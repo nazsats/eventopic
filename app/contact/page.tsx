@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 export default function Contact() {
   const [clientForm, setClientForm] = useState({ name: "", email: "", message: "" });
@@ -25,13 +28,13 @@ export default function Contact() {
         body: JSON.stringify(clientForm),
       });
       if (response.ok) {
-        alert("Client inquiry submitted!");
+        toast.success("Client inquiry submitted!");
         setClientForm({ name: "", email: "", message: "" });
       } else {
-        alert("Failed to submit inquiry.");
+        toast.error("Failed to submit inquiry.");
       }
     } catch (error) {
-      alert("Error submitting inquiry.");
+      toast.error("Error submitting inquiry.");
     }
   };
 
@@ -44,140 +47,165 @@ export default function Contact() {
         body: JSON.stringify(staffForm),
       });
       if (response.ok) {
-        alert("Application submitted!");
+        toast.success("Application submitted!");
         setStaffForm({ name: "", email: "", role: "", experience: "" });
       } else {
-        alert("Failed to submit application.");
+        toast.error("Failed to submit application.");
       }
     } catch (error) {
-      alert("Error submitting application.");
+      toast.error("Error submitting application.");
     }
   };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--secondary)", color: "var(--dark)" }}>
-      {/* Navigation */}
-      <nav style={{ backgroundColor: "var(--primary)", color: "var(--white)" }} className="p-4">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 p-4 shadow-lg" style={{ background: "linear-gradient(to right, var(--primary), var(--accent))", color: "var(--white)" }}>
         <div className="container mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Eventopic</h1>
-            <p className="text-sm">The Future of Showcasing</p>
+          <div className="flex items-center space-x-2">
+            <Image src="/logo.png" alt="Eventopic Logo" width={40} height={40} className="rounded-full" />
+            <div>
+              <h1 className="text-2xl font-bold">Eventopic</h1>
+              <p className="text-sm">The Future of Showcasing</p>
+            </div>
           </div>
-          <div className="hidden md:flex space-x-4">
-            <Link href="/" className="hover:text-[var(--light)]">Home</Link>
-            <Link href="/about" className="hover:text-[var(--light)]">About</Link>
-            <Link href="/services" className="hover:text-[var(--light)]">Services</Link>
-            <Link href="/contact" className="hover:text-[var(--light)]">Contact</Link>
+          <div className="hidden md:flex space-x-6">
+            <Link href="/" className="text-lg hover:text-[var(--light)] transition-colors">Home</Link>
+            <Link href="/about" className="text-lg hover:text-[var(--light)] transition-colors">About</Link>
+            <Link href="/services" className="text-lg hover:text-[var(--light)] transition-colors">Services</Link>
+            <Link href="/contact" className="text-lg hover:text-[var(--light)] transition-colors">Contact</Link>
           </div>
           <button 
-            className="md:hidden"
+            className="md:hidden text-2xl"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             style={{ color: "var(--white)" }}
           >
-            Menu
+            ☰
           </button>
         </div>
         {isMenuOpen && (
-          <div className="md:hidden mt-2 flex flex-col space-y-2">
-            <Link href="/" className="hover:text-[var(--light)]">Home</Link>
-            <Link href="/about" className="hover:text-[var(--light)]">About</Link>
-            <Link href="/services" className="hover:text-[var(--light)]">Services</Link>
-            <Link href="/contact" className="hover:text-[var(--light)]">Contact</Link>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden mt-4 flex flex-col space-y-4 bg-[var(--primary)] p-4 rounded-lg shadow-md"
+          >
+            <Link href="/" className="hover:text-[var(--light)] text-lg">Home</Link>
+            <Link href="/about" className="hover:text-[var(--light)] text-lg">About</Link>
+            <Link href="/services" className="hover:text-[var(--light)] text-lg">Services</Link>
+            <Link href="/contact" className="hover:text-[var(--light)] text-lg">Contact</Link>
+          </motion.div>
         )}
       </nav>
 
       {/* Contact Section */}
-      <section className="py-16">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12" style={{ color: "var(--primary)" }}>Get in Touch</h2>
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl font-bold text-center mb-16" 
+            style={{ color: "var(--primary)" }}
+          >
+            Get in Touch
+          </motion.h2>
           
           {/* Client Contact Form */}
-          <div className="max-w-lg mx-auto bg-[var(--white)] p-8 rounded-lg shadow-md mb-16">
-            <h3 className="text-2xl font-semibold mb-6" style={{ color: "var(--accent)" }}>Client Inquiry</h3>
-            <div className="space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-lg mx-auto bg-[var(--white)] p-10 rounded-xl shadow-xl mb-16"
+          >
+            <h3 className="text-3xl font-semibold mb-8 text-center" style={{ color: "var(--accent)" }}>Client Inquiry</h3>
+            <form onSubmit={handleClientSubmit} className="space-y-6">
               <div>
-                <label htmlFor="client-name" className="block text-sm font-medium">Name</label>
+                <label htmlFor="client-name" className="block text-sm font-medium mb-2">Name</label>
                 <input
                   type="text"
                   id="client-name"
                   name="name"
                   value={clientForm.name}
                   onChange={handleClientChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="client-email" className="block text-sm font-medium">Email</label>
+                <label htmlFor="client-email" className="block text-sm font-medium mb-2">Email</label>
                 <input
                   type="email"
                   id="client-email"
                   name="email"
                   value={clientForm.email}
                   onChange={handleClientChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="client-message" className="block text-sm font-medium">Message</label>
+                <label htmlFor="client-message" className="block text-sm font-medium mb-2">Message</label>
                 <textarea
                   id="client-message"
                   name="message"
                   value={clientForm.message}
                   onChange={handleClientChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   rows={4}
                   required
                 ></textarea>
               </div>
               <button
-                onClick={handleClientSubmit}
+                type="submit"
+                className="w-full p-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
                 style={{ backgroundColor: "var(--accent)", color: "var(--white)" }}
-                className="w-full p-2 rounded hover:bg-[var(--primary)]"
               >
                 Send Inquiry
               </button>
-            </div>
-          </div>
+            </form>
+          </motion.div>
 
           {/* Staff/Volunteer Application Form */}
-          <div className="max-w-lg mx-auto bg-[var(--white)] p-8 rounded-lg shadow-md">
-            <h3 className="text-2xl font-semibold mb-6" style={{ color: "var(--accent)" }}>Join Our Team</h3>
-            <div className="space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-lg mx-auto bg-[var(--white)] p-10 rounded-xl shadow-xl"
+          >
+            <h3 className="text-3xl font-semibold mb-8 text-center" style={{ color: "var(--accent)" }}>Join Our Team</h3>
+            <form onSubmit={handleStaffSubmit} className="space-y-6">
               <div>
-                <label htmlFor="staff-name" className="block text-sm font-medium">Name</label>
+                <label htmlFor="staff-name" className="block text-sm font-medium mb-2">Name</label>
                 <input
                   type="text"
                   id="staff-name"
                   name="name"
                   value={staffForm.name}
                   onChange={handleStaffChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="staff-email" className="block text-sm font-medium">Email</label>
+                <label htmlFor="staff-email" className="block text-sm font-medium mb-2">Email</label>
                 <input
                   type="email"
                   id="staff-email"
                   name="email"
                   value={staffForm.email}
                   onChange={handleStaffChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="role" className="block text-sm font-medium">Role Interested In</label>
+                <label htmlFor="role" className="block text-sm font-medium mb-2">Role Interested In</label>
                 <select
                   id="role"
                   name="role"
                   value={staffForm.role}
                   onChange={handleStaffChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   required
                 >
                   <option value="">Select Role</option>
@@ -187,30 +215,30 @@ export default function Contact() {
                 </select>
               </div>
               <div>
-                <label htmlFor="experience" className="block text-sm font-medium">Experience</label>
+                <label htmlFor="experience" className="block text-sm font-medium mb-2">Experience</label>
                 <textarea
                   id="experience"
                   name="experience"
                   value={staffForm.experience}
                   onChange={handleStaffChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   rows={4}
                 ></textarea>
               </div>
               <button
-                onClick={handleStaffSubmit}
+                type="submit"
+                className="w-full p-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
                 style={{ backgroundColor: "var(--accent)", color: "var(--white)" }}
-                className="w-full p-2 rounded hover:bg-[var(--primary)]"
               >
                 Apply Now
               </button>
-            </div>
-          </div>
+            </form>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8" style={{ backgroundColor: "var(--dark)", color: "var(--white)" }}>
+      <footer className="py-10" style={{ backgroundColor: "var(--dark)", color: "var(--white)" }}>
         <div className="container mx-auto text-center">
           <p>&copy; 2025 Eventopic. All rights reserved.</p>
         </div>

@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 /* Define Eventopic theme colors as CSS variables */
 :root {
   --primary: #283e56;
@@ -9,4 +8,13 @@
   --accent: #385779;
   --dark: #182533;
   --light: #fcddb7;
+}
+
+/* Additional trendy styles */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.container {
+  max-width: 1200px;
 }
