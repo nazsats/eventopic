@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
 export default function Contact() {
-  const [clientForm, setClientForm] = useState({ name: "", email: "", message: "" });
+  const [clientForm, setClientForm] = useState({ name: "", email: "",mobile: "", message: "" });
   const [staffForm, setStaffForm] = useState({ name: "", email: "", role: "", experience: "" });
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function Contact() {
       });
       if (response.ok) {
         toast.success("Client inquiry submitted!");
-        setClientForm({ name: "", email: "", message: "" });
+        setClientForm({ name: "", email: "",mobile: "", message: "" });
       } else {
         toast.error("Failed to submit inquiry.");
       }
@@ -85,7 +85,7 @@ export default function Contact() {
             transition={{ duration: 0.8 }}
             className="max-w-lg mx-auto bg-[var(--white)] p-10 rounded-xl shadow-xl mb-16"
           >
-            <h3 className="text-3xl font-semibold mb-8 text-center" style={{ color: "var(--accent)" }}>Client Inquiry</h3>
+            <h3 className="text-3xl font-semibold mb-8 text-center" style={{ color: "var(--accent)" }}>Enquiry</h3>
             <form onSubmit={handleClientSubmit} className="space-y-6">
               <div>
                 <label htmlFor="client-name" className="block text-sm font-medium mb-2">Name</label>
@@ -94,6 +94,18 @@ export default function Contact() {
                   id="client-name"
                   name="name"
                   value={clientForm.name}
+                  onChange={handleClientChange}
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
+                  required
+                />
+              </div>
+                            <div>
+                <label htmlFor="Mobile" className="block text-sm font-medium mb-2">Mobile No.</label>
+                <input
+                  type="text"
+                  id="Mobile"
+                  name="Mobile"
+                  value={clientForm.mobile}
                   onChange={handleClientChange}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   required
@@ -155,6 +167,18 @@ export default function Contact() {
                   required
                 />
               </div>
+                <div>
+                <label htmlFor="Mobile" className="block text-sm font-medium mb-2">Mobile No.</label>
+                <input
+                  type="text"
+                  id="Mobile"
+                  name="Mobile"
+                  value={clientForm.mobile}
+                  onChange={handleClientChange}
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
+                  required
+                />
+              </div>
               <div>
                 <label htmlFor="staff-email" className="block text-sm font-medium mb-2">Email</label>
                 <input
@@ -177,10 +201,12 @@ export default function Contact() {
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--accent)]"
                   required
                 >
-                  <option value="">Select Role</option>
+                 
                   <option value="promoter">Promoter</option>
-                  <option value="staff">Staff</option>
+                  <option value="promoter">Waitresss</option>
+                 <option value="promoter">Usher</option>
                   <option value="volunteer">Volunteer</option>
+                  <option value="volunteer">Model</option>
                 </select>
               </div>
               <div>

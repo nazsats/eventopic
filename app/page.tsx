@@ -191,6 +191,24 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-10" style={{ backgroundColor: "var(--dark)", color: "var(--white)" }}>
         <div className="container mx-auto text-center">
+          <div className="flex justify-center space-x-6 mb-4">
+            <a 
+              href="https://www.instagram.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-lg hover:text-[var(--light)] transition-colors"
+            >
+              Instagram
+            </a>
+            <a 
+              href="https://www.facebook.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-lg hover:text-[var(--light)] transition-colors"
+            >
+              Facebook
+            </a>
+          </div>
           <p>&copy; 2025 Eventopic. All rights reserved.</p>
         </div>
       </footer>
