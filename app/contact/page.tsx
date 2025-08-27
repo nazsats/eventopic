@@ -16,16 +16,42 @@ export default function Contact() {
     setStaffForm({ ...staffForm, [e.target.name]: e.target.value });
   };
 
-  const handleClientSubmit = (e: React.FormEvent) => {
+  const handleClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add submission logic (e.g., API call)
-    alert("Client inquiry submitted!");
+    try {
+      const response = await fetch("/api/submit-client", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clientForm),
+      });
+      if (response.ok) {
+        alert("Client inquiry submitted!");
+        setClientForm({ name: "", email: "", message: "" });
+      } else {
+        alert("Failed to submit inquiry.");
+      }
+    } catch (error) {
+      alert("Error submitting inquiry.");
+    }
   };
 
-  const handleStaffSubmit = (e: React.FormEvent) => {
+  const handleStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add submission logic (e.g., API call)
-    alert("Application submitted!");
+    try {
+      const response = await fetch("/api/submit-staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(staffForm),
+      });
+      if (response.ok) {
+        alert("Application submitted!");
+        setStaffForm({ name: "", email: "", role: "", experience: "" });
+      } else {
+        alert("Failed to submit application.");
+      }
+    } catch (error) {
+      alert("Error submitting application.");
+    }
   };
 
   return (
