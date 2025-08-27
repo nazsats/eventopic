@@ -3,7 +3,7 @@
 import Navbar from "../components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function Home() {
   // Sample gallery images (replace with your actual image paths in public/gallery/)
@@ -17,28 +17,39 @@ export default function Home() {
   ];
 
   // Animation variants for hero text
-  const textVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
-  };
-
-  // Button animation with bounce
-  const buttonVariants = {
+  const textVariants: Variants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { 
       opacity: 1, 
       scale: 1, 
       transition: { 
-        duration: 0.6, 
-        ease: "easeOut",
-        scale: {
-          type: "spring",
-          stiffness: 100,
-          damping: 10,
-        }
+        duration: 0.8, 
+        type: "spring", 
+        stiffness: 100, 
+        damping: 10 
       } 
     },
-    hover: { scale: 1.1, transition: { duration: 0.3 } },
+  };
+
+  // Button animation with slide-in
+  const buttonVariants: Variants = {
+    hidden: (direction: number) => ({
+      opacity: 0,
+      x: direction,
+    }),
+    visible: { 
+      opacity: 1, 
+      x: 0, 
+      transition: { 
+        duration: 0.6, 
+        type: "spring", 
+        stiffness: 80 
+      } 
+    },
+    hover: { 
+      scale: 1.1, 
+      transition: { duration: 0.3 } 
+    },
   };
 
   return (
@@ -52,16 +63,16 @@ export default function Home() {
             variants={textVariants}
             initial="hidden"
             animate="visible"
-            className="text-5xl md:text-6xl font-extrabold mb-6 drop-shadow-lg"
+            className="text-5xl md:text-7xl font-extrabold mb-6 drop-shadow-lg"
           >
-           Eventopic
+            Eventopic
           </motion.h2>
           <motion.p 
             variants={textVariants}
             initial="hidden"
             animate="visible"
             transition={{ delay: 0.2 }}
-            className="text-2xl mb-10 drop-shadow-md"
+            className="text-2xl md:text-3xl mb-10 drop-shadow-md"
           >
             The Future of Showcasing Your Events
           </motion.p>
@@ -71,13 +82,29 @@ export default function Home() {
             animate="visible"
             variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
           >
-            <motion.div variants={buttonVariants} whileHover="hover">
-              <Link href="/contact" className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" style={{ backgroundColor: "var(--light)", color: "var(--dark)" }}>
+            <motion.div 
+              variants={buttonVariants} 
+              custom={-100} 
+              whileHover="hover"
+            >
+              <Link 
+                href="/contact" 
+                className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" 
+                style={{ backgroundColor: "var(--light)", color: "var(--dark)" }}
+              >
                 Enquiry
               </Link>
             </motion.div>
-            <motion.div variants={buttonVariants} whileHover="hover">
-              <Link href="/contact#staff-form" className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" style={{ backgroundColor: "var(--white)", color: "var(--accent)" }}>
+            <motion.div 
+              variants={buttonVariants} 
+              custom={100} 
+              whileHover="hover"
+            >
+              <Link 
+                href="/contact#staff-form" 
+                className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" 
+                style={{ backgroundColor: "var(--white)", color: "var(--accent)" }}
+              >
                 Join Our Team
               </Link>
             </motion.div>
@@ -141,7 +168,11 @@ export default function Home() {
             transition={{ duration: 0.6, type: "spring" }}
             viewport={{ once: true }}
           >
-            <Link href="/about" className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}>
+            <Link 
+              href="/about" 
+              className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" 
+              style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}
+            >
               Learn More
             </Link>
           </motion.div>
