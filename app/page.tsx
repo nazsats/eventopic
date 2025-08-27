@@ -57,7 +57,16 @@ export default function Home() {
       <Navbar />
       {/* Hero Section */}
       <section className="py-32 relative overflow-hidden" style={{ background: "linear-gradient(to bottom, var(--accent), var(--primary))", color: "var(--white)" }}>
-        <div className="absolute inset-0 opacity-20 hero-bg" style={{ backgroundImage: "url('/hero-bg-pattern.png')" }}></div>
+        <div className="absolute inset-0 opacity-20 hero-bg">
+          <Image
+            src="/gallery/burjkhalifa.png"
+            alt="Burj Khalifa Background"
+            fill
+            style={{ objectFit: "cover" }}
+            quality={50}
+            priority
+          />
+        </div>
         <div className="container mx-auto text-center relative z-10">
           <motion.h2 
             variants={textVariants}
