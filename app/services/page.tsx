@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-export default function Home() {
+export default function Services() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -39,48 +39,28 @@ export default function Home() {
         )}
       </nav>
 
-      {/* Hero Section */}
-      <section style={{ backgroundColor: "var(--accent)", color: "var(--white)" }} className="py-20">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4">Welcome to Eventopic</h2>
-          <p className="text-xl mb-8">The Future of Showcasing Your Events</p>
-          <Link href="/contact" style={{ backgroundColor: "var(--light)", color: "var(--dark)" }} className="px-6 py-3 rounded-full hover:bg-[var(--white)]">
-            Get in Touch
-          </Link>
-        </div>
-      </section>
-
-      {/* Services Preview */}
-      <section className="py-16" style={{ backgroundColor: "var(--secondary)" }}>
+      {/* Services Section */}
+      <section className="py-16">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12" style={{ color: "var(--primary)" }}>Our Services</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="p-6 bg-[var(--white)] rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--accent)" }}>Event Staffing</h3>
-              <p>We provide promoters, staff, and volunteers for private and government events.</p>
+              <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--accent)" }}>Promoters and Staff</h3>
+              <p>We provide experienced promoters and staff for all types of events to ensure smooth operations.</p>
             </div>
             <div className="p-6 bg-[var(--white)] rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--accent)" }}>Event Planning</h3>
-              <p>Comprehensive services for marriages, parties, birthdays, tech events, and more.</p>
+              <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--accent)" }}>Event Planning Services</h3>
+              <p>Full-service planning for marriages, parties, birthday celebrations, tech events, and more.</p>
+            </div>
+            <div className="p-6 bg-[var(--white)] rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--accent)" }}>Volunteers</h3>
+              <p>Supplying dedicated volunteers for private and government events.</p>
             </div>
             <div className="p-6 bg-[var(--white)] rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--accent)" }}>Job Opportunities</h3>
-              <p>Short-term, part-time jobs as promoters, staff, or volunteers.</p>
+              <p>Offering short-term works and part-time jobs in the event management sector.</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* About Preview */}
-      <section className="py-16" style={{ backgroundColor: "var(--light)" }}>
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-8" style={{ color: "var(--primary)" }}>About Us</h2>
-          <p className="text-lg max-w-2xl mx-auto">
-            Eventopic is an experienced team with over 3 years of hands-on experience in Dubai. We have handled numerous events, providing top-notch services to make every occasion memorable.
-          </p>
-          <Link href="/about" style={{ backgroundColor: "var(--primary)", color: "var(--white)" }} className="mt-4 inline-block px-6 py-3 rounded-full hover:bg-[var(--accent)]">
-            Learn More
-          </Link>
         </div>
       </section>
 
