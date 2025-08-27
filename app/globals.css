@@ -14,8 +14,46 @@
 /* Additional trendy styles */
 body {
   font-family: 'Inter', sans-serif;
+  background-color: var(--secondary);
+  color: var(--dark);
 }
 
 .container {
   max-width: 1200px;
+}
+
+/* Gallery styles */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+  transform: scale(1.05) rotate(2deg);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Hero background pulse animation */
+@keyframes pulse {
+  0% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.05); }
+  100% { opacity: 0.2; transform: scale(1); }
+}
+
+.hero-bg {
+  animation: pulse 8s infinite ease-in-out;
 }
