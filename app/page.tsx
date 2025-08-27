@@ -72,9 +72,13 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex justify-center space-x-4"
           >
             <Link href="/contact" className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" style={{ backgroundColor: "var(--light)", color: "var(--dark)" }}>
-              Get in Touch
+              Enquiry
+            </Link>
+            <Link href="/contact#staff-form" className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" style={{ backgroundColor: "var(--white)", color: "var(--accent)" }}>
+              Join Our Team
             </Link>
           </motion.div>
         </div>

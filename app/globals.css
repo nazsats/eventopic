@@ -1,13 +1,14 @@
 @import "tailwindcss";
 
+
 /* Define Eventopic theme colors as CSS variables */
 :root {
-  --primary: #283e56;
-  --secondary: #fef4e8;
-  --white: #ffffff;
-  --accent: #385779;
-  --dark: #182533;
-  --light: #fcddb7;
+  --primary: #1E3A8A; /* Deep Blue */
+  --secondary: #EDE9FE; /* Light Purple */
+  --white: #FFFFFF;
+  --accent: #6B21A8; /* Vibrant Purple */
+  --dark: #0F172A; /* Dark Slate Blue */
+  --light: #A5B4FC; /* Soft Blue-Purple */
 }
 
 /* Additional trendy styles */
