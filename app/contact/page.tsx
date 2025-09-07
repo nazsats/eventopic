@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 export default function Contact() {
   const [clientForm, setClientForm] = useState({ name: "", email: "", mobile: "", message: "" });
-  const [staffForm, setStaffForm] = useState({ name: "", email: "", mobile: "", role: "", experience: "" }); // Fixed: Added mobile
+  const [staffForm, setStaffForm] = useState({ name: "", email: "", mobile: "", role: "", experience: "" });
 
   useEffect(() => {
     if (window.location.hash === "#staff-form") {
@@ -20,10 +20,9 @@ export default function Contact() {
   };
 
   const handleStaffChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setStaffForm({ ...staffForm, [e.target.name]: e.target.value }); // Fixed: Use staffForm
+    setStaffForm({ ...staffForm, [e.target.name]: e.target.value });
   };
 
-  // Phone validation: Basic for Dubai (e.g., 05xxxxxxxx)
   const validatePhone = (phone: string) => /^05\d{8}$/.test(phone);
 
   const handleClientSubmit = async (e: React.FormEvent) => {
@@ -44,14 +43,15 @@ export default function Contact() {
       } else {
         toast.error("Failed to submit inquiry. Please try again.");
       }
-    } catch (error) {
+    } catch {
+      // Remove 'error' param
       toast.error("Error submitting inquiry. Check your connection.");
     }
   };
 
   const handleStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validatePhone(staffForm.mobile)) { // Fixed: staffForm
+    if (!validatePhone(staffForm.mobile)) {
       toast.error("Please enter a valid Dubai mobile number (e.g., 05xxxxxxxx).");
       return;
     }
@@ -67,12 +67,13 @@ export default function Contact() {
       } else {
         toast.error("Failed to submit application. Please try again.");
       }
-    } catch (error) {
+    } catch {
+      // Remove 'error' param
       toast.error("Error submitting application. Check your connection.");
     }
   };
 
-  const roles = ["Promoter", "Waitress", "Usher", "Volunteer", "Model"]; // Fixed: Unique, corrected spelling
+  const roles = ["Promoter", "Waitress", "Usher", "Volunteer", "Model"];
 
   return (
     <>
@@ -87,7 +88,7 @@ export default function Contact() {
             className="text-4xl md:text-5xl font-bold text-center mb-16 font-heading" 
             style={{ color: "var(--white)" }}
           >
-            Get in Touch – Let's Plan Your Next Event in Dubai
+            Get in Touch &ndash; Let&apos;s Plan Your Next Event in Dubai
           </motion.h1>
           
           {/* Client Contact Form */}
@@ -167,7 +168,7 @@ export default function Contact() {
             className="max-w-lg mx-auto card p-8 md:p-10 rounded-xl shadow-xl"
             id="staff-form"
           >
-            <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center font-heading" style={{ color: "var(--primary)" }}>Join Our Team – Opportunities in Dubai Events</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center font-heading" style={{ color: "var(--primary)" }}>Join Our Team &ndash; Opportunities in Dubai&apos;s Events</h2>
             <form onSubmit={handleStaffSubmit} className="space-y-6">
               <div>
                 <label htmlFor="staff-name" className="block text-sm font-medium mb-2" style={{ color: "var(--primary)" }}>Full Name</label>
@@ -187,8 +188,8 @@ export default function Contact() {
                   type="tel"
                   id="staff-mobile"
                   name="mobile"
-                  value={staffForm.mobile} // Fixed
-                  onChange={handleStaffChange} // Fixed
+                  value={staffForm.mobile}
+                  onChange={handleStaffChange}
                   pattern="05\d{8}"
                   title="Dubai mobile: 05 followed by 8 digits"
                   className="w-full p-3 border border-[var(--accent)] rounded-lg focus:ring-2 focus:ring-[var(--white)] bg-[var(--white)] text-[var(--primary)]"

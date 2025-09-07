@@ -2,6 +2,21 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { Inter, Poppins } from 'next/font/google';  // Import fonts (built-in, no @next/font needed)
+
+const inter = Inter({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'],  // Adjust weights as needed
+  variable: '--font-inter',  // For CSS var usage
+  display: 'swap',  // Prevents layout shift
+});
+
+const poppins = Poppins({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700', '800'], 
+  variable: '--font-poppins',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "Eventopic - Event Management & Staffing Solutions in Dubai",
@@ -21,14 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      </head>
-      <body>
+    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
+      <body className={`${inter.className} antialiased`}>  {/* Apply Inter globally; use Poppins for headings via CSS vars */}
         {children}
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme="dark" /> {/* Dark theme for B&W */}
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme="dark" />
       </body>
     </html>
   );

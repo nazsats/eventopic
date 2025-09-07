@@ -1,7 +1,6 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
-import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function About() {
@@ -18,7 +17,7 @@ export default function About() {
             className="text-4xl md:text-5xl font-bold text-center mb-16 font-heading" 
             style={{ color: "var(--white)" }}
           >
-            About Eventopic – Where Ideas Become Experiences
+            About Eventopic &ndash; Where Ideas Become Experiences
           </motion.h1>
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -31,7 +30,7 @@ export default function About() {
               Eventopic is a full-service event and staffing solutions company based in Dubai. With over 3 years of hands-on experience, we transform visions into reality through expert event management. From end-to-end planning and logistics to execution, we create seamless, memorable experiences for private individuals, corporations, and government entities.
             </p>
             <p className="text-lg italic mb-8">
-              "Your Event. Our People. Perfect Execution." – Staffing Moments, Creating Memories.
+              &quot;Your Event. Our People. Perfect Execution.&quot; &ndash; Staffing Moments, Creating Memories.
             </p>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-10">
@@ -42,7 +41,7 @@ export default function About() {
               },
               { 
                 title: "Our Services", 
-                desc: "Event staffing (hosts, hostesses, ushers, coordinators, security); Labour support (set-up crews, technical teams); Promoters & brand ambassadors; Sponsorship solutions; Marketing services (pre-event buzz, digital campaigns); Corporate HR support; Content creation (photos/videos); Vendor management (sound, light, décor)." 
+                desc: "Event staffing (hosts, hostesses, ushers, coordinators, security); Labour support (set-up crews, technical teams); Promoters &amp; brand ambassadors; Sponsorship solutions; Marketing services (pre-event buzz, digital campaigns); Corporate HR support; Content creation (photos/videos); Vendor management (sound, light, décor)." 
               },
               { 
                 title: "Who We Work With", 

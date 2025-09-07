@@ -26,8 +26,8 @@ export default function Home() {
 
   const textVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, type: "spring", stiffness: 100, damping: 10 } },
-  };
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, type: "spring" as const, stiffness: 100, damping: 10 } },
+  } as const;
 
   const staggerChildren: Variants = {
     visible: { transition: { staggerChildren: 0.2 } },
@@ -35,7 +35,7 @@ export default function Home() {
 
   const buttonVariants: Variants = {
     hidden: { opacity: 0, scale: 0.9 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring" as const, stiffness: 80 } },
     hover: { scale: 1.05, y: -5, transition: { duration: 0.3 } },
   };
 
@@ -81,7 +81,7 @@ export default function Home() {
             transition={{ delay: 0.5 }}
             className="text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed opacity-80"
           >
-            Dubai's trusted partner for luxury event management and professional staffing. Create unforgettable moments with our expert team.
+            Dubai&apos;s trusted partner for luxury event management and professional staffing. Create unforgettable moments with our expert team.
           </motion.p>
           <motion.div 
             variants={staggerChildren}
@@ -255,9 +255,9 @@ export default function Home() {
           </motion.h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { quote: "Eventopic turned our corporate gala into an unforgettable night. Professional staff and seamless planning!", name: "Ahmed K., CEO" },
-              { quote: "The promoters were outstanding – boosted our brand visibility like never before.", name: "Sara L., Marketing Director" },
-              { quote: "From wedding setup to volunteers, everything was perfect. Highly recommend for Dubai events!", name: "Fatima R., Bride" },
+              { quote: "&quot;Eventopic turned our corporate gala into an unforgettable night. Professional staff and seamless planning!&quot;", name: "Ahmed K., CEO" },
+              { quote: "&quot;The promoters were outstanding &ndash; boosted our brand visibility like never before.&quot;", name: "Sara L., Marketing Director" },
+              { quote: "&quot;From wedding setup to volunteers, everything was perfect. Highly recommend for Dubai events!&quot;", name: "Fatima R., Bride" },
             ].map((testimonial, index) => (
               <motion.div 
                 key={index}
@@ -267,7 +267,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="card p-6 rounded-xl shadow-xl italic"
               >
-                <p className="mb-4 text-lg" style={{ color: "var(--accent)" }}>"{testimonial.quote}"</p>
+                <p className="mb-4 text-lg" style={{ color: "var(--accent)" }}>{testimonial.quote}</p>
                 <p className="font-semibold text-right" style={{ color: "var(--primary)" }}>- {testimonial.name}</p>
               </motion.div>
             ))}
@@ -294,12 +294,12 @@ export default function Home() {
             className="text-lg md:text-xl max-w-2xl mx-auto mb-10 font-body"
             style={{ color: "var(--light)" }}
           >
-            With over 3 years in Dubai's dynamic event scene, Eventopic is your partner for staffing, planning, and execution. Let's create memories that last.
+            With over 3 years in Dubai&apos;s dynamic event scene, Eventopic is your partner for staffing, planning, and execution. Let&apos;s create memories that last.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, type: "spring" }}
+            transition={{ duration: 0.6, type: "spring" as const }}
             viewport={{ once: true }}
           >
             <Link 
@@ -327,7 +327,7 @@ export default function Home() {
               <FaEnvelope />
             </a>
           </div>
-          <p>&copy; 2025 Eventopic. All rights reserved. | Dubai's Trusted Event Management Partner.</p>
+          <p>&copy; 2025 Eventopic. All rights reserved. | Dubai&apos;s Trusted Event Management Partner.</p>
         </div>
       </footer>
     </>

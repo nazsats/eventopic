@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { name, email, message } = await request.json();
-    // Add logic to handle form data (e.g., send to email service or database)
-    console.log("Client Inquiry:", { name, email, message });
-    // Example: Integrate with an email service like SendGrid or save to a database
-    return NextResponse.json({ message: "Inquiry submitted successfully" }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to submit inquiry" }, { status: 500 });
+    const body = await request.json();
+    // Add your email submission logic here (e.g., using Nodemailer or a service like Resend)
+    // Example: await sendEmail(body);
+    console.log('Client form submitted:', body); // For debugging
+    return NextResponse.json({ success: true, message: 'Inquiry submitted successfully' });
+  } catch {
+    return NextResponse.json({ error: 'Failed to submit inquiry' }, { status: 500 });
   }
 }

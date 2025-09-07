@@ -3,7 +3,7 @@
 import Navbar from "../../components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { FaInstagram, FaFacebookF, FaEnvelope } from "react-icons/fa";
 import { useState } from "react";
 
@@ -16,8 +16,8 @@ export default function Gallery() {
     { src: "/gallery/event4.png", alt: "Private Party in Dubai by Eventopic", desc: "Exclusive rooftop party", category: "Parties" },
     { src: "/gallery/event5.png", alt: "Cultural Event in Dubai - Eventopic Staffing", desc: "Government cultural festival", category: "Cultural" },
     { src: "/gallery/event6.png", alt: "Luxury Event in Dubai - Eventopic Planning", desc: "High-profile gala dinner", category: "Corporate" },
-    // Fallbacks if images missing:
-    // { src: "https://images.unsplash.com/photo-1517457373958-b7bdd4587208?w=800&h=600&fit=crop", alt: "Eventopic Event", desc: "Placeholder event", category: "Weddings" },
+    // Fallbacks if images missing (uncomment and add to next.config.js for external domains):
+    // { src: "https://images.unsplash.com/photo-1517457373958-b7bdd4587208?w=800&h=600&fit=crop", alt: "Eventopic Wedding Event Placeholder", desc: "Elegant wedding setup", category: "Weddings" },
   ];
 
   const categories = ["All", "Weddings", "Corporate", "Promotions", "Parties", "Cultural"];
@@ -25,10 +25,20 @@ export default function Gallery() {
 
   const filteredImages = filter === "All" ? galleryImages : galleryImages.filter((img) => img.category === filter);
 
-  const textVariants = {
+  // Fixed variants with as const for TypeScript literal typing
+  const textVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, type: "spring", stiffness: 100, damping: 10 } },
-  };
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        duration: 0.8, 
+        type: "spring" as const,  // Literal "spring" to satisfy Variants type
+        stiffness: 100, 
+        damping: 10 
+      } 
+    },
+  } as const;  // Ensures literal types for the entire object
 
   return (
     <>
@@ -53,7 +63,7 @@ export default function Gallery() {
             className="text-lg md:text-xl max-w-3xl mx-auto mb-12 font-body leading-relaxed" 
             style={{ color: "var(--light)" }}
           >
-            Explore our portfolio of unforgettable events in Dubai – from luxurious weddings to high-energy corporate activations, crafted with precision by Eventopic.
+            Explore our portfolio of unforgettable events in Dubai &ndash; from luxurious weddings to high-energy corporate activations, crafted with precision by Eventopic.
           </motion.p>
           {/* Category Filters */}
           <motion.div 
@@ -145,12 +155,12 @@ export default function Gallery() {
             className="text-lg md:text-xl max-w-2xl mx-auto mb-10 font-body"
             style={{ color: "var(--light)" }}
           >
-            From concept to execution, Eventopic delivers world-class events in Dubai with professional staffing and flawless planning.
+            From concept to execution, Eventopic delivers world-class events in Dubai&apos;s vibrant scene with professional staffing and flawless planning.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, type: "spring" }}
+            transition={{ duration: 0.6, type: "spring" as const }}
             viewport={{ once: true }}
           >
             <Link 
@@ -178,7 +188,7 @@ export default function Gallery() {
               <FaEnvelope />
             </a>
           </div>
-          <p>&copy; 2025 Eventopic. All rights reserved. | Dubai's Premier Event Management Experts.</p>
+          <p>&copy; 2025 Eventopic. All rights reserved. | Dubai&apos;s Premier Event Management Experts.</p>
         </div>
       </footer>
     </>
