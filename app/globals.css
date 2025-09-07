@@ -1,59 +1,118 @@
 @import "tailwindcss";
-
-
-/* Define Eventopic theme colors as CSS variables */
 :root {
-  --primary: #1E3A8A; /* Deep Blue */
-  --secondary: #EDE9FE; /* Light Purple */
-  --white: #FFFFFF;
-  --accent: #6B21A8; /* Vibrant Purple */
-  --dark: #0F172A; /* Dark Slate Blue */
-  --light: #A5B4FC; /* Soft Blue-Purple */
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  /* Black and White Shades Theme */
+  --primary: #000000; /* Pure Black */
+  --secondary: #121212; /* Near-Black */
+  --accent: #333333; /* Dark Gray */
+  --light: #F5F5F5; /* Light Gray */
+  --soft: #FAFAFA; /* Off-White */
+  --white: #FFFFFF; /* Pure White */
+  /* Colorful accent for title hover */
+  --color-accent: #773f3f; /* Gold */
 }
 
-/* Additional trendy styles */
+/* Body */
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--secondary);
-  color: var(--dark);
+  font-family: var(--font-body);
+  background-color: var(--primary);
+  color: var(--white);
+  line-height: 1.6;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
+}
+
+/* Hero image animation: Grayscale to colorful */
+@keyframes colorizeImage {
+  0% {
+    filter: grayscale(80%) brightness(90%);
+  }
+  50% {
+    filter: grayscale(0%) brightness(100%);
+  }
+  100% {
+    filter: grayscale(80%) brightness(90%);
+  }
+}
+
+.hero-bg img {
+  animation: colorizeImage 10s infinite ease-in-out;
+}
+
+/* Eventopic title hover */
+.eventopic-title {
+  transition: color 0.4s ease;
+}
+
+.eventopic-title:hover {
+  color: var(--color-accent);
 }
 
 /* Gallery styles */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+  padding: 0 16px;
 }
 
 .gallery-item {
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  aspect-ratio: 3/2;
+  background-color: var(--accent);
 }
 
 .gallery-item:hover {
-  transform: scale(1.05) rotate(2deg);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.9);
 }
 
 .gallery-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease, filter 0.4s ease;
+  filter: grayscale(80%) brightness(90%);
 }
 
-/* Hero background pulse animation */
-@keyframes pulse {
-  0% { opacity: 0.2; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.05); }
-  100% { opacity: 0.2; transform: scale(1); }
+.gallery-item:hover img {
+  transform: scale(1.1);
+  filter: grayscale(0%) brightness(100%);
 }
 
-.hero-bg {
-  animation: pulse 8s infinite ease-in-out;
+.gallery-item .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 20px;
+  text-align: center;
+}
+
+.gallery-item:hover .overlay {
+  opacity: 1;
+}
+
+/* Cards */
+.card {
+  background-color: var(--soft);
+  color: var(--primary);
+  border: 1px solid var(--accent);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
 }

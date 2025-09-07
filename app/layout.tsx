@@ -4,8 +4,15 @@ import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
-  title: "Eventopic - The Future of Showcasing",
-  description: "Event management services in Dubai",
+  title: "Eventopic - Event Management & Staffing Solutions in Dubai",
+  description: "Eventopic – Where Ideas Become Experiences. Full-service event management, staffing, promoters, and volunteers in Dubai. Plan unforgettable events with our expert team.",
+  keywords: "event management Dubai, event staffing, promoters Dubai, event volunteers, corporate events, wedding planning Dubai, part-time jobs events",
+  openGraph: {
+    title: "Eventopic - The Future of Showcasing Your Events",
+    description: "Professional event planning and staffing services in Dubai for businesses, individuals, and government.",
+    images: ["/og-image.png"], // Add an OG image in public/
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -16,11 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
         {children}
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme="colored" />
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme="dark" /> {/* Dark theme for B&W */}
       </body>
     </html>
   );

@@ -5,38 +5,44 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Services() {
+  const services = [
+    { title: "Event Management", desc: "End-to-end planning, logistics, and execution for weddings, birthdays, corporate tech events, and more in Dubai." },
+    { title: "Event Staffing", desc: "Professional hosts, hostesses, ushers, coordinators, security, and backstage crew to ensure smooth operations." },
+    { title: "Labour Support", desc: "Reliable set-up crews, technical teams, and runners for efficient event setup and management." },
+    { title: "Promoters & Brand Ambassadors", desc: "Short-term or part-time hiring for product/service promotion at events." },
+    { title: "Sponsorship Solutions", desc: "Finding and managing sponsors to enhance your event's reach and funding." },
+    { title: "Marketing Services", desc: "Pre-event buzz through digital campaigns, on-ground activations, and content creation (photos/videos)." },
+    { title: "Corporate Support", desc: "HR solutions for temporary staffing needs, plus vendor management for sound, light, and décor." },
+    { title: "Job Opportunities", desc: "Part-time and short-term roles in event management – join our team as promoters, volunteers, or staff." },
+  ];
+
   return (
-    <div className="min-h-screen">
+    <>
       <Navbar />
-      {/* Services Section */}
-      <section className="py-20">
+      {/* Services Section: Grid for Responsiveness */}
+      <section className="py-20 bg-[var(--secondary)]">
         <div className="container mx-auto px-4">
-          <motion.h2 
+          <motion.h1 
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl font-bold text-center mb-16" 
-            style={{ color: "var(--primary)" }}
+            className="text-4xl md:text-5xl font-bold text-center mb-16 font-heading" 
+            style={{ color: "var(--white)" }}
           >
-            Our Services
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {[
-              { title: "Promoters and Staff", desc: "We provide experienced promoters and staff for all types of events to ensure smooth operations." },
-              { title: "Event Planning Services", desc: "Full-service planning for marriages, parties, birthday celebrations, tech events, and more." },
-              { title: "Volunteers", desc: "Supplying dedicated volunteers for private and government events." },
-              { title: "Job Opportunities", desc: "Offering short-term works and part-time jobs in the event management sector." },
-            ].map((service, index) => (
+            Our Services – Comprehensive Event Solutions in Dubai
+          </motion.h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {services.map((service, index) => (
               <motion.div 
                 key={index}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: (index % 4) * 0.1 }}
                 viewport={{ once: true }}
-                className="p-8 bg-[var(--white)] rounded-xl shadow-lg hover:shadow-2xl transition-shadow"
+                className="card p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow text-center"
               >
-                <h3 className="text-2xl font-semibold mb-4" style={{ color: "var(--accent)" }}>{service.title}</h3>
-                <p className="text-lg">{service.desc}</p>
+                <h3 className="text-xl font-semibold mb-4 font-heading" style={{ color: "var(--primary)" }}>{service.title}</h3>
+                <p className="text-base leading-relaxed" style={{ color: "var(--accent)" }}>{service.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -44,11 +50,11 @@ export default function Services() {
       </section>
 
       {/* Footer */}
-      <footer className="py-10" style={{ backgroundColor: "var(--dark)", color: "var(--white)" }}>
-        <div className="container mx-auto text-center">
-          <p>&copy; 2025 Eventopic. All rights reserved.</p>
+      <footer className="py-10" style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}>
+        <div className="container mx-auto text-center px-4">
+          <p>&copy; 2025 Eventopic. All rights reserved. | Tailored Event Services for Dubai.</p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

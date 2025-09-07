@@ -8,14 +8,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      colors: {
-        primary: "#283e56",
-        secondary: "#fef4e8",
-        accent: "#385779",
-        dark: "#182533",
-        light: "#fcddb7",
-        white: "#ffffff",
+      fontFamily: {
+        heading: ['var(--font-heading)'],
+        body: ['var(--font-body)'],
       },
+      /* No custom colors - use CSS vars for B&W consistency */
     },
   },
   plugins: [],

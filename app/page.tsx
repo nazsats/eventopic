@@ -4,147 +4,271 @@ import Navbar from "../components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
+import { FaInstagram, FaFacebookF, FaEnvelope, FaCalendarAlt, FaUsers, FaCheckCircle } from "react-icons/fa";
 
 export default function Home() {
-  // Sample gallery images (replace with your actual image paths in public/gallery/)
   const galleryImages = [
-    "/gallery/event1.png",
-    "/gallery/event2.png",
-    "/gallery/event3.png",
-    "/gallery/event4.png",
-    "/gallery/event5.png",
-    "/gallery/event6.png",
+    { src: "/gallery/event1.png", alt: "Luxurious Wedding Event in Dubai by Eventopic", desc: "Elegant wedding setup", category: "Weddings" },
+    { src: "/gallery/event2.png", alt: "Corporate Gala in Dubai - Eventopic Management", desc: "Tech conference", category: "Corporate" },
+    { src: "/gallery/event3.png", alt: "Brand Activation Event in Dubai", desc: "Product launch", category: "Promotions" },
+    { src: "/gallery/event4.png", alt: "Private Party in Dubai by Eventopic", desc: "Rooftop party", category: "Parties" },
+    { src: "/gallery/event5.png", alt: "Cultural Event in Dubai - Eventopic Staffing", desc: "Cultural festival", category: "Cultural" },
+    { src: "/gallery/event6.png", alt: "Luxury Event in Dubai - Eventopic Planning", desc: "Gala dinner", category: "Corporate" },
+    // Fallbacks: Uncomment if images missing
+    // { src: "https://images.unsplash.com/photo-1517457373958-b7bdd4587208?w=800&h=600&fit=crop", alt: "Eventopic Event", desc: "Placeholder event", category: "Weddings" },
   ];
 
-  // Animation variants for hero text
+  const stats = [
+    { number: "3+", label: "Years Experience" },
+    { number: "100+", label: "Events Managed" },
+    { number: "500+", label: "Happy Clients" },
+  ];
+
   const textVariants: Variants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
-      transition: { 
-        duration: 0.8, 
-        type: "spring", 
-        stiffness: 100, 
-        damping: 10 
-      } 
-    },
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, type: "spring", stiffness: 100, damping: 10 } },
   };
 
-  // Button animation with slide-in
+  const staggerChildren: Variants = {
+    visible: { transition: { staggerChildren: 0.2 } },
+  };
+
   const buttonVariants: Variants = {
-    hidden: (direction: number) => ({
-      opacity: 0,
-      x: direction,
-    }),
-    visible: { 
-      opacity: 1, 
-      x: 0, 
-      transition: { 
-        duration: 0.6, 
-        type: "spring", 
-        stiffness: 80 
-      } 
-    },
-    hover: { 
-      scale: 1.1, 
-      transition: { duration: 0.3 } 
-    },
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+    hover: { scale: 1.05, y: -5, transition: { duration: 0.3 } },
   };
 
   return (
-    <div className="min-h-screen">
+    <>
       <Navbar />
-      {/* Hero Section */}
-      <section className="py-32 relative overflow-hidden" style={{ background: "linear-gradient(to bottom, var(--accent), var(--primary))", color: "var(--white)" }}>
-        <div className="absolute inset-0 opacity-20 hero-bg">
+      {/* Hero Section: Image with grayscale-to-color animation */}
+      <section className="relative overflow-hidden" style={{ minHeight: "100vh", background: "linear-gradient(to bottom, var(--accent), var(--primary))", color: "var(--white)" }}>
+        <div className="hero-bg">
           <Image
-            src="/gallery/burjkhalifa.png"
-            alt="Burj Khalifa Background"
+            src="/gallery/burjkhalifa.png" // Fallback: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=1920&h=1080&fit=cover"
+            alt="Dubai Skyline - Burj Khalifa, Symbolizing Luxury Events with Eventopic"
             fill
+            sizes="100vw"
             style={{ objectFit: "cover" }}
-            quality={50}
+            quality={85}
             priority
+            className="brightness-50"
           />
         </div>
-        <div className="container mx-auto text-center relative z-10">
-          <motion.h2 
+        <div className="container mx-auto px-4 relative z-10 flex flex-col justify-center items-center text-center h-full py-20">
+          <motion.h1 
             variants={textVariants}
             initial="hidden"
             animate="visible"
-            className="text-5xl md:text-7xl font-extrabold mb-6 drop-shadow-lg"
+            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 drop-shadow-2xl font-heading leading-tight"
           >
-            Eventopic
-          </motion.h2>
+            <span className="eventopic-title">Eventopic</span>
+          </motion.h1>
           <motion.p 
             variants={textVariants}
             initial="hidden"
             animate="visible"
-            transition={{ delay: 0.2 }}
-            className="text-2xl md:text-3xl mb-10 drop-shadow-md"
+            transition={{ delay: 0.3 }}
+            className="text-2xl md:text-3xl lg:text-4xl mb-8 drop-shadow-lg font-body opacity-90"
           >
-            The Future of Showcasing Your Events
+            Where Ideas Become Experiences
           </motion.p>
-          <motion.div 
-            className="flex justify-center space-x-4"
+          <motion.p 
+            variants={textVariants}
             initial="hidden"
             animate="visible"
-            variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
+            transition={{ delay: 0.5 }}
+            className="text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed opacity-80"
           >
-            <motion.div 
-              variants={buttonVariants} 
-              custom={-100} 
-              whileHover="hover"
-            >
+            Dubai's trusted partner for luxury event management and professional staffing. Create unforgettable moments with our expert team.
+          </motion.p>
+          <motion.div 
+            variants={staggerChildren}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-wrap justify-center items-center space-x-8 md:space-x-12 mb-12 gap-4 md:gap-0"
+          >
+            {stats.map((stat, index) => (
+              <motion.div 
+                key={index}
+                variants={textVariants}
+                className="text-center"
+              >
+                <div className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "var(--white)" }}>
+                  {stat.number}
+                </div>
+                <div className="text-sm md:text-base opacity-70" style={{ color: "var(--light)" }}>
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+          <motion.div 
+            className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6"
+            variants={staggerChildren}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={buttonVariants} whileHover="hover">
               <Link 
                 href="/contact" 
-                className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" 
-                style={{ backgroundColor: "var(--light)", color: "var(--dark)" }}
+                className="px-8 py-4 rounded-full text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 inline-block border-2 border-[var(--white)]" 
+                style={{ backgroundColor: "transparent", color: "var(--white)" }}
               >
-                Enquiry
+                Get a Free Quote
               </Link>
             </motion.div>
-            <motion.div 
-              variants={buttonVariants} 
-              custom={100} 
-              whileHover="hover"
-            >
+            <motion.div variants={buttonVariants} whileHover="hover">
               <Link 
                 href="/contact#staff-form" 
-                className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" 
-                style={{ backgroundColor: "var(--white)", color: "var(--accent)" }}
+                className="px-8 py-4 rounded-full text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 inline-block" 
+                style={{ backgroundColor: "var(--white)", color: "var(--primary)" }}
               >
-                Join Our Team
+                Join the Team
               </Link>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Gallery Section */}
-      <section className="py-20">
+      {/* Why Choose Eventopic: Relevant icons, B&W gradient */}
+      <section className="py-24" style={{ background: "linear-gradient(to right, var(--primary), var(--accent))" }}>
         <div className="container mx-auto px-4">
           <motion.h2 
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-4xl font-bold text-center mb-16" 
-            style={{ color: "var(--primary)" }}
+            className="text-4xl md:text-5xl font-bold text-center mb-16 font-heading" 
+            style={{ color: "var(--white)" }}
           >
-            Event Gallery
+            Why Choose Eventopic?
           </motion.h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { 
+                icon: <FaCalendarAlt className="text-5xl md:text-6xl mb-6 mx-auto" />, 
+                title: "Expert Planning", 
+                desc: "From concept to cleanup, our end-to-end event management ensures every detail is perfect for your Dubai event." 
+              },
+              { 
+                icon: <FaUsers className="text-5xl md:text-6xl mb-6 mx-auto" />, 
+                title: "Professional Staffing", 
+                desc: "Skilled promoters, hostesses, ushers, and volunteers tailored to make your event seamless and memorable." 
+              },
+              { 
+                icon: <FaCheckCircle className="text-5xl md:text-6xl mb-6 mx-auto" />, 
+                title: "Flawless Execution", 
+                desc: "Over 100 events delivered with precision in Dubai, turning your vision into reality." 
+              },
+            ].map((feature, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="card p-8 rounded-xl shadow-xl text-center"
+              >
+                <div style={{ color: "var(--primary)" }}>{feature.icon}</div>
+                <h3 className="text-xl md:text-2xl font-semibold mb-4 font-heading" style={{ color: "var(--primary)" }}>{feature.title}</h3>
+                <p className="text-base leading-relaxed" style={{ color: "var(--accent)" }}>{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className="py-24" style={{ background: "linear-gradient(to left, var(--primary), var(--accent))" }}>
+        <div className="container mx-auto px-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-bold text-center mb-12 font-heading" 
+            style={{ color: "var(--white)" }}
+          >
+            Our Event Portfolio
+          </motion.h2>
+          <p className="text-center mb-12 text-lg md:text-xl opacity-80" style={{ color: "var(--light)" }}>
+            Discover highlights from our luxurious events across Dubai.
+          </p>
           <div className="gallery-grid">
-            {galleryImages.map((src, index) => (
+            {galleryImages.map((image, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 80 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="gallery-item"
+                whileHover={{ scale: 1.03 }}
+                className="gallery-item relative"
               >
-                <Image src={src} alt={`Event ${index + 1}`} width={300} height={200} className="rounded-xl" />
+                <Image 
+                  src={image.src} 
+                  alt={image.alt} 
+                  fill 
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="rounded-xl object-cover" 
+                  quality={85}
+                  loading={index > 2 ? "lazy" : "eager"}
+                />
+                <div className="overlay rounded-xl">
+                  <span className="text-white text-lg font-semibold font-body">{image.desc}</span>
+                  <span className="text-sm text-[var(--light)] mt-2">{image.category}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Link 
+              href="/gallery" 
+              className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all inline-block border-2 border-[var(--white)]" 
+              style={{ backgroundColor: "transparent", color: "var(--white)" }}
+            >
+              Explore Full Gallery
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24" style={{ background: "linear-gradient(to right, var(--accent), var(--primary))" }}>
+        <div className="container mx-auto px-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-bold text-center mb-16 font-heading" 
+            style={{ color: "var(--white)" }}
+          >
+            What Our Clients Say
+          </motion.h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { quote: "Eventopic turned our corporate gala into an unforgettable night. Professional staff and seamless planning!", name: "Ahmed K., CEO" },
+              { quote: "The promoters were outstanding – boosted our brand visibility like never before.", name: "Sara L., Marketing Director" },
+              { quote: "From wedding setup to volunteers, everything was perfect. Highly recommend for Dubai events!", name: "Fatima R., Bride" },
+            ].map((testimonial, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="card p-6 rounded-xl shadow-xl italic"
+              >
+                <p className="mb-4 text-lg" style={{ color: "var(--accent)" }}>"{testimonial.quote}"</p>
+                <p className="font-semibold text-right" style={{ color: "var(--primary)" }}>- {testimonial.name}</p>
               </motion.div>
             ))}
           </div>
@@ -152,24 +276,25 @@ export default function Home() {
       </section>
 
       {/* About Preview */}
-      <section className="py-20" style={{ background: "linear-gradient(to right, var(--light), var(--secondary))" }}>
-        <div className="container mx-auto text-center">
+      <section className="py-24" style={{ background: "linear-gradient(to left, var(--accent), var(--primary))" }}>
+        <div className="container mx-auto px-4 text-center">
           <motion.h2 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-4xl font-bold mb-12" 
-            style={{ color: "var(--primary)" }}
+            className="text-4xl md:text-5xl font-bold mb-8 font-heading" 
+            style={{ color: "var(--white)" }}
           >
-            About Us
+            Ready to Elevate Your Event?
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-xl max-w-3xl mx-auto mb-10"
+            className="text-lg md:text-xl max-w-2xl mx-auto mb-10 font-body"
+            style={{ color: "var(--light)" }}
           >
-            Eventopic is an experienced team with over 3 years of hands-on experience in Dubai. We have handled numerous events, providing top-notch services to make every occasion memorable.
+            With over 3 years in Dubai's dynamic event scene, Eventopic is your partner for staffing, planning, and execution. Let's create memories that last.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -179,39 +304,32 @@ export default function Home() {
           >
             <Link 
               href="/about" 
-              className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all" 
-              style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}
+              className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all inline-block border-2 border-[var(--white)]" 
+              style={{ backgroundColor: "transparent", color: "var(--white)" }}
             >
-              Learn More
+              Discover More
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10" style={{ backgroundColor: "var(--dark)", color: "var(--white)" }}>
-        <div className="container mx-auto text-center">
-          <div className="flex justify-center space-x-6 mb-4">
-            <a 
-              href="https://www.instagram.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-lg hover:text-[var(--light)] transition-colors"
-            >
-              Instagram
+      {/* Footer: With React Icons */}
+      <footer className="py-12" style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}>
+        <div className="container mx-auto text-center px-4">
+          <div className="flex justify-center space-x-8 mb-6">
+            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--light)] transition-colors">
+              <FaInstagram />
             </a>
-            <a 
-              href="https://www.facebook.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-lg hover:text-[var(--light)] transition-colors"
-            >
-              Facebook
+            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--light)] transition-colors">
+              <FaFacebookF />
+            </a>
+            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--light)] transition-colors">
+              <FaEnvelope />
             </a>
           </div>
-          <p>&copy; 2025 Eventopic. All rights reserved.</p>
+          <p>&copy; 2025 Eventopic. All rights reserved. | Dubai's Trusted Event Management Partner.</p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
