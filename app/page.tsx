@@ -50,7 +50,7 @@ export default function Home() {
       <section className="relative overflow-hidden" style={{ minHeight: "100vh", background: "linear-gradient(to bottom, var(--accent), var(--primary))", color: "var(--white)" }}>
         <div className="hero-bg">
           <Image
-            src="/gallery/burjkhalifa.png" // Fallback: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=1920&h=1080&fit=cover"
+            src="/gallery/BurjKhalifa.png" // Fallback: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=1920&h=1080&fit=cover"
             alt="Dubai Skyline - Burj Khalifa, Symbolizing Luxury Events with Eventopic"
             fill
             sizes="100vw"
