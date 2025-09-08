@@ -1,3 +1,6 @@
+// Updated components/Navbar.tsx
+// Changes: Updated color theme (e.g., hover to gold, mobile menu background).
+
 "use client";
 
 import Link from "next/link";
@@ -36,7 +39,7 @@ export default function Navbar() {
             <Link 
               key={item.href}
               href={item.href} 
-              className={`text-lg font-semibold hover:scale-105 transition-transform duration-200 ${pathname === item.href ? 'underline underline-offset-4' : 'hover:text-[var(--light)]'}`}
+              className={`text-lg font-semibold hover:scale-105 transition-transform duration-200 ${pathname === item.href ? 'underline underline-offset-4' : 'hover:text-[var(--color-accent)]'}`}
             >
               {item.label}
             </Link>
@@ -70,13 +73,13 @@ export default function Navbar() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="md:hidden mt-4 space-y-4 bg-[var(--accent)] p-4 rounded-lg"
+          className="md:hidden mt-4 space-y-4 bg-[var(--secondary)] p-4 rounded-lg"
         >
           {menuItems.map((item) => (
             <Link 
               key={item.href}
               href={item.href} 
-              className={`block text-lg font-semibold hover:text-[var(--light)] ${pathname === item.href ? 'font-bold' : ''}`}
+              className={`block text-lg font-semibold hover:text-[var(--color-accent)] ${pathname === item.href ? 'font-bold' : ''}`}
               onClick={() => setIsMenuOpen(false)}
             >
               {item.label}

@@ -1,3 +1,6 @@
+// Updated app/about/page.tsx
+// Changes: Updated color theme integration (using new CSS vars). No major logic changes.
+
 "use client";
 
 import Navbar from "../../components/Navbar";
@@ -55,7 +58,7 @@ export default function About() {
                 transition={{ duration: 0.8, delay: index * 0.2 }}
                 className="card p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow"
               >
-                <h3 className="text-2xl font-semibold mb-4 font-heading" style={{ color: "var(--primary)" }}>{item.title}</h3>
+                <h3 className="text-2xl font-semibold mb-4 font-heading" style={{ color: "var(--accent)" }}>{item.title}</h3>
                 <p className="text-base leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}

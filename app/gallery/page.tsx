@@ -1,3 +1,6 @@
+// Updated app/gallery/page.tsx
+// Changes: Updated color theme integration (e.g., buttons, overlays).
+
 "use client";
 
 import Navbar from "../../components/Navbar";
@@ -77,7 +80,7 @@ export default function Gallery() {
                 key={category}
                 onClick={() => setFilter(category)}
                 className={`px-4 py-2 rounded-full font-semibold text-sm md:text-base transition-all ${
-                  filter === category ? "bg-[var(--white)] text-[var(--primary)]" : "bg-[var(--accent)] text-[var(--white)] hover:bg-[var(--light)] hover:text-[var(--primary)]"
+                  filter === category ? "bg-[var(--soft)] text-[var(--primary)]" : "bg-[var(--light)] text-[var(--primary)] hover:bg-[var(--accent)] hover:text-[var(--white)]"
                 }`}
               >
                 {category}
@@ -136,7 +139,7 @@ export default function Gallery() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[var(--accent)]">
+      <section className="py-20 bg-[var(--light)]">
         <div className="container mx-auto px-4 text-center">
           <motion.h2 
             initial={{ opacity: 0, y: 50 }}
@@ -144,7 +147,7 @@ export default function Gallery() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold mb-8 font-heading" 
-            style={{ color: "var(--white)" }}
+            style={{ color: "var(--primary)" }}
           >
             Plan Your Next Unforgettable Event
           </motion.h2>
@@ -153,7 +156,7 @@ export default function Gallery() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-lg md:text-xl max-w-2xl mx-auto mb-10 font-body"
-            style={{ color: "var(--light)" }}
+            style={{ color: "var(--accent)" }}
           >
             From concept to execution, Eventopic delivers world-class events in Dubai&apos;s vibrant scene with professional staffing and flawless planning.
           </motion.p>
@@ -165,8 +168,8 @@ export default function Gallery() {
           >
             <Link 
               href="/contact" 
-              className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all inline-block border-2 border-[var(--white)]" 
-              style={{ backgroundColor: "transparent", color: "var(--white)" }}
+              className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all inline-block border-2 border-[var(--accent)]" 
+              style={{ backgroundColor: "transparent", color: "var(--accent)" }}
             >
               Get a Free Quote
             </Link>
@@ -178,13 +181,13 @@ export default function Gallery() {
       <footer className="py-12" style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}>
         <div className="container mx-auto text-center px-4">
           <div className="flex justify-center space-x-8 mb-6">
-            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--light)] transition-colors">
+            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--accent)] transition-colors">
               <FaInstagram />
             </a>
-            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--light)] transition-colors">
+            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--accent)] transition-colors">
               <FaFacebookF />
             </a>
-            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--light)] transition-colors">
+            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--accent)] transition-colors">
               <FaEnvelope />
             </a>
           </div>

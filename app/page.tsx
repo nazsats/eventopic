@@ -1,6 +1,10 @@
+// Updated app/page.tsx
+// Changes: Updated color theme integration (e.g., buttons, stats, icons). Added ChatBot component fixed bottom-right.
+
 "use client";
 
 import Navbar from "../components/Navbar";
+import ChatBot from "../components/ChatBot"; // New import for chatbot
 import Link from "next/link";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
@@ -42,7 +46,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      {/* Hero Section: Image with grayscale-to-color animation */}
+      {/* Hero Section: Image with grayscale-to-color animation -> Updated filter */}
       <section className="relative overflow-hidden" style={{ minHeight: "100vh", background: "linear-gradient(to bottom, var(--accent), var(--primary))", color: "var(--white)" }}>
         <div className="hero-bg">
           <Image
@@ -53,7 +57,7 @@ export default function Home() {
             style={{ objectFit: "cover" }}
             quality={85}
             priority
-            className="brightness-50"
+            className="brightness-50 sepia(10%) hue-rotate(200deg)"
           />
         </div>
         <div className="container mx-auto px-4 relative z-10 flex flex-col justify-center items-center text-center h-full py-20">
@@ -132,7 +136,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose Eventopic: Relevant icons, B&W gradient */}
+      {/* Why Choose Eventopic: Relevant icons, B&W gradient -> Updated to blue gradient */}
       <section className="py-24" style={{ background: "linear-gradient(to right, var(--primary), var(--accent))" }}>
         <div className="container mx-auto px-4">
           <motion.h2 
@@ -171,7 +175,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="card p-8 rounded-xl shadow-xl text-center"
               >
-                <div style={{ color: "var(--primary)" }}>{feature.icon}</div>
+                <div style={{ color: "var(--accent)" }}>{feature.icon}</div>
                 <h3 className="text-xl md:text-2xl font-semibold mb-4 font-heading" style={{ color: "var(--primary)" }}>{feature.title}</h3>
                 <p className="text-base leading-relaxed" style={{ color: "var(--accent)" }}>{feature.desc}</p>
               </motion.div>
@@ -313,17 +317,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer: With React Icons */}
+      {/* ChatBot Component - Positioned fixed bottom-right */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <ChatBot />
+      </div>
+
+      {/* Footer: With React Icons - Updated hover color to gold */}
       <footer className="py-12" style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}>
         <div className="container mx-auto text-center px-4">
           <div className="flex justify-center space-x-8 mb-6">
-            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--light)] transition-colors">
+            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-colors">
               <FaInstagram />
             </a>
-            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--light)] transition-colors">
+            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-colors">
               <FaFacebookF />
             </a>
-            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--light)] transition-colors">
+            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--color-accent)] transition-colors">
               <FaEnvelope />
             </a>
           </div>

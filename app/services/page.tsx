@@ -1,3 +1,6 @@
+// Updated services/page.tsx (Note: Path should be app/services/page.tsx for consistency)
+// Changes: Updated color theme integration.
+
 "use client";
 
 import Navbar from "../../components/Navbar";
@@ -40,8 +43,8 @@ export default function Services() {
                 viewport={{ once: true }}
                 className="card p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow text-center"
               >
-                <h3 className="text-xl font-semibold mb-4 font-heading" style={{ color: "var(--primary)" }}>{service.title}</h3>
-                <p className="text-base leading-relaxed" style={{ color: "var(--accent)" }}>{service.desc}</p>
+                <h3 className="text-xl font-semibold mb-4 font-heading" style={{ color: "var(--accent)" }}>{service.title}</h3>
+                <p className="text-base leading-relaxed" style={{ color: "var(--light)" }}>{service.desc}</p>
               </motion.div>
             ))}
           </div>

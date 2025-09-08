@@ -1,16 +1,17 @@
+/* Updated app/globals.css */
+/* Changes: New color theme - Dubai-inspired: Deep blue primary, gold accent, light backgrounds for luxury feel. Updated animations and cards to match. */
 @import "tailwindcss";
 :root {
   --font-heading: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
-  /* Black and White Shades Theme */
-  --primary: #000000; /* Pure Black */
-  --secondary: #121212; /* Near-Black */
-  --accent: #333333; /* Dark Gray */
-  --light: #F5F5F5; /* Light Gray */
-  --soft: #FAFAFA; /* Off-White */
-  --white: #FFFFFF; /* Pure White */
-  /* Colorful accent for title hover */
-  --color-accent: #773f3f; /* Gold */
+  /* Dark Blue and Black Theme: Luxurious Night Aesthetic */
+  --primary: #0a1128; /* Deep Black-Blue */
+  --secondary: #1c2526; /* Dark Slate Blue */
+  --accent: #183758; /* Deep Blue for highlights */
+  --light: #a0aec0; /* Slate Gray for readable text */
+  --soft: #edf2f7; /* Soft Gray for card/input backgrounds */
+  --white: #ffffff; /* Pure White */
+  --color-accent: #d4af37; /* Gold for hovers */
 }
 
 /* Body */
@@ -25,16 +26,16 @@ body {
   max-width: 1280px;
 }
 
-/* Hero image animation: Grayscale to colorful */
+/* Hero image animation: Adjusted for darker tones */
 @keyframes colorizeImage {
   0% {
-    filter: grayscale(80%) brightness(90%);
+    filter: grayscale(50%) brightness(80%) sepia(10%) hue-rotate(190deg);
   }
   50% {
-    filter: grayscale(0%) brightness(100%);
+    filter: grayscale(0%) brightness(100%) sepia(0%) hue-rotate(0deg);
   }
   100% {
-    filter: grayscale(80%) brightness(90%);
+    filter: grayscale(50%) brightness(80%) sepia(10%) hue-rotate(190deg);
   }
 }
 
@@ -42,7 +43,7 @@ body {
   animation: colorizeImage 10s infinite ease-in-out;
 }
 
-/* Eventopic title hover */
+/* Eventopic title hover: Gold */
 .eventopic-title {
   transition: color 0.4s ease;
 }
@@ -51,7 +52,7 @@ body {
   color: var(--color-accent);
 }
 
-/* Gallery styles */
+/* Gallery styles: Darker shadows and overlays */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -63,15 +64,15 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 8px 24px rgba(10, 17, 40, 0.5); /* Black-blue shadow */
   transition: transform 0.4s ease, box-shadow 0.4s ease;
   aspect-ratio: 3/2;
-  background-color: var(--accent);
+  background-color: var(--soft);
 }
 
 .gallery-item:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 12px 32px rgba(10, 17, 40, 0.7);
 }
 
 .gallery-item img {
@@ -79,18 +80,18 @@ body {
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease, filter 0.4s ease;
-  filter: grayscale(80%) brightness(90%);
+  filter: grayscale(50%) brightness(80%) sepia(10%) hue-rotate(190deg);
 }
 
 .gallery-item:hover img {
   transform: scale(1.1);
-  filter: grayscale(0%) brightness(100%);
+  filter: grayscale(0%) brightness(100%) saturate(110%);
 }
 
 .gallery-item .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+  background: linear-gradient(to top, rgba(10, 17, 40, 0.6), transparent); /* Black-blue gradient */
   opacity: 0;
   transition: opacity 0.4s ease;
   display: flex;
@@ -105,14 +106,118 @@ body {
   opacity: 1;
 }
 
-/* Cards */
+/* Cards: Soft gray background, dark text */
 .card {
   background-color: var(--soft);
   color: var(--primary);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--light);
+}
+
+/* Chatbot styles: Responsive and trendy */
+.react-chatbot-kit-chat-container {
+  width: 100% !important;
+  max-width: 90vw;
+  height: 18rem;
+  border-radius: 0.75rem;
+  background: rgba(28, 37, 38, 0.95); /* Semi-transparent dark slate blue */
+  box-shadow: 0 8px 24px rgba(10, 17, 40, 0.6);
+  backdrop-filter: blur(8px); /* Glassmorphism effect */
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .react-chatbot-kit-chat-container {
+    max-width: 20rem;
+    height: 24rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .react-chatbot-kit-chat-container {
+    max-width: 24rem;
+    height: 28rem;
+  }
+}
+
+.react-chatbot-kit-chat-inner-container {
+  background-color: transparent;
+  color: var(--white);
+}
+
+.react-chatbot-kit-chat-message-container {
+  overflow-y: auto;
+  height: calc(100% - 7rem); /* Adjust for header and input */
+  padding: 0.5rem;
+}
+
+.react-chatbot-kit-chat-bot-message {
+  background-color: var(--accent);
+  color: var(--white);
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
+.react-chatbot-kit-chat-bot-message:hover {
+  transform: translateY(-2px);
+}
+
+.react-chatbot-kit-chat-user-message {
+  background-color: var(--soft);
+  color: var(--primary);
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
+.react-chatbot-kit-chat-user-message:hover {
+  transform: translateY(-2px);
+}
+
+.react-chatbot-kit-chat-input {
+  background-color: var(--soft) !important;
+  color: var(--primary) !important;
+  border-color: var(--light) !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem !important;
+}
+
+.react-chatbot-kit-chat-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.react-chatbot-kit-chat-btn-send {
+  background-color: var(--accent) !important;
+  color: var(--white) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem !important;
+  font-size: 0.875rem !important;
+}
+
+.react-chatbot-kit-chat-btn-send:hover {
+  background-color: var(--color-accent) !important;
 }
 
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
+}
+
+/* Pulse animation for chat icon */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite ease-in-out;
 }

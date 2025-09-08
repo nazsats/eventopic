@@ -1,3 +1,6 @@
+// Updated layout.tsx (app/layout.tsx)
+// Changes: No major changes, but ensured font vars are used consistently with new theme.
+
 import type { Metadata } from "next";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
