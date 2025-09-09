@@ -1,11 +1,12 @@
 // Updated layout.tsx (app/layout.tsx)
-// Changes: No major changes, but ensured font vars are used consistently with new theme.
+// Changes: Added metadataBase for proper Open Graph image resolution. No major changes otherwise, but ensured font vars are used consistently with new theme.
 
 import type { Metadata } from "next";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { Inter, Poppins } from 'next/font/google';  // Import fonts (built-in, no @next/font needed)
+import { AuthProvider } from "../contexts/AuthContext";
 
 const inter = Inter({ 
   subsets: ['latin'], 
@@ -22,6 +23,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://eventopic.com'), // Replace with your actual domain; resolves the warning
   title: "Eventopic - Event Management & Staffing Solutions in Dubai",
   description: "Eventopic – Where Ideas Become Experiences. Full-service event management, staffing, promoters, and volunteers in Dubai. Plan unforgettable events with our expert team.",
   keywords: "event management Dubai, event staffing, promoters Dubai, event volunteers, corporate events, wedding planning Dubai, part-time jobs events",
@@ -41,8 +43,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className={`${inter.className} antialiased`}>  {/* Apply Inter globally; use Poppins for headings via CSS vars */}
-        {children}
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme="dark" />
+        <AuthProvider>
+          {children}
+          <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme="dark" />
+        </AuthProvider>
       </body>
     </html>
   );

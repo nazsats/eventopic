@@ -1,5 +1,5 @@
 // Updated app/gallery/page.tsx
-// Changes: Updated color theme integration (e.g., buttons, overlays).
+// Enhancements: Improved gallery grid with CSS masonry (via Tailwind). Better overlay with blur and color accents. Filter buttons with active state gradients.
 
 "use client";
 
@@ -11,7 +11,6 @@ import { FaInstagram, FaFacebookF, FaEnvelope } from "react-icons/fa";
 import { useState } from "react";
 
 export default function Gallery() {
-  // Gallery images with categories for filtering
   const galleryImages = [
     { src: "/gallery/event1.png", alt: "Luxurious Wedding Event in Dubai by Eventopic", desc: "Elegant wedding at Burj Al Arab", category: "Weddings" },
     { src: "/gallery/event2.png", alt: "Corporate Gala in Dubai - Eventopic Management", desc: "Tech conference at DWTC", category: "Corporate" },
@@ -19,8 +18,6 @@ export default function Gallery() {
     { src: "/gallery/event4.png", alt: "Private Party in Dubai by Eventopic", desc: "Exclusive rooftop party", category: "Parties" },
     { src: "/gallery/event5.png", alt: "Cultural Event in Dubai - Eventopic Staffing", desc: "Government cultural festival", category: "Cultural" },
     { src: "/gallery/event6.png", alt: "Luxury Event in Dubai - Eventopic Planning", desc: "High-profile gala dinner", category: "Corporate" },
-    // Fallbacks if images missing (uncomment and add to next.config.js for external domains):
-    // { src: "https://images.unsplash.com/photo-1517457373958-b7bdd4587208?w=800&h=600&fit=crop", alt: "Eventopic Wedding Event Placeholder", desc: "Elegant wedding setup", category: "Weddings" },
   ];
 
   const categories = ["All", "Weddings", "Corporate", "Promotions", "Parties", "Cultural"];
@@ -28,7 +25,6 @@ export default function Gallery() {
 
   const filteredImages = filter === "All" ? galleryImages : galleryImages.filter((img) => img.category === filter);
 
-  // Fixed variants with as const for TypeScript literal typing
   const textVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: { 
@@ -36,25 +32,26 @@ export default function Gallery() {
       y: 0, 
       transition: { 
         duration: 0.8, 
-        type: "spring" as const,  // Literal "spring" to satisfy Variants type
+        type: "spring",
         stiffness: 100, 
         damping: 10 
       } 
     },
-  } as const;  // Ensures literal types for the entire object
+  } as const;
 
   return (
     <>
       <Navbar />
-      {/* Header: No hero image, clean and focused */}
-      <section className="py-20 bg-[var(--secondary)]">
-        <div className="container mx-auto px-4 text-center">
+      {/* Header: Enhanced with gradient text shadow */}
+      <section className="py-20 bg-[var(--secondary)] relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)]/10 to-[var(--teal-accent)]/5"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
           <motion.h1 
             variants={textVariants}
             initial="hidden"
             animate="visible"
-            className="text-4xl md:text-6xl font-bold mb-6 font-heading" 
-            style={{ color: "var(--white)" }}
+            className="text-4xl md:text-6xl font-bold mb-6 font-heading relative" 
+            style={{ color: "var(--white)", textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}
           >
             Eventopic Gallery
           </motion.h1>
@@ -63,12 +60,12 @@ export default function Gallery() {
             initial="hidden"
             animate="visible"
             transition={{ delay: 0.3 }}
-            className="text-lg md:text-xl max-w-3xl mx-auto mb-12 font-body leading-relaxed" 
+            className="text-lg md:text-xl max-w-3xl mx-auto mb-12 font-body leading-relaxed relative" 
             style={{ color: "var(--light)" }}
           >
             Explore our portfolio of unforgettable events in Dubai &ndash; from luxurious weddings to high-energy corporate activations, crafted with precision by Eventopic.
           </motion.p>
-          {/* Category Filters */}
+          {/* Category Filters: Enhanced with gradients */}
           <motion.div 
             className="flex flex-wrap justify-center gap-4 mb-12"
             initial={{ opacity: 0 }}
@@ -79,8 +76,10 @@ export default function Gallery() {
               <button
                 key={category}
                 onClick={() => setFilter(category)}
-                className={`px-4 py-2 rounded-full font-semibold text-sm md:text-base transition-all ${
-                  filter === category ? "bg-[var(--soft)] text-[var(--primary)]" : "bg-[var(--light)] text-[var(--primary)] hover:bg-[var(--accent)] hover:text-[var(--white)]"
+                className={`px-6 py-3 rounded-full font-semibold text-sm md:text-base transition-all duration-300 relative overflow-hidden ${
+                  filter === category 
+                    ? "bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-[var(--primary)] shadow-lg" 
+                    : "bg-[var(--accent)] text-[var(--white)] hover:bg-gradient-to-r hover:from-[var(--color-accent)] hover:to-[var(--teal-accent)] hover:text-[var(--primary)]"
                 }`}
               >
                 {category}
@@ -90,20 +89,21 @@ export default function Gallery() {
         </div>
       </section>
 
-      {/* Gallery Grid: Masonry-style, premium design */}
-      <section className="py-24 bg-[var(--primary)]">
-        <div className="container mx-auto px-4">
+      {/* Gallery Grid: Enhanced masonry with better overlays */}
+      <section className="py-24 bg-[var(--primary)] relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--accent)]/20"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <motion.h2 
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold text-center mb-12 font-heading" 
-            style={{ color: "var(--white)" }}
+            className="text-3xl md:text-4xl font-bold text-center mb-12 font-heading relative" 
+            style={{ color: "var(--white)", textShadow: "1px 1px 2px rgba(0,0,0,0.5)" }}
           >
             Our Signature Events
           </motion.h2>
-          <div className="gallery-grid">
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4"> {/* Tailwind masonry */}
             {filteredImages.map((image, index) => (
               <motion.div
                 key={index}
@@ -111,43 +111,49 @@ export default function Gallery() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                whileHover={{ scale: 1.03 }}
-                className="gallery-item"
+                whileHover={{ scale: 1.05 }}
+                className="break-inside-avoid rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 relative group"
               >
                 <Image 
                   src={image.src} 
                   alt={image.alt} 
                   fill 
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="rounded-xl object-cover" 
+                  className="object-cover transition-transform duration-500 group-hover:scale-110" 
                   quality={85}
                   loading={index > 2 ? "lazy" : "eager"}
                 />
-                <div className="overlay rounded-xl">
-                  <span className="text-white text-lg font-semibold font-body">{image.desc}</span>
-                  <span className="text-sm text-[var(--light)] mt-2">{image.category}</span>
+                <div className="overlay absolute inset-0 bg-[var(--accent)]/80 backdrop-blur-sm flex flex-col justify-end p-6 text-white rounded-2xl transition-all duration-300 opacity-0 group-hover:opacity-100">
+                  <span className="text-lg font-semibold font-body mb-2" style={{ color: "var(--color-accent)" }}>{image.desc}</span>
+                  <span className="text-sm" style={{ color: "var(--light)" }}>{image.category}</span>
                 </div>
               </motion.div>
             ))}
           </div>
           {filteredImages.length === 0 && (
-            <p className="text-center text-lg" style={{ color: "var(--light)" }}>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-center text-lg mt-12" 
+              style={{ color: "var(--light)" }}
+            >
               No events found in this category. Explore others!
-            </p>
+            </motion.p>
           )}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-[var(--light)]">
-        <div className="container mx-auto px-4 text-center">
+      {/* CTA Section: Enhanced button with border glow */}
+      <section className="py-20 bg-[var(--light)] relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent)]/5 to-transparent"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
           <motion.h2 
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold mb-8 font-heading" 
-            style={{ color: "var(--primary)" }}
+            style={{ color: "var(--primary)", textShadow: "1px 1px 2px rgba(0,0,0,0.1)" }}
           >
             Plan Your Next Unforgettable Event
           </motion.h2>
@@ -163,12 +169,12 @@ export default function Gallery() {
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, type: "spring" as const }}
+            transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
             viewport={{ once: true }}
           >
             <Link 
               href="/contact" 
-              className="px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all inline-block border-2 border-[var(--accent)]" 
+              className="px-8 py-4 rounded-2xl text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 inline-block border-2 border-[var(--teal-accent)] hover:border-[var(--color-accent)]" 
               style={{ backgroundColor: "transparent", color: "var(--accent)" }}
             >
               Get a Free Quote
@@ -177,21 +183,21 @@ export default function Gallery() {
         </div>
       </section>
 
-      {/* Footer: With React Icons */}
-      <footer className="py-12" style={{ backgroundColor: "var(--primary)", color: "var(--white)" }}>
-        <div className="container mx-auto text-center px-4">
+      {/* Footer: Enhanced icons with hover scale */}
+      <footer className="py-12 relative" style={{ backgroundColor: "var(--primary)", color: "var(--white)", borderTop: "1px solid var(--color-accent)" }}>
+        <div className="container mx-auto text-center px-4 relative z-10">
           <div className="flex justify-center space-x-8 mb-6">
-            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--accent)] transition-colors">
+            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
               <FaInstagram />
             </a>
-            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--accent)] transition-colors">
+            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
               <FaFacebookF />
             </a>
-            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--accent)] transition-colors">
+            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
               <FaEnvelope />
             </a>
           </div>
-          <p>&copy; 2025 Eventopic. All rights reserved. | Dubai&apos;s Premier Event Management Experts.</p>
+          <p className="text-lg font-medium">&copy; 2025 Eventopic. All rights reserved. | Dubai&apos;s Premier Event Management Experts.</p>
         </div>
       </footer>
     </>

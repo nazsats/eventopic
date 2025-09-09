@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, ReactNode } from "react";
@@ -8,7 +9,7 @@ import { toast } from "react-toastify";
 import { FaComment } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Interface for chatbot message (replacing ChatMessage)
+// Interface for chatbot message
 interface ChatBotMessage {
   message: string;
   type: string;
@@ -27,7 +28,7 @@ interface FormData {
   experience: string;
 }
 
-// Interface for actions (passed to widgets/children)
+// Interface for actions
 interface Actions {
   handleEnquiryStart: () => void;
   handleStaffApplication: () => void;
@@ -44,7 +45,7 @@ interface ActionProviderProps {
   createChatBotMessage: (text: string, options?: { widget?: string }) => ChatBotMessage;
   setState: (updater: (prevState: { messages: ChatBotMessage[] }) => { messages: ChatBotMessage[] }) => void;
   children: ReactNode;
-  actions?: Actions; // Optional for recursion
+  actions?: Actions;
 }
 
 // Interface for MessageParser props
@@ -55,7 +56,6 @@ interface MessageParserProps {
 
 // Functional ActionProvider
 const ActionProvider: React.FC<ActionProviderProps> = ({ createChatBotMessage, setState, children, actions = {} }) => {
-  // Internal state for form logic
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -230,9 +230,7 @@ const ActionProvider: React.FC<ActionProviderProps> = ({ createChatBotMessage, s
 
     if (missingFields.length > 0) {
       const botMessage = createChatBotMessage(
-        `Please provide: ${missingFields.join(
-          ", "
-        )}. Type 'back' to revise or continue.`,
+        `Please provide: ${missingFields.join(", ")}. Type 'back' to revise or continue.`,
         {}
       );
       updateChatbotState(botMessage);
@@ -251,9 +249,7 @@ const ActionProvider: React.FC<ActionProviderProps> = ({ createChatBotMessage, s
           `${isClientEnquiry ? "Enquiry" : "Application"} submitted! We'll contact you soon.`
         );
         const botMessage = createChatBotMessage(
-          `Thank you! Your ${
-            isClientEnquiry ? "enquiry" : "application"
-          } has been submitted. We'll reach out soon.`,
+          `Thank you! Your ${isClientEnquiry ? "enquiry" : "application"} has been submitted. We'll reach out soon.`,
           {}
         );
         updateChatbotState(botMessage);
@@ -269,15 +265,12 @@ const ActionProvider: React.FC<ActionProviderProps> = ({ createChatBotMessage, s
         setCurrentStep(0);
       } else {
         const botMessage = createChatBotMessage(
-          `Sorry, submission failed. Please try the ${
-            isClientEnquiry ? "contact" : "staff"
-          } form on our website.`,
+          `Sorry, submission failed. Please try the ${isClientEnquiry ? "contact" : "staff"} form on our website.`,
           {}
         );
         updateChatbotState(botMessage);
       }
     } catch (err) {
-      // Log the error for debugging (or remove if not needed)
       console.error("Submission error:", err);
       const botMessage = createChatBotMessage(
         "Error submitting. Please check your connection and try again.",
@@ -287,7 +280,6 @@ const ActionProvider: React.FC<ActionProviderProps> = ({ createChatBotMessage, s
     }
   };
 
-  // Combine internal actions with any passed actions
   const allActions: Actions = {
     handleEnquiryStart,
     handleStaffApplication,
@@ -347,13 +339,13 @@ const MessageParser: React.FC<MessageParserProps> = ({ children, actions }) => {
 };
 
 const EventTypeSelector = ({ actions }: { actions: Actions }) => (
-  <div className="flex flex-wrap gap-2 p-2">
+  <div className="flex flex-wrap gap-2 p-4 bg-[var(--soft)] rounded-xl">
     {["Wedding", "Corporate", "Promotion", "Party", "Cultural"].map((type) => (
       <button
         key={type}
         onClick={() => actions.handleEventTypeSelected(type)}
-        className="px-3 py-1 rounded-full text-sm font-semibold hover:bg-[var(--color-accent)] hover:text-[var(--white)] transition-colors duration-200"
-        style={{ backgroundColor: "var(--accent)", color: "var(--white)" }}
+        className="px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105"
+        style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
       >
         {type}
       </button>
@@ -362,13 +354,13 @@ const EventTypeSelector = ({ actions }: { actions: Actions }) => (
 );
 
 const RoleSelector = ({ actions }: { actions: Actions }) => (
-  <div className="flex flex-wrap gap-2 p-2">
+  <div className="flex flex-wrap gap-2 p-4 bg-[var(--soft)] rounded-xl">
     {["Promoter", "Waitress", "Usher", "Volunteer", "Model"].map((role) => (
       <button
         key={role}
         onClick={() => actions.handleRoleSelected(role.toLowerCase())}
-        className="px-3 py-1 rounded-full text-sm font-semibold hover:bg-[var(--color-accent)] hover:text-[var(--white)] transition-colors duration-200"
-        style={{ backgroundColor: "var(--accent)", color: "var(--white)" }}
+        className="px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105"
+        style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
       >
         {role}
       </button>
@@ -390,7 +382,7 @@ const ChatBotComponent = () => {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={() => setIsOpen(true)}
-            className="p-3 rounded-full shadow-lg hover:shadow-xl transition-all bg-[var(--accent)] text-[var(--white)] hover:bg-[var(--color-accent)] animate-pulse"
+            className="p-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-[var(--color-accent)] to-[var(--teal-accent)] text-[var(--primary)] hover:scale-110"
           >
             <FaComment size={24} />
           </motion.button>
@@ -402,8 +394,7 @@ const ChatBotComponent = () => {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
             transition={{ duration: 0.3, type: "spring", stiffness: 100 }}
-            className="w-full max-w-[90vw] sm:max-w-xs md:max-w-sm lg:max-w-md h-[18rem] sm:h-[24rem] md:h-[28rem] bg-[var(--secondary)] rounded-xl shadow-xl overflow-hidden"
-            style={{ backgroundColor: "var(--secondary)" }}
+            className="w-full max-w-[90vw] sm:max-w-xs md:max-w-sm lg:max-w-md h-[70vh] sm:h-[80vh] bg-[var(--secondary)] rounded-2xl shadow-2xl overflow-hidden border border-[var(--accent)]/30"
           >
             <Chatbot
               config={{
@@ -419,7 +410,7 @@ const ChatBotComponent = () => {
                     backgroundColor: "var(--accent)",
                   },
                   chatButton: {
-                    backgroundColor: "var(--accent)",
+                    backgroundColor: "var(--teal-accent)",
                   },
                 },
                 widgets: [
@@ -443,7 +434,16 @@ const ChatBotComponent = () => {
               }}
               messageParser={MessageParser}
               actionProvider={ActionProvider}
+              headerText="Eventopic Assistant"
+              placeholderText="Type your message..."
             />
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-2 right-2 p-2 rounded-full hover:bg-[var(--accent)] transition-colors"
+              style={{ color: "var(--white)" }}
+            >
+              ×
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
