@@ -1,3 +1,4 @@
+// app/portal/page.tsx
 "use client";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -45,7 +46,7 @@ export default function Portal() {
               <h2 className="text-2xl font-semibold mb-4 font-heading" style={{ color: "var(--white)" }}>Client Inquiries</h2>
               <p style={{ color: "var(--light)" }}>Submit or view your event requests.</p>
               <Link href="/portal/inquiries" className="mt-4 inline-block px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105" style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}>
-                Manage Inquiries
+                Coming soon 
               </Link>
             </motion.div>
             <motion.div 
@@ -55,10 +56,10 @@ export default function Portal() {
               className="card p-8 rounded-2xl shadow-2xl text-center border border-[var(--accent)]/30 bg-[var(--primary)]/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300"
             >
               <FaUserTie className="text-4xl mx-auto mb-4" style={{ color: "var(--color-accent)" }} />
-              <h2 className="text-2xl font-semibold mb-4 font-heading" style={{ color: "var(--white)" }}>Staff Applications</h2>
-              <p style={{ color: "var(--light)" }}>Apply for roles or track applications.</p>
+              <h2 className="text-2xl font-semibold mb-4 font-heading" style={{ color: "var(--white)" }}>Apply Jobs</h2>
+              <p style={{ color: "var(--light)" }}>Browse and apply for roles or track applications.</p>
               <Link href="/portal/applications" className="mt-4 inline-block px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105" style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}>
-                Manage Applications
+                Browse Jobs
               </Link>
             </motion.div>
             <motion.div 

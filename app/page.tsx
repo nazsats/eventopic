@@ -1,6 +1,3 @@
-// Updated app/page.tsx
-// Enhancements: Hero with better overlay and stats icons. Why Choose section with colored icons. Gallery with masonry. Testimonials with quotes styling. Footer icons enhanced.
-
 "use client";
 
 import Navbar from "../components/Navbar";
@@ -8,7 +5,7 @@ import ChatBot from "../components/ChatBot";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
-import { FaInstagram, FaFacebookF, FaEnvelope, FaCalendarAlt, FaUsers, FaCheckCircle, FaStar } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaEnvelope, FaCalendarAlt, FaUsers, FaCheckCircle, FaStar, FaLinkedin } from "react-icons/fa";
 
 export default function Home() {
   const galleryImages = [
@@ -329,17 +326,20 @@ export default function Home() {
       <footer className="py-12 relative" style={{ backgroundColor: "var(--primary)", color: "var(--white)", borderTop: "1px solid var(--color-accent)" }}>
         <div className="container mx-auto text-center px-4 relative z-10">
           <div className="flex justify-center space-x-8 mb-6">
-            <a href="https://www.instagram.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
+            <a href="https://www.linkedin.com/in/eventopic-staffing-b037b6383?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
+              <FaLinkedin />
+            </a>
+            <a href="https://www.instagram.com/eventopic_staffing?igsh=MTk5dTN4bjdnczh1aA%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
               <FaInstagram />
             </a>
-            <a href="https://www.facebook.com/eventopic" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
+            <a href="https://www.facebook.com/share/1C7GsbB6Zr/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
               <FaFacebookF />
             </a>
             <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
               <FaEnvelope />
             </a>
           </div>
-          <p className="text-lg font-medium">&copy; 2025 Eventopic. All rights reserved. | Dubai&apos;s Trusted Event Management Partner.</p>
+          <p className="text-lg font-medium">&copy; 2025 Eventopic. All rights reserved. </p>
         </div>
       </footer>
     </>

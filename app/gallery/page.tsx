@@ -1,6 +1,3 @@
-// Updated app/gallery/page.tsx
-// Enhancements: Improved gallery grid with CSS masonry (via Tailwind). Better overlay with blur and color accents. Filter buttons with active state gradients.
-
 "use client";
 
 import Navbar from "../../components/Navbar";
@@ -42,7 +39,6 @@ export default function Gallery() {
   return (
     <>
       <Navbar />
-      {/* Header: Enhanced with gradient text shadow */}
       <section className="py-20 bg-[var(--secondary)] relative">
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)]/10 to-[var(--teal-accent)]/5"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
@@ -65,7 +61,6 @@ export default function Gallery() {
           >
             Explore our portfolio of unforgettable events in Dubai &ndash; from luxurious weddings to high-energy corporate activations, crafted with precision by Eventopic.
           </motion.p>
-          {/* Category Filters: Enhanced with gradients */}
           <motion.div 
             className="flex flex-wrap justify-center gap-4 mb-12"
             initial={{ opacity: 0 }}
@@ -89,7 +84,6 @@ export default function Gallery() {
         </div>
       </section>
 
-      {/* Gallery Grid: Enhanced masonry with better overlays */}
       <section className="py-24 bg-[var(--primary)] relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--accent)]/20"></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -103,7 +97,7 @@ export default function Gallery() {
           >
             Our Signature Events
           </motion.h2>
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4"> {/* Tailwind masonry */}
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
             {filteredImages.map((image, index) => (
               <motion.div
                 key={index}
@@ -113,6 +107,7 @@ export default function Gallery() {
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.05 }}
                 className="break-inside-avoid rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 relative group"
+                style={{ position: "relative", width: "100%", aspectRatio: "4/3", minHeight: "200px" }}
               >
                 <Image 
                   src={image.src} 
@@ -121,9 +116,12 @@ export default function Gallery() {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-110" 
                   quality={85}
-                  loading={index > 2 ? "lazy" : "eager"}
+                  loading="eager" // Temporarily set to eager to rule out lazy loading issues
+                  onError={() => console.error(`Failed to load image: ${image.src}`)}
+                  placeholder="blur"
+                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" // Small placeholder
                 />
-                <div className="overlay absolute inset-0 bg-[var(--accent)]/80 backdrop-blur-sm flex flex-col justify-end p-6 text-white rounded-2xl transition-all duration-300 opacity-0 group-hover:opacity-100">
+                <div className="absolute inset-0 bg-[var(--accent)]/80 backdrop-blur-sm flex flex-col justify-end p-6 text-white rounded-2xl transition-all duration-300 opacity-0 group-hover:opacity-100">
                   <span className="text-lg font-semibold font-body mb-2" style={{ color: "var(--color-accent)" }}>{image.desc}</span>
                   <span className="text-sm" style={{ color: "var(--light)" }}>{image.category}</span>
                 </div>
@@ -143,7 +141,6 @@ export default function Gallery() {
         </div>
       </section>
 
-      {/* CTA Section: Enhanced button with border glow */}
       <section className="py-20 bg-[var(--light)] relative">
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent)]/5 to-transparent"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
@@ -183,7 +180,6 @@ export default function Gallery() {
         </div>
       </section>
 
-      {/* Footer: Enhanced icons with hover scale */}
       <footer className="py-12 relative" style={{ backgroundColor: "var(--primary)", color: "var(--white)", borderTop: "1px solid var(--color-accent)" }}>
         <div className="container mx-auto text-center px-4 relative z-10">
           <div className="flex justify-center space-x-8 mb-6">

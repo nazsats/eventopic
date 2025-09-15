@@ -8,7 +8,7 @@ import ChatBot from "../../components/ChatBot";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { FaUser, FaPhone, FaEnvelope, FaComment, FaMapMarkerAlt, FaBriefcase } from "react-icons/fa";
+import { FaUser, FaPhone, FaEnvelope, FaComment,FaInstagram , FaFacebookF , FaMapMarkerAlt, FaBriefcase, FaLinkedin } from "react-icons/fa";
 
 export default function Contact() {
   const [clientForm, setClientForm] = useState({ name: "", email: "", mobile: "", message: "" });
@@ -81,7 +81,6 @@ export default function Contact() {
   return (
     <>
       <Navbar />
-      {/* Contact Section: Enhanced with icons and gradient backgrounds */}
       <section className="py-20 bg-[var(--secondary)] relative">
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)]/10 to-[var(--teal-accent)]/5"></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -95,7 +94,6 @@ export default function Contact() {
             Get in Touch &ndash; Let&apos;s Plan Your Next Event in Dubai
           </motion.h1>
           
-          {/* Client Contact Form: Enhanced with icons */}
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -178,7 +176,6 @@ export default function Contact() {
             </form>
           </motion.div>
 
-          {/* Staff Form: Similar enhancements */}
           <motion.div 
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -281,15 +278,29 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* ChatBot Component - Enhanced positioning with shadow */}
       <div className="fixed bottom-6 right-6 z-50 shadow-2xl rounded-full">
         <ChatBot />
       </div>
 
-      {/* Footer */}
-      <footer className="py-10" style={{ backgroundColor: "var(--primary)", color: "var(--white)", borderTop: "1px solid var(--color-accent)" }}>
+      <footer className="py-10 relative" style={{ backgroundColor: "var(--primary)", color: "var(--white)", borderTop: "1px solid var(--color-accent)" }}>
         <div className="container mx-auto text-center px-4">
-          <p>&copy; 2025 Eventopic. All rights reserved. | Contact Us for Event Excellence in Dubai.</p>
+          <div className="flex justify-center space-x-8 mb-6">
+            <a href="https://www.linkedin.com/in/eventopic-staffing-b037b6383?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
+              <FaLinkedin />
+            </a>
+            <a href="https://www.instagram.com/eventopic_staffing?igsh=MTk5dTN4bjdnczh1aA%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
+              <FaInstagram />
+            </a>
+            <a href="https://www.facebook.com/share/1C7GsbB6Zr/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
+              <FaFacebookF />
+            </a>
+            <a href="mailto:info@eventopic.com" className="text-2xl hover:text-[var(--color-accent)] transition-all duration-300 hover:scale-110">
+              <FaEnvelope />
+            </a>
+          </div>
+          <p className="text-lg font-medium">
+            &copy; 2025 Eventopic. All rights reserved. 
+          </p>
         </div>
       </footer>
     </>

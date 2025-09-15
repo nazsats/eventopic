@@ -24,7 +24,6 @@ import {
   FaCar,
   FaCalendar,
   FaExclamationTriangle,
-  FaCity,
   FaStar,
 } from "react-icons/fa";
 
@@ -32,7 +31,7 @@ import {
 function ProfileContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();  // This is now inside the suspended component
+  const searchParams = useSearchParams();
   const isEditMode = searchParams.get("edit") === "true";
   const [profile, setProfile] = useState({
     firstName: "",
@@ -41,8 +40,7 @@ function ProfileContent() {
     phoneNumber: "",
     nationality: "",
     countryOfResidence: "UAE",
-    region: "",
-    city: "",
+    city: "", // Renamed from region
     visaType: "",
     gender: "",
     languagesSpoken: [] as string[],
@@ -106,8 +104,7 @@ function ProfileContent() {
         "dateOfBirth",
         "phoneNumber",
         "nationality",
-        "region",
-        "city",
+        "city", // Renamed from region
         "visaType",
         "gender",
         "hourlyRate",
@@ -187,8 +184,7 @@ function ProfileContent() {
       "dateOfBirth",
       "phoneNumber",
       "nationality",
-      "region",
-      "city",
+      "city", // Renamed from region
       "visaType",
       "gender",
       "hourlyRate",
@@ -297,7 +293,7 @@ function ProfileContent() {
     ],
   };
 
-  const regions = [
+  const cities = [
     "Abu Dhabi",
     "Dubai",
     "Sharjah",
@@ -305,61 +301,6 @@ function ProfileContent() {
     "Umm Al Quwain",
     "Fujairah",
     "Ras Al Khaimah",
-  ];
-
-  const cities = [
-    "Abu al Abyad",
-    "Adhen",
-    "Al Ajban",
-    "Al Aryam",
-    "Al Awir",
-    "Al Badiyah",
-    "Al Bataeh",
-    "Al Bithnah",
-    "Al Faqa",
-    "Al Halah",
-    "Al Hamraniyah",
-    "Al Hamriyah",
-    "Al Jeer",
-    "Al Khawaneej",
-    "Al Lisaili",
-    "Al Madam",
-    "Al Manama",
-    "Al Mirfa",
-    "Al Qusaidat",
-    "Al Qor",
-    "Al Rafaah",
-    "Al Rashidya",
-    "Al Ruwayyah",
-    "Al Salamah",
-    "Al Shuwaib",
-    "Al Yahar",
-    "Asimah",
-    "Dalma",
-    "Dadna",
-    "Digdaga",
-    "Falaj Al Mualla",
-    "Ghalilah",
-    "Ghayl",
-    "Ghub",
-    "Habshan",
-    "Huwaylat",
-    "Khatt",
-    "Khor Khwair",
-    "Lahbab",
-    "Manama",
-    "Marawah",
-    "Masafi",
-    "Masfut",
-    "Mirbah",
-    "Mleiha",
-    "Nahil",
-    "Qidfa",
-    "Sha'am",
-    "Sila",
-    "Sweihan",
-    "Wadi Shah",
-    "Zubarah",
   ];
 
   const steps = [
@@ -370,7 +311,7 @@ function ProfileContent() {
     },
     {
       title: "Location & Visa",
-      fields: ["countryOfResidence", "region", "city", "visaType"],
+      fields: ["countryOfResidence", "city", "visaType"], // Renamed region to city
       icon: <FaMapMarkerAlt />,
     },
     { title: "Skills & Talents", fields: ["skills", "talents"], icon: <FaGlobe /> },
@@ -423,7 +364,8 @@ function ProfileContent() {
               onClick={toggleDarkMode}
               className="p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-[var(--accent)] hover:bg-[var(--teal-accent)]"
               style={{ color: "var(--white)" }}
-              aria-label="Toggle dark mode"
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              aria-pressed={isDarkMode}
             >
               {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
             </button>
@@ -624,37 +566,7 @@ function ProfileContent() {
                       className="block text-sm font-medium mb-2 flex items-center gap-2"
                       style={{ color: "var(--light)" }}
                     >
-                      <FaMapMarkerAlt /> Region*
-                    </label>
-                    <select
-                      name="region"
-                      value={profile.region}
-                      onChange={handleInputChange}
-                      className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                      required
-                    >
-                      <option value="">Select Region</option>
-                      {regions.map((region) => (
-                        <option key={region} value={region}>
-                          {region}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.region && (
-                      <p
-                        className="text-sm mt-1 flex items-center gap-1"
-                        style={{ color: "var(--color-accent)" }}
-                      >
-                        <FaExclamationTriangle /> {errors.region}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-2 flex items-center gap-2"
-                      style={{ color: "var(--light)" }}
-                    >
-                      <FaCity /> City*
+                      <FaMapMarkerAlt /> City*
                     </label>
                     <select
                       name="city"
@@ -1006,21 +918,6 @@ function ProfileContent() {
                       value={profile.availability}
                       onChange={handleInputChange}
                       className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-2 flex items-center gap-2"
-                      style={{ color: "var(--light)" }}
-                    >
-                      <FaGlobe /> Experience Description
-                    </label>
-                    <textarea
-                      name="experienceDescription"
-                      value={profile.experienceDescription}
-                      onChange={handleInputChange}
-                      className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                      rows={4}
                     />
                   </div>
                   <div>

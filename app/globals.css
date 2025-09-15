@@ -3,17 +3,18 @@
 
 @import "tailwindcss";
 
+
 :root {
   --font-heading: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --primary: #290014;
-  --secondary: #18030f;
-  --accent: #1e020f;
-  --light: #f5f0e1;
-  --soft: #f5f0e1;
+  --primary: #46077e; /* Shade 1: Deep purple for primary background */
+  --secondary: #460569; /* Shade 2: Darker purple for secondary elements */
+  --accent: #440367; /* Shade 3: Darkest purple for accents */
+  --light: #f5f0e1; /* Retained for text and light elements */
+  --soft: #f5f0e1; /* Retained for subtle backgrounds */
   --white: #ffffff;
-  --color-accent: #e6b800;
-  --teal-accent: #00c4b4;
+  --color-accent: #e6b800; /* Retained for buttons and highlights */
+  --teal-accent: #00c4b4; /* Retained for gradients */
   --dark-bg: #121212;
   --dark-text: #ffffff;
 }
@@ -22,7 +23,7 @@
 .dark {
   --primary: #121212;
   --secondary: #1e1e1e;
-  --accent: #00c4b4;
+  --accent: #00c4b4; /* Use teal-accent in dark mode for contrast */
   --light: #b0bec5;
   --soft: #2d2d2d;
   --white: #ffffff;
@@ -41,14 +42,14 @@ body {
   max-width: 1280px;
 }
 
-/* Neumorphic inputs - Enhanced with accent focus */
+/* Neumorphic inputs - Updated with new shades */
 .neumorphic-input {
   background: var(--soft);
-  border: 2px solid var(--light)/20;
+  border: 2px solid var(--accent); /* Use shade3 for input borders */
   border-radius: 12px;
   box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.1), inset -4px -4px 8px rgba(255, 255, 255, 0.1);
   padding: 1rem;
-  color: var(--accent);
+  color: var(--secondary); /* Use shade2 for input text */
   transition: all 0.3s ease;
   width: 100%;
 }
@@ -60,7 +61,7 @@ body {
   transform: translateY(-2px);
 }
 
-/* Buttons - Enhanced gradients */
+/* Buttons - Retain gradient with color-accent and teal-accent */
 button, a[class*="rounded-2xl"], a[class*="rounded-full"] {
   background: linear-gradient(135deg, var(--color-accent), var(--teal-accent));
   color: var(--primary);
@@ -80,7 +81,7 @@ button:hover, a[class*="rounded-2xl"]:hover, a[class*="rounded-full"]:hover {
   box-shadow: 6px 6px 16px rgba(0, 0, 0, 0.3), -6px -6px 16px rgba(255, 255, 255, 0.2);
 }
 
-/* Form container - Enhanced backdrop */
+/* Form container - Use shade2 for background */
 .form-container {
   background: var(--secondary);
   border-radius: 20px;
@@ -89,7 +90,7 @@ button:hover, a[class*="rounded-2xl"]:hover, a[class*="rounded-full"]:hover {
   backdrop-filter: blur(10px);
 }
 
-/* Progress bar - Thicker with shadow */
+/* Progress bar */
 .progress-bar {
   background: linear-gradient(to right, var(--teal-accent), var(--color-accent));
   height: 8px;
@@ -98,14 +99,14 @@ button:hover, a[class*="rounded-2xl"]:hover, a[class*="rounded-full"]:hover {
   transition: width 0.5s ease;
 }
 
-/* Collapsible - Enhanced hover */
+/* Collapsible */
 .collapsible-header {
   background: var(--soft);
   padding: 1rem;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid var(--light)/20;
+  border: 1px solid var(--accent); /* Use shade3 for collapsible borders */
 }
 
 .collapsible-header:hover {
@@ -114,7 +115,7 @@ button:hover, a[class*="rounded-2xl"]:hover, a[class*="rounded-full"]:hover {
   transform: translateY(-1px);
 }
 
-/* Dark mode toggle - Enhanced */
+/* Dark mode toggle */
 .dark-mode-toggle {
   background: var(--accent);
   color: var(--white);
@@ -131,7 +132,7 @@ button:hover, a[class*="rounded-2xl"]:hover, a[class*="rounded-full"]:hover {
   box-shadow: 0 4px 12px rgba(0, 196, 180, 0.3);
 }
 
-/* Skill tags - Enhanced selection */
+/* Skill tags */
 .skill-tag {
   display: inline-flex;
   align-items: center;
@@ -158,7 +159,33 @@ button:hover, a[class*="rounded-2xl"]:hover, a[class*="rounded-full"]:hover {
   transform: scale(1.02);
 }
 
-/* Gallery grid - Masonry support */
+/* Job card - Specific styling for job cards */
+.job-card {
+  background: var(--secondary); /* Use shade2 for card background */
+  border: 1px solid var(--accent); /* Use shade3 for border */
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2), -4px -4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 6px 6px 16px rgba(0, 0, 0, 0.3), -6px -6px 16px rgba(255, 255, 255, 0.2);
+}
+
+/* Modal - Specific styling for job details modal */
+.job-modal {
+  background: linear-gradient(135deg, var(--secondary), var(--accent)); /* Gradient with shade2 and shade3 */
+  border: 1px solid var(--accent); /* Use shade3 for border */
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.3), -8px -8px 20px rgba(255, 255, 255, 0.05);
+}
+
+/* Gallery grid */
 .gallery-grid, .columns-1, .columns-2, .columns-3 {
   column-gap: 1rem;
 }
@@ -172,7 +199,7 @@ button:hover, a[class*="rounded-2xl"]:hover, a[class*="rounded-full"]:hover {
   transition: all 0.4s ease;
 }
 
-/* Smooth scroll and pulse - Enhanced */
+/* Smooth scroll and pulse */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
@@ -195,7 +222,7 @@ html {
   animation: pulse 2s infinite;
 }
 
-/* Card class - Global enhancement */
+/* Card class - General card styling */
 .card {
   background: var(--primary)/50;
   backdrop-filter: blur(10px);
@@ -216,11 +243,17 @@ html {
   button, a[class*="rounded-2xl"] {
     padding: 0.875rem 1.25rem;
   }
+
+  .job-card {
+    padding: 1rem;
+  }
+
+  .job-modal {
+    padding: 1.5rem;
+  }
 }
 
-
-
-/* Add to app/globals.css - Custom styling for react-chatbot-kit bot messages */
+/* Chatbot styling */
 .react-chatbot-kit-chat-bot-message-container .react-chatbot-kit-chat-message {
   border-radius: 12px !important;
 }
@@ -229,7 +262,6 @@ html {
   border-radius: 12px !important;
 }
 
-/* Ensure the messages have proper padding and margins */
 .react-chatbot-kit-chat-bot-message-container {
   margin-bottom: 10px;
 }
