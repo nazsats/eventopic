@@ -8,7 +8,7 @@ import { auth, db } from "../lib/firebase";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { FaGoogle, FaFacebookF, FaApple, FaEnvelope, FaLock } from "react-icons/fa";
+import { FaGoogle, FaFacebookF, FaApple, FaEnvelope, FaLock, FaSpinner } from "react-icons/fa";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -23,6 +23,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [socialLoading, setSocialLoading] = useState({
+    google: false,
+    facebook: false,
+    apple: false,
+  });
+
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +41,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       toast.error("Password must be at least 6 characters.");
       return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!validateEmail(email)) {
       toast.error("Please enter a valid email.");
       return;
     }
@@ -43,34 +49,40 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setIsProcessing(true);
     try {
       if (mode === "signup") {
-        await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", email), { email, createdAt: new Date().toISOString() });
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", user.uid), { email, createdAt: new Date().toISOString() });
         toast.success("Account created! Welcome!");
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast.success("Signed in!");
       }
+      setEmail("");
+      setPassword("");
       onClose();
     } catch (error: unknown) {
-      console.error("Auth error:", error instanceof Error ? error.message : "Unknown error");
-      if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
-        const { code, message } = error as { code: string; message: string };
-        let errorMessage = "Auth failed. Try again.";
-        if (code === 'auth/email-already-in-use') {
-          errorMessage = "Email already exists. Try signing in.";
-        } else if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
-          errorMessage = "Wrong password, try again.";
-        } else if (code === 'auth/weak-password') {
-          errorMessage = "Password too weak (min 6 chars).";
-        } else if (code === 'auth/invalid-email') {
-          errorMessage = "Invalid email format.";
-        } else {
-          errorMessage = message || "Auth failed. Try again.";
+      console.error("Auth error:", error);
+      let errorMessage = "Authentication failed. Try again.";
+      if (error instanceof Error) {
+        switch (error.message) {
+          case "auth/email-already-in-use":
+            errorMessage = "Email already in use. Try signing in.";
+            break;
+          case "auth/invalid-credential":
+          case "auth/wrong-password":
+          case "auth/user-not-found":
+            errorMessage = "Invalid email or password.";
+            break;
+          case "auth/weak-password":
+            errorMessage = "Password too weak (min 6 characters).";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "Invalid email format.";
+            break;
+          default:
+            errorMessage = error.message || errorMessage;
         }
-        toast.error(errorMessage);
-      } else {
-        toast.error("An unexpected error occurred. Try again.");
       }
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -82,8 +94,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       toast.error("Please enter your email.");
       return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(resetEmail)) {
+    if (!validateEmail(resetEmail)) {
       toast.error("Please enter a valid email.");
       return;
     }
@@ -94,10 +105,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setShowResetForm(false);
       setResetEmail("");
     } catch (error: unknown) {
-      console.error("Reset password error:", error instanceof Error ? error.message : "Unknown error");
+      console.error("Reset password error:", error);
       toast.error("Failed to send reset email. Check if the email is registered.");
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleSocialSignIn = async (
+    signInFn: () => Promise<void>,
+    provider: keyof typeof socialLoading
+  ) => {
+    setSocialLoading((prev) => ({ ...prev, [provider]: true }));
+    try {
+      await signInFn();
+      onClose();
+    } catch (error: unknown) {
+      console.error(`${provider} sign-in error:`, error);
+      toast.error(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in failed. Try again.`);
+    } finally {
+      setSocialLoading((prev) => ({ ...prev, [provider]: false }));
     }
   };
 
@@ -108,134 +135,177 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 flex items-center justify-center z-50 bg-black/50"
+      className="fixed inset-0 flex items-center justify-center z-50 bg-black/30"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.9, y: 50 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 50 }}
-        className="p-8 rounded-2xl shadow-2xl border border-[var(--accent)]/30 bg-[var(--primary)]/70 backdrop-blur-md max-w-md w-full mx-4"
+        className="p-6 rounded-xl shadow-xl border border-[var(--accent)]/30 bg-[var(--primary)]/80 backdrop-blur-md max-w-sm w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-center mb-6" style={{ color: "var(--white)", textShadow: "1px 1px 2px rgba(0,0,0,0.5)" }}>
+        <h2
+          className="text-xl font-bold text-center mb-4"
+          style={{ color: "var(--white)", textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
+        >
           {mode === "signup" ? "Sign Up" : "Sign In"} to Eventopic
         </h2>
-        <div className="space-y-4 mb-6">
-          <button
-            onClick={signInWithGoogle}
-            className="w-full p-4 rounded-xl flex items-center justify-center gap-2 font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+        <div className="space-y-3 mb-4">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleSocialSignIn(signInWithGoogle, "google")}
+            disabled={socialLoading.google}
+            className="w-full p-2 rounded-lg flex items-center justify-center gap-2 font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
             style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
           >
-            <FaGoogle /> Sign {mode === "signup" ? "Up" : "In"} with Google
-          </button>
-          <button
-            onClick={signInWithFacebook}
-            className="w-full p-4 rounded-xl flex items-center justify-center gap-2 font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+            {socialLoading.google ? <FaSpinner className="animate-spin" /> : <FaGoogle />}
+            Sign {mode === "signup" ? "Up" : "In"} with Google
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleSocialSignIn(signInWithFacebook, "facebook")}
+            disabled={socialLoading.facebook}
+            className="w-full p-2 rounded-lg flex items-center justify-center gap-2 font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
             style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
           >
-            <FaFacebookF /> Sign {mode === "signup" ? "Up" : "In"} with Facebook
-          </button>
-          <button
-            onClick={signInWithApple}
-            className="w-full p-4 rounded-xl flex items-center justify-center gap-2 font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+            {socialLoading.facebook ? <FaSpinner className="animate-spin" /> : <FaFacebookF />}
+            Sign {mode === "signup" ? "Up" : "In"} with Facebook
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleSocialSignIn(signInWithApple, "apple")}
+            disabled={socialLoading.apple}
+            className="w-full p-2 rounded-lg flex items-center justify-center gap-2 font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
             style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
           >
-            <FaApple /> Sign {mode === "signup" ? "Up" : "In"} with Apple
-          </button>
+            {socialLoading.apple ? <FaSpinner className="animate-spin" /> : <FaApple />}
+            Sign {mode === "signup" ? "Up" : "In"} with Apple
+          </motion.button>
         </div>
-        <div className="text-center my-4 text-[var(--light)]">or</div>
+        <div className="text-center my-3 text-sm" style={{ color: "var(--light)" }}>
+          or
+        </div>
         {!showResetForm ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: "var(--light)" }}>
-                <FaEnvelope className="inline mr-2" /> Email
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--light)" }}>
+                <FaEnvelope className="inline mr-1" /> Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
+                className="w-full p-2 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                 placeholder="Enter your email"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: "var(--light)" }}>
-                <FaLock className="inline mr-2" /> Password
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--light)" }}>
+                <FaLock className="inline mr-1" /> Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
+                className="w-full p-2 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                 placeholder="Enter your password"
                 required
               />
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="submit"
               disabled={isProcessing}
-              className="w-full p-4 rounded-2xl font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+              className="w-full p-2 rounded-lg font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
             >
-              {isProcessing ? "Processing..." : (mode === "signup" ? "Sign Up" : "Sign In")}
-            </button>
+              {isProcessing ? (
+                <>
+                  <FaSpinner className="animate-spin inline mr-2" />
+                  Processing...
+                </>
+              ) : mode === "signup" ? (
+                "Sign Up"
+              ) : (
+                "Sign In"
+              )}
+            </motion.button>
           </form>
         ) : (
-          <form onSubmit={handleResetSubmit} className="space-y-6">
+          <form onSubmit={handleResetSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: "var(--light)" }}>
-                <FaEnvelope className="inline mr-2" /> Email
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--light)" }}>
+                <FaEnvelope className="inline mr-1" /> Email
               </label>
               <input
                 type="email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
+                className="w-full p-2 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                 placeholder="Enter your email"
                 required
               />
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="submit"
               disabled={isProcessing}
-              className="w-full p-4 rounded-2xl font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+              className="w-full p-2 rounded-lg font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
             >
-              {isProcessing ? "Sending..." : "Send Reset Link"}
-            </button>
+              {isProcessing ? (
+                <>
+                  <FaSpinner className="animate-spin inline mr-2" />
+                  Sending...
+                </>
+              ) : (
+                "Send Reset Link"
+              )}
+            </motion.button>
           </form>
         )}
         {mode === "signin" && !showResetForm && (
-          <p className="text-center mt-4" style={{ color: "var(--light)" }}>
-            <button onClick={() => setShowResetForm(true)} className="hover:text-[var(--color-accent)] font-semibold transition-colors duration-200">
+          <p className="text-center mt-3 text-xs" style={{ color: "var(--light)" }}>
+            <span
+              onClick={() => setShowResetForm(true)}
+              className="cursor-pointer hover:text-[var(--color-accent)] transition-colors duration-200 underline"
+            >
               Forgot Password?
-            </button>
+            </span>
           </p>
         )}
         {showResetForm && (
-          <p className="text-center mt-4" style={{ color: "var(--light)" }}>
-            <button onClick={() => setShowResetForm(false)} className="hover:text-[var(--color-accent)] font-semibold transition-colors duration-200">
+          <p className="text-center mt-3 text-xs" style={{ color: "var(--light)" }}>
+            <span
+              onClick={() => setShowResetForm(false)}
+              className="cursor-pointer hover:text-[var(--color-accent)] transition-colors duration-200 underline"
+            >
               Back to Sign In
-            </button>
+            </span>
           </p>
         )}
-        <p className="text-center mt-4" style={{ color: "var(--light)" }}>
+        <p className="text-center mt-3 text-xs" style={{ color: "var(--light)" }}>
           {mode === "signup" ? "Already have an account?" : "Don't have an account?"}
-          <button
+          <span
             onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-            className="ml-2 hover:text-[var(--color-accent)] font-semibold transition-colors duration-200"
+            className="ml-1 cursor-pointer hover:text-[var(--color-accent)] transition-colors duration-200 underline"
           >
             {mode === "signup" ? "Sign In" : "Sign Up"}
-          </button>
+          </span>
         </p>
-        <div className="flex justify-between mt-6 text-sm" style={{ color: "var(--light)" }}>
+        <div className="flex justify-between mt-4 text-xs" style={{ color: "var(--light)" }}>
           <Link href="/terms" className="hover:text-[var(--color-accent)] transition-colors duration-200">
-            Terms and Conditions
+            Terms
           </Link>
           <Link href="/privacy" className="hover:text-[var(--color-accent)] transition-colors duration-200">
-            Privacy Policy
+            Privacy
           </Link>
         </div>
       </motion.div>

@@ -1,3 +1,5 @@
+//app/terms/page.tsx
+
 "use client"; // Ensure client-side rendering to avoid SSR issues
 
 import Navbar from "../../components/Navbar";

@@ -7,17 +7,18 @@
 :root {
   --font-heading: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --primary: #46077e; /* Shade 1: Deep purple for primary background */
-  --secondary: #460569; /* Shade 2: Darker purple for secondary elements */
-  --accent: #440367; /* Shade 3: Darkest purple for accents */
-  --light: #f5f0e1; /* Retained for text and light elements */
-  --soft: #f5f0e1; /* Retained for subtle backgrounds */
-  --white: #ffffff;
-  --color-accent: #e6b800; /* Retained for buttons and highlights */
-  --teal-accent: #00c4b4; /* Retained for gradients */
-  --dark-bg: #121212;
-  --dark-text: #ffffff;
+  --primary: #4b0082; /* Indigo for headers */
+  --secondary: #3c0764; /* Deep indigo for text */
+  --accent: #dda0dd; /* Soft orchid for highlights */
+  --light: #f5f6ff; /* Pearl white for backgrounds */
+  --soft: #f5f6ff; /* Same as light for subtle elements */
+  --white: #ffffff; /* Pure white */
+  --color-accent: #b19cd9; /* Pale indigo for buttons */
+  --teal-accent: #6a0dad; /* Vibrant indigo for secondary accents */
+  --dark-bg: #1f0a44; /* Dark indigo for contrast */
+  --dark-text: #e6ccff; /* Light purple for text on dark */
 }
+
 
 /* Dark mode */
 .dark {
