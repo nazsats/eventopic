@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,7 +8,7 @@ import Footer from "../components/Footer";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
-import {  FaCalendarAlt, FaUsers, FaCheckCircle, FaStar,  FaBriefcase, FaClock, FaMapMarkerAlt, FaMoneyBillWave } from "react-icons/fa";
+import { FaCalendarAlt, FaUsers, FaCheckCircle, FaStar, FaBriefcase, FaClock, FaMapMarkerAlt, FaMoneyBillWave } from "react-icons/fa";
 import { collection, getDocs, query, limit } from "firebase/firestore";
 import { db } from "../lib/firebase";
 

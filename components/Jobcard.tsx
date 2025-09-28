@@ -1,4 +1,3 @@
-// components/JobCard.tsx
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { FaBriefcase, FaClock, FaMapMarkerAlt, FaMoneyBillWave } from "react-icons/fa";

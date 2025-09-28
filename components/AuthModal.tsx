@@ -31,32 +31,29 @@ const SocialButton: React.FC<SocialButtonProps> = ({ icon, label, onClick, disab
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
     disabled={disabled}
-    className="w-full px-10 py-4 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative disabled:opacity-50"
-    style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+    className="flex items-center justify-center w-full h-9 px-3 py-1 rounded-md text-sm font-bold font-body shadow-md hover:shadow-[0_0_15px_rgba(0,196,180,0.5)] transition-all duration-300 group relative disabled:opacity-50 bg-[var(--accent)] text-[var(--white)] border-2 border-[var(--light)]"
     aria-label={label}
     aria-busy={disabled}
   >
-    {disabled ? <FaSpinner className="animate-spin inline mr-2 text-2xl" /> : <span className="inline mr-2 text-2xl">{icon}</span>}
+    {disabled ? <FaSpinner className="animate-spin mr-1 text-base" /> : <span className="mr-1 text-base">{icon}</span>}
     {label}
-    <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+    <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-md -z-10"></span>
   </motion.button>
 );
 
 const buttonVariants: Variants = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.4, type: "spring", stiffness: 80, ease: "easeOut" } },
   hover: {
-    scale: 1.1,
-    y: -5,
-    boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
-    backgroundColor: "var(--teal-accent)",
-    borderColor: "var(--teal-accent)",
-    transition: { duration: 0.3 },
+    scale: 1.05,
+    y: -3,
+    boxShadow: "0 6px 20px rgba(0, 196, 180, 0.3)",
+    transition: { duration: 0.2, ease: "easeOut" },
   },
 };
 
 const containerVariants: Variants = {
-  visible: { transition: { staggerChildren: 0.2 } },
+  visible: { transition: { staggerChildren: 0.15 } },
 };
 
 export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthModalProps) {
@@ -205,13 +202,13 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
         initial="hidden"
         animate="visible"
         exit={{ scale: 0.9, y: 50 }}
-        className="p-8 rounded-xl shadow-xl border border-[var(--light)]/30 bg-[var(--primary)] backdrop-blur-md max-w-sm w-full mx-4"
+        className="p-4 rounded-md shadow-xl border border-[var(--light)]/30 bg-[var(--primary)] backdrop-blur-md max-w-[280px] sm:max-w-[300px] w-full mx-4 flex flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 font-heading text-[var(--text-accent)] text-shadow" style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}>
+        <h2 className="text-lg md:text-xl font-extrabold text-center mb-3 font-heading text-[var(--text-accent)] text-shadow" style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.4)" }}>
           {mode === "signup" ? "Sign Up" : "Sign In"} to Eventopic
         </h2>
-        <motion.div className="space-y-4 mb-6" variants={containerVariants}>
+        <motion.div className="flex flex-col gap-2 mb-3 w-full" variants={containerVariants}>
           <SocialButton
             icon={<FaGoogle />}
             label={`Sign ${mode === "signup" ? "Up" : "In"} with Google`}
@@ -231,104 +228,104 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
             disabled={socialLoading.apple}
           />
         </motion.div>
-        <div className="text-center my-4 text-lg font-body text-[var(--text-body)]">
+        <div className="flex justify-center my-1.5 text-sm font-body text-[var(--text-body)]">
           or
         </div>
         {!showResetForm ? (
-          <motion.form onSubmit={handleSubmit} className="space-y-4" variants={containerVariants}>
-            <motion.div variants={cardVariants}>
-              <label className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
-                <FaEnvelope className="inline mr-2 text-2xl" /> Email
+          <motion.form onSubmit={handleSubmit} className="space-y-1 w-full flex flex-col items-center" variants={containerVariants}>
+            <motion.div variants={cardVariants} className="w-full">
+              <label className="block mb-1 text-sm font-semibold font-body text-[var(--text-accent)]">
+                <FaEnvelope className="inline mr-1 text-base" /> Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
+                className="w-full h-9 p-1.5 rounded-md text-sm font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
                 placeholder="Enter your email"
                 required
                 aria-invalid={!!errors.email}
                 aria-describedby="email-error"
               />
-              {errors.email && <p id="email-error" className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p id="email-error" className="text-red-400 text-xs mt-0.5 text-center">{errors.email}</p>}
             </motion.div>
-            <motion.div variants={cardVariants}>
-              <label className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
-                <FaLock className="inline mr-2 text-2xl" /> Password
+            <motion.div variants={cardVariants} className="w-full">
+              <label className="block mb-1 text-sm font-semibold font-body text-[var(--text-accent)]">
+                <FaLock className="inline mr-1 text-base" /> Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
+                className="w-full h-9 p-1.5 rounded-md text-sm font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
                 placeholder="Enter your password"
                 required
                 aria-invalid={!!errors.password}
                 aria-describedby="password-error"
               />
-              {errors.password && <p id="password-error" className="text-red-500 text-sm mt-1">{errors.password}</p>}
+              {errors.password && <p id="password-error" className="text-red-400 text-xs mt-0.5 text-center">{errors.password}</p>}
             </motion.div>
             <motion.button
               variants={buttonVariants}
               type="submit"
               disabled={isProcessing}
-              className="w-full px-10 py-4 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative disabled:opacity-50"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+              className="inline-flex items-center justify-center w-full h-9 px-3 py-1 rounded-md text-sm font-bold font-body shadow-md hover:shadow-[0_0_15px_rgba(0,196,180,0.5)] transition-all duration-300 group relative disabled:opacity-50 bg-[var(--accent)] text-[var(--white)] border-2 border-[var(--light)]"
               aria-busy={isProcessing}
+              style={{ lineHeight: "normal" }}
             >
               {isProcessing ? (
-                <>
-                  <FaSpinner className="animate-spin inline mr-2 text-2xl" />
+                <span className="inline-flex items-center">
+                  <FaSpinner className="animate-spin mr-1 text-base" />
                   Processing...
-                </>
+                </span>
               ) : mode === "signup" ? (
                 "Sign Up"
               ) : (
                 "Sign In"
               )}
-              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-md -z-10"></span>
             </motion.button>
           </motion.form>
         ) : (
-          <motion.form onSubmit={handleResetSubmit} className="space-y-4" variants={containerVariants}>
-            <motion.div variants={cardVariants}>
-              <label className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
-                <FaEnvelope className="inline mr-2 text-2xl" /> Email
+          <motion.form onSubmit={handleResetSubmit} className="space-y-1 w-full flex flex-col items-center" variants={containerVariants}>
+            <motion.div variants={cardVariants} className="w-full">
+              <label className="block mb-1 text-sm font-semibold font-body text-[var(--text-accent)]">
+                <FaEnvelope className="inline mr-1 text-base" /> Email
               </label>
               <input
                 type="email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
+                className="w-full h-9 p-1.5 rounded-md text-sm font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
                 placeholder="Enter your email"
                 required
                 aria-invalid={!!errors.resetEmail}
                 aria-describedby="reset-email-error"
               />
-              {errors.resetEmail && <p id="reset-email-error" className="text-red-500 text-sm mt-1">{errors.resetEmail}</p>}
+              {errors.resetEmail && <p id="reset-email-error" className="text-red-400 text-xs mt-0.5 text-center">{errors.resetEmail}</p>}
             </motion.div>
             <motion.button
               variants={buttonVariants}
               type="submit"
               disabled={isProcessing}
-              className="w-full px-10 py-4 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative disabled:opacity-50"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+              className="inline-flex items-center justify-center w-full h-9 px-3 py-1 rounded-md text-sm font-bold font-body shadow-md hover:shadow-[0_0_15px_rgba(0,196,180,0.5)] transition-all duration-300 group relative disabled:opacity-50 bg-[var(--accent)] text-[var(--white)] border-2 border-[var(--light)]"
               aria-busy={isProcessing}
+              style={{ lineHeight: "normal" }}
             >
               {isProcessing ? (
-                <>
-                  <FaSpinner className="animate-spin inline mr-2 text-2xl" />
+                <span className="inline-flex items-center">
+                  <FaSpinner className="animate-spin mr-1 text-base" />
                   Sending...
-                </>
+                </span>
               ) : (
                 "Send Reset Link"
               )}
-              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-md -z-10"></span>
             </motion.button>
           </motion.form>
         )}
         {mode === "signin" && !showResetForm && (
-          <p className="text-center mt-4 text-lg font-body text-[var(--text-body)]">
+          <p className="text-center mt-1.5 text-sm font-body text-[var(--text-body)]">
             <span
               onClick={() => setShowResetForm(true)}
               className="cursor-pointer hover:text-[var(--text-accent)] transition-colors duration-200 underline"
@@ -339,7 +336,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
           </p>
         )}
         {showResetForm && (
-          <p className="text-center mt-4 text-lg font-body text-[var(--text-body)]">
+          <p className="text-center mt-1.5 text-sm font-body text-[var(--text-body)]">
             <span
               onClick={() => setShowResetForm(false)}
               className="cursor-pointer hover:text-[var(--text-accent)] transition-colors duration-200 underline"
@@ -349,7 +346,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
             </span>
           </p>
         )}
-        <p className="text-center mt-4 text-lg font-body text-[var(--text-body)]">
+        <p className="text-center mt-1.5 text-sm font-body text-[var(--text-body)]">
           {mode === "signup" ? "Already have an account?" : "Don't have an account?"}
           <span
             onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
@@ -359,7 +356,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
             {mode === "signup" ? "Sign In" : "Sign Up"}
           </span>
         </p>
-        <div className="flex justify-between mt-4 text-lg font-body text-[var(--text-body)]">
+        <div className="flex justify-between mt-1.5 text-sm font-body text-[var(--text-body)] w-full">
           <Link href="/terms" className="hover:text-[var(--text-accent)] transition-colors duration-200">
             Terms
           </Link>
@@ -373,6 +370,6 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
 }
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, type: "spring", stiffness: 100 } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, type: "spring", stiffness: 100, ease: "easeOut" } },
 };
