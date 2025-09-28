@@ -1,14 +1,32 @@
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import AuthModal from "./AuthModal";
 import { toast } from "react-toastify";
 import { FaMoon, FaSun } from "react-icons/fa";
+
+const buttonVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+  hover: {
+    scale: 1.1,
+    y: -5,
+    boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
+    backgroundColor: "var(--teal-accent)",
+    borderColor: "var(--teal-accent)",
+    transition: { duration: 0.3 },
+  },
+};
+
+const containerVariants: Variants = {
+  visible: { transition: { staggerChildren: 0.2 } },
+};
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,7 +35,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, loading, signOut } = useAuth();
 
-  // Load theme preference from localStorage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
@@ -29,7 +46,6 @@ export default function Navbar() {
     }
   }, []);
 
-  // Toggle dark/light mode and save to localStorage
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
@@ -42,8 +58,8 @@ export default function Navbar() {
       try {
         await signOut();
         toast.success("Signed out successfully!");
-      } catch (error: unknown) {
-        console.error("Sign out error:", error instanceof Error ? error.message : "Unknown error");
+      } catch (error) {
+        console.error("Sign-out error:", error);
         toast.error("Failed to sign out.");
       }
     } else {
@@ -51,128 +67,127 @@ export default function Navbar() {
     }
   };
 
-  // Base menu items visible to all users
-  const menuItems = [
+  const baseMenu = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/services", label: "Services" },
     { href: "/gallery", label: "Gallery" },
   ];
+  const adminMenu = user?.email === "ansarinazrul91@gmail.com" ? [{ href: "/admin", label: "Admin" }] : [];
+  const menuItems = user && !loading
+    ? [...baseMenu, { href: "/portal", label: "Portal" }, { href: "/dashboard", label: "Dashboard" }, { href: "/profile", label: "Profile" }, ...adminMenu]
+    : baseMenu;
 
-  // Add protected routes only if user is signed in
-  if (!loading && user) {
-    menuItems.push(
-      { href: "/portal", label: "Portal" },
-      { href: "/dashboard", label: "Dashboard" },
-      { href: "/profile", label: "Profile" }
-    );
-    if (user.email === "ansarinazrul91@gmail.com") {
-      menuItems.push({ href: "/admin", label: "Admin" });
-    }
-  }
+  if (loading) return <div className="h-24 bg-[var(--primary)] flex items-center justify-center text-[var(--text-body)]">Loading...</div>;
 
   return (
     <>
-      <nav
-        className="fixed top-0 z-50 p-4 shadow-xl w-full mb-8"
-        style={{
-          background: "linear-gradient(to right, var(--primary), var(--accent))",
-          color: "var(--white)",
-          borderBottom: "1px solid var(--color-accent)/20",
-        }}
-      >
-        <div className="container mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/logoWhite.png"
-              alt="Eventopic Logo"
-              width={56}
-              height={56}
-              className="w-14 h-14 md:w-16 md:h-16 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300"
-              priority
-            />
-          </Link>
-          <div className="hidden md:flex items-center space-x-6">
+      <nav className="fixed top-0 z-50 p-4 shadow-xl w-full bg-[var(--primary)]/80 border-b border-[var(--light)]/20 backdrop-blur-sm">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              className="md:hidden text-2xl text-[var(--text-body)]"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              ☰
+            </button>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logoWhite.png"
+                alt="Eventopic Logo - Event Management and Staffing in Dubai"
+                width={56}
+                height={56}
+                className="w-14 h-14 md:w-16 md:h-16 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300"
+                priority
+              />
+            </Link>
+          </div>
+          <motion.div className="hidden md:flex items-center space-x-6" variants={containerVariants} initial="hidden" animate="visible">
             {menuItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`text-base font-medium relative hover:scale-105 transition-all duration-300 group ${
-                  pathname === item.href
-                    ? "text-[var(--color-accent)] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-[var(--color-accent)] after:to-[var(--teal-accent)] after:rounded-full"
-                    : "hover:text-[var(--color-accent)]"
-                }`}
-              >
-                {item.label}
-              </Link>
+              <motion.div key={item.href} variants={buttonVariants}>
+                <Link
+                  href={item.href}
+                  className={`text-lg font-medium relative hover:scale-105 transition-all duration-300 group text-[var(--text-body)] hover:text-[var(--text-accent)] ${
+                    pathname === item.href ? "text-[var(--text-accent)] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-1 after:bg-[var(--teal-accent)] after:rounded-full" : ""
+                  }`}
+                  aria-current={pathname === item.href ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              </motion.div>
             ))}
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              variants={buttonVariants}
               onClick={handleAuthClick}
-              className="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-[var(--primary)] shadow-md hover:shadow-lg"
+              className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
             >
-              {loading ? "Loading..." : user ? "Sign Out" : "Sign In"}
+              {user ? "Sign Out" : "Sign In"}
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              variants={buttonVariants}
               onClick={toggleDarkMode}
-              className="p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 bg-[var(--accent)] hover:bg-[var(--teal-accent)]"
-              style={{ color: "var(--white)" }}
+              className="p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
               aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
               aria-pressed={isDarkMode}
             >
               {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
             </motion.button>
-          </div>
-          <button
-            className="md:hidden text-2xl"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            style={{ color: "var(--white)" }}
-            aria-label="Toggle mobile menu"
-            aria-expanded={isMenuOpen}
-          >
-            ☰
-          </button>
+          </motion.div>
+          <motion.div className="flex items-center space-x-4 md:hidden" variants={containerVariants} initial="hidden" animate="visible">
+            <motion.button
+              variants={buttonVariants}
+              onClick={toggleDarkMode}
+              className="p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              aria-pressed={isDarkMode}
+            >
+              {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+            </motion.button>
+            <motion.button
+              variants={buttonVariants}
+              onClick={handleAuthClick}
+              className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+            >
+              {user ? "Sign Out" : "Sign In"}
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+            </motion.button>
+          </motion.div>
         </div>
         {isMenuOpen && (
           <motion.div
+            variants={containerVariants}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            className="md:hidden mt-4 space-y-3 bg-[var(--secondary)] p-4 rounded-xl shadow-xl border border-[var(--accent)]/30 mb-16"
+            className="md:hidden mt-4 space-y-3 bg-[var(--primary)]/80 p-4 rounded-xl shadow-xl border border-[var(--light)]/30 mb-16 backdrop-blur-sm"
+            id="mobile-menu"
           >
             {menuItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block text-base font-medium py-1 hover:text-[var(--color-accent)] transition-colors duration-300"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
+              <motion.div key={item.href} variants={buttonVariants}>
+                <Link
+                  href={item.href}
+                  className="block text-lg font-medium py-1 text-[var(--text-body)] hover:text-[var(--text-accent)] transition-colors duration-300"
+                  onClick={() => setIsMenuOpen(false)}
+                  aria-current={pathname === item.href ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              </motion.div>
             ))}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleAuthClick}
-              className="w-full text-left px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-[var(--primary)]"
-            >
-              {loading ? "Loading..." : user ? "Sign Out" : "Sign In"}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={toggleDarkMode}
-              className="w-full text-left px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 bg-[var(--accent)] hover:bg-[var(--teal-accent)] text-[var(--white)]"
-            >
-              {isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            </motion.button>
           </motion.div>
         )}
       </nav>
       <div className="h-24 md:h-14"></div>
-      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} mode="signin" />
     </>
   );
 }

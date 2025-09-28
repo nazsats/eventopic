@@ -1,18 +1,20 @@
-//app/portal/applications/[jobId]./page.tsx
 
 "use client";
 
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useState, useEffect } from "react";
-import { doc, getDoc, addDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from "../../../../contexts/AuthContext";
+import { doc, getDoc, collection, getDocs, query, where, addDoc } from "firebase/firestore";
 import { db } from "../../../../lib/firebase";
-import Navbar from "../../../../components/Navbar";
-import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { FaBriefcase, FaClock, FaMapMarkerAlt, FaMoneyBillWave, FaUser, FaEnvelope, FaComment, FaPhone } from "react-icons/fa";
+import { motion, Variants } from "framer-motion";
+import AuthModal from "../../../../components/AuthModal";
+import Navbar from "../../../../components/Navbar";
+import Footer from "../../../../components/Footer";
+import { FaBriefcase, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaExclamationTriangle } from "react-icons/fa";
 
 interface Job {
+  id: string;
   title: string;
   location: string;
   type: string;
@@ -22,18 +24,12 @@ interface Job {
   category: string;
 }
 
-interface Application {
-  id: string;
-  status: 'pending' | 'accepted' | 'rejected';
-}
-
 export default function JobDetails() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const params = useParams();
-  const jobId = params.jobId as string;
+  const { jobId } = useParams();
   const [job, setJob] = useState<Job | null>(null);
-  const [application, setApplication] = useState<Application | null>(null);
+  const [application, setApplication] = useState<{ id: string; status: string } | null>(null);
   const [applicationData, setApplicationData] = useState({
     name: "",
     email: user?.email || "",
@@ -41,57 +37,65 @@ export default function JobDetails() {
     coverLetter: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/");
-      return;
+      // No redirect; allow unauthenticated users to view job details
     }
+
     const fetchJobAndApplication = async () => {
       try {
-        const jobDoc = await getDoc(doc(db, "jobs", jobId));
-        if (jobDoc.exists()) {
-          setJob(jobDoc.data() as Job);
-        } else {
-          toast.error("Job not found.");
+        if (typeof jobId !== "string") {
+          toast.error("Invalid job ID.");
           router.push("/portal/applications");
           return;
         }
 
-        const applicationsQuery = query(
-          collection(db, "applications"),
-          where("userEmail", "==", user?.email),
-          where("jobId", "==", jobId)
-        );
-        const applicationsSnapshot = await getDocs(applicationsQuery);
-        if (!applicationsSnapshot.empty) {
-          const appDoc = applicationsSnapshot.docs[0];
-          setApplication({ id: appDoc.id, status: appDoc.data().status });
+        const jobDoc = doc(db, "jobs", jobId);
+        const jobSnapshot = await getDoc(jobDoc);
+        if (!jobSnapshot.exists()) {
+          toast.error("Job not found.");
+          router.push("/portal/applications");
+          return;
         }
-        setIsLoading(false);
-      } catch (error: unknown) {
-        console.error("Error fetching data:", error instanceof Error ? error.message : "Unknown error");
+        setJob({ id: jobSnapshot.id, ...jobSnapshot.data() } as Job);
+
+        if (user) {
+          const applicationsQuery = query(
+            collection(db, "applications"),
+            where("userEmail", "==", user.email),
+            where("jobId", "==", jobId)
+          );
+          const applicationsSnapshot = await getDocs(applicationsQuery);
+          if (!applicationsSnapshot.empty) {
+            const appData = applicationsSnapshot.docs[0].data();
+            setApplication({ id: applicationsSnapshot.docs[0].id, status: appData.status });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching job:", error);
         toast.error("Failed to load job details.");
-        setIsLoading(false);
       }
     };
+
     fetchJobAndApplication();
-  }, [user, loading, router, jobId]);
+  }, [jobId, user, loading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setApplicationData({ ...applicationData, [name]: value });
+    setApplicationData({ ...applicationData, [e.target.name]: e.target.value });
   };
 
-  const submitApplication = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { name, email, mobile, coverLetter } = applicationData;
-    if (!name || !email || !mobile || !coverLetter) {
-      toast.error("Please fill in all required fields.");
+    if (!user) return;
+
+    if (!applicationData.name || !applicationData.email || !applicationData.mobile || !applicationData.coverLetter) {
+      toast.error("Please fill in all fields.");
       return;
     }
-    if (!/^05\d{8}$/.test(mobile)) {
+
+    if (!/^05\d{8}$/.test(applicationData.mobile)) {
       toast.error("Please enter a valid Dubai mobile number (e.g., 05xxxxxxxx).");
       return;
     }
@@ -99,153 +103,213 @@ export default function JobDetails() {
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "applications"), {
-        userEmail: user?.email,
+        userEmail: user.email,
         jobId,
-        name,
-        email,
-        mobile,
-        coverLetter,
+        ...applicationData,
         timestamp: new Date().toISOString(),
         status: "pending",
       });
       toast.success("Application submitted successfully!");
-      setApplication({ id: '', status: 'pending' });
-    } catch (error: unknown) {
-      console.error("Error submitting application:", error instanceof Error ? error.message : "Unknown error");
+      setApplication({ id: "", status: "pending" });
+    } catch (error) {
+      console.error("Error submitting application:", error);
       toast.error("Failed to submit application. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading || isLoading) {
-    return <div className="py-20 text-center flex items-center justify-center min-h-screen" style={{ color: "var(--white)" }}>Loading...</div>;
-  }
+  const textVariants: Variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, type: "spring", stiffness: 100, damping: 10 } },
+  };
 
-  if (!job) return null;
+  const containerVariants: Variants = {
+    visible: { transition: { staggerChildren: 0.2 } },
+  };
+
+  const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, type: "spring", stiffness: 100 } },
+  };
+
+  const buttonVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+    hover: {
+      scale: 1.1,
+      y: -5,
+      boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
+      backgroundColor: "var(--teal-accent)",
+      borderColor: "var(--teal-accent)",
+      transition: { duration: 0.3 },
+    },
+  };
+
+  if (!job) {
+    return (
+      <>
+        <Navbar />
+        <div className="text-center py-20 font-body text-[var(--text-body)]" style={{ backgroundColor: "var(--secondary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
-      <section className="py-20 bg-[var(--secondary)] min-h-screen relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/10 to-[var(--teal-accent)]/5"></div>
+      <section className="min-h-screen py-24 relative" style={{ backgroundColor: "var(--secondary)" }}>
+        <div className="absolute inset-0 bg-[var(--color-accent)]/5"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <motion.h1 
-            initial={{ opacity: 0, y: 50 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            className="text-4xl md:text-5xl font-bold text-center mb-16 font-heading relative" 
-            style={{ color: "var(--white)", textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}
+          <motion.h1
+            variants={textVariants}
+            initial="hidden"
+            animate="visible"
+            className="text-5xl md:text-6xl font-bold text-center mb-12 font-heading text-[var(--text-accent)] text-shadow"
+            style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
           >
             {job.title}
           </motion.h1>
-          <div className="max-w-3xl mx-auto card p-8 rounded-2xl shadow-2xl border border-[var(--accent)]/30 bg-[var(--primary)]/70 backdrop-blur-md">
-            <div className="space-y-4 mb-8">
-              <p className="text-lg" style={{ color: "var(--light)" }}>{job.description}</p>
-              <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                <FaMapMarkerAlt /> <strong>Location:</strong> {job.location}
-              </p>
-              <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                <FaClock /> <strong>Type:</strong> {job.type}
-              </p>
-              <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                <FaClock /> <strong>Duration:</strong> {job.duration}
-              </p>
-              <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                <FaMoneyBillWave /> <strong>Rate:</strong> AED {job.rate}/hour
-              </p>
-              <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                <FaBriefcase /> <strong>Category:</strong> {job.category.charAt(0).toUpperCase() + job.category.slice(1).replace('_', ' ')}
-              </p>
-            </div>
 
-            {application ? (
-              <div className="text-center p-4 rounded-xl bg-[var(--soft)]">
-                <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--color-accent)" }}>Application Status: {application.status.toUpperCase()}</h3>
-                <p style={{ color: "var(--light)" }}>You have already applied for this job.</p>
-              </div>
-            ) : (
-              <motion.form 
-                onSubmit={submitApplication}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <h3 className="text-xl font-semibold font-heading flex items-center gap-2" style={{ color: "var(--color-accent)" }}>
-                  <FaBriefcase /> Apply for this Job
-                </h3>
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaUser /> Full Name*
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={applicationData.name}
-                    onChange={handleInputChange}
-                    className="neumorphic-input w-full"
-                    placeholder="Enter your full name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaEnvelope /> Email*
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={applicationData.email}
-                    onChange={handleInputChange}
-                    className="neumorphic-input w-full"
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaPhone /> Mobile No. (Dubai)*
-                  </label>
-                  <input
-                    type="tel"
-                    name="mobile"
-                    value={applicationData.mobile}
-                    onChange={handleInputChange}
-                    className="neumorphic-input w-full"
-                    placeholder="05xxxxxxxx"
-                    pattern="05\d{8}"
-                    title="Dubai mobile: 05 followed by 8 digits"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaComment /> Cover Letter*
-                  </label>
-                  <textarea
-                    name="coverLetter"
-                    value={applicationData.coverLetter}
-                    onChange={handleInputChange}
-                    className="neumorphic-input w-full"
-                    rows={5}
-                    placeholder="Why are you a good fit for this role?"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full p-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 ${
-                    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
+          <motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            className="card p-10 rounded-2xl shadow-xl max-w-3xl mx-auto border bg-[var(--primary)]/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 group relative"
+            style={{ borderColor: "var(--light)/30" }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-accent)]/10 to-[var(--teal-accent)]/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <h2 className="text-2xl md:text-3xl font-semibold mb-6 font-heading flex items-center gap-2 text-[var(--text-accent)] relative z-10">
+              <FaBriefcase className="text-2xl" /> Job Details
+            </h2>
+            <p className="mb-3 flex items-center gap-2 text-lg font-body text-[var(--text-body)] relative z-10">
+              <FaMapMarkerAlt className="text-2xl" /> <strong>Location:</strong> {job.location}
+            </p>
+            <p className="mb-3 flex items-center gap-2 text-lg font-body text-[var(--text-body)] relative z-10">
+              <FaClock className="text-2xl" /> <strong>Type:</strong> {job.type}
+            </p>
+            <p className="mb-3 flex items-center gap-2 text-lg font-body text-[var(--text-body)] relative z-10">
+              <FaClock className="text-2xl" /> <strong>Duration:</strong> {job.duration}
+            </p>
+            <p className="mb-6 flex items-center gap-2 text-lg font-body text-[var(--text-body)] relative z-10">
+              <FaMoneyBillWave className="text-2xl" /> <strong>Rate:</strong> AED {job.rate}/hour
+            </p>
+            <p className="mb-6 text-lg font-body text-[var(--text-body)] relative z-10">
+              <strong>Description:</strong> {job.description}
+            </p>
+
+            {user ? (
+              application ? (
+                <motion.div
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="mt-6 p-8 rounded-lg border bg-[var(--primary)]/50 backdrop-blur-sm relative z-10"
+                  style={{ borderColor: "var(--light)/20" }}
                 >
-                  {isSubmitting ? "Submitting..." : "Submit Application"}
-                </button>
-              </motion.form>
+                  <p className="flex items-center gap-2 text-lg font-semibold font-body text-[var(--text-accent)]">
+                    <FaExclamationTriangle className="text-2xl" /> Application Status: {application.status}
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.form
+                  onSubmit={handleSubmit}
+                  className="mt-8"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <h2 className="text-2xl md:text-3xl font-semibold mb-6 font-heading text-[var(--text-accent)] relative z-10">
+                    Apply for this Job
+                  </h2>
+                  {[
+                    { label: "Full Name", name: "name", type: "text", placeholder: "Enter your full name" },
+                    { label: "Email", name: "email", type: "email", placeholder: "Enter your email", disabled: true },
+                    { label: "Mobile Number", name: "mobile", type: "text", placeholder: "Enter your mobile number (e.g., 05xxxxxxxx)" },
+                  ].map((field, index) => (
+                    <motion.div
+                      key={field.name}
+                      variants={cardVariants}
+                      transition={{ delay: index * 0.2 }}
+                      className="mb-6"
+                    >
+                      <label htmlFor={field.name} className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
+                        {field.label}
+                      </label>
+                      <input
+                        type={field.type}
+                        name={field.name}
+                        value={applicationData[field.name as keyof typeof applicationData]}
+                        onChange={handleInputChange}
+                        disabled={field.disabled}
+                        className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
+                        placeholder={field.placeholder}
+                      />
+                    </motion.div>
+                  ))}
+                  <motion.div
+                    variants={cardVariants}
+                    transition={{ delay: 0.6 }}
+                    className="mb-6"
+                  >
+                    <label htmlFor="coverLetter" className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
+                      Cover Letter
+                    </label>
+                    <textarea
+                      name="coverLetter"
+                      value={applicationData.coverLetter}
+                      onChange={handleInputChange}
+                      className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
+                      placeholder="Why are you a good fit for this role?"
+                      rows={5}
+                    />
+                  </motion.div>
+                  <motion.button
+                    type="submit"
+                    disabled={isSubmitting}
+                    variants={buttonVariants}
+                    className={`w-full py-4 px-10 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 relative z-10 group ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                    style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                    <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                  </motion.button>
+                </motion.form>
+              )
+            ) : (
+              <motion.div
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                className="mt-8 text-center group relative"
+              >
+                <motion.button
+                  variants={buttonVariants}
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-10 py-4 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 inline-block focus:ring-4 focus:ring-[var(--teal-accent)]/50 relative z-10"
+                  style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                  aria-label="Log in to Apply"
+                >
+                  Log in to Apply
+                  <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                </motion.button>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
+        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} mode="signin" />
       </section>
+      <Footer />
+      <style jsx>{`
+        input::placeholder,
+        textarea::placeholder {
+          color: var(--text-body);
+          opacity: 0.7;
+        }
+      `}</style>
     </>
   );
 }

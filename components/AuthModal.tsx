@@ -1,11 +1,12 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { FaGoogle, FaFacebookF, FaApple, FaEnvelope, FaLock, FaSpinner } from "react-icons/fa";
@@ -13,11 +14,54 @@ import { FaGoogle, FaFacebookF, FaApple, FaEnvelope, FaLock, FaSpinner } from "r
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  mode: "signin" | "signup";
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+interface SocialButtonProps {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+}
+
+const SocialButton: React.FC<SocialButtonProps> = ({ icon, label, onClick, disabled }) => (
+  <motion.button
+    variants={buttonVariants}
+    whileHover="hover"
+    whileTap={{ scale: 0.95 }}
+    onClick={onClick}
+    disabled={disabled}
+    className="w-full px-10 py-4 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative disabled:opacity-50"
+    style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+    aria-label={label}
+    aria-busy={disabled}
+  >
+    {disabled ? <FaSpinner className="animate-spin inline mr-2 text-2xl" /> : <span className="inline mr-2 text-2xl">{icon}</span>}
+    {label}
+    <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+  </motion.button>
+);
+
+const buttonVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+  hover: {
+    scale: 1.1,
+    y: -5,
+    boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
+    backgroundColor: "var(--teal-accent)",
+    borderColor: "var(--teal-accent)",
+    transition: { duration: 0.3 },
+  },
+};
+
+const containerVariants: Variants = {
+  visible: { transition: { staggerChildren: 0.2 } },
+};
+
+export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthModalProps) {
   const { signInWithGoogle, signInWithFacebook, signInWithApple, resetPassword } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -28,20 +72,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     facebook: false,
     apple: false,
   });
+  const [errors, setErrors] = useState({ email: "", password: "", resetEmail: "" });
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({ email: "", password: "", resetEmail: "" });
+
     if (!email || !password) {
+      setErrors({ email: !email ? "Required" : "", password: !password ? "Required" : "", resetEmail: "" });
       toast.error("Please fill in all fields.");
       return;
     }
     if (password.length < 6) {
+      setErrors({ email: "", password: "Minimum 6 characters", resetEmail: "" });
       toast.error("Password must be at least 6 characters.");
       return;
     }
     if (!validateEmail(email)) {
+      setErrors({ email: "Invalid email format", password: "", resetEmail: "" });
       toast.error("Please enter a valid email.");
       return;
     }
@@ -59,24 +109,28 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setEmail("");
       setPassword("");
       onClose();
-    } catch (error: unknown) {
-      console.error("Auth error:", error);
+    } catch (error) {
+      console.error("Authentication error:", error);
       let errorMessage = "Authentication failed. Try again.";
       if (error instanceof Error) {
         switch (error.message) {
           case "auth/email-already-in-use":
             errorMessage = "Email already in use. Try signing in.";
+            setErrors({ email: "Email already in use", password: "", resetEmail: "" });
             break;
           case "auth/invalid-credential":
           case "auth/wrong-password":
           case "auth/user-not-found":
             errorMessage = "Invalid email or password.";
+            setErrors({ email: "Invalid credentials", password: "Invalid credentials", resetEmail: "" });
             break;
           case "auth/weak-password":
             errorMessage = "Password too weak (min 6 characters).";
+            setErrors({ email: "", password: "Too weak", resetEmail: "" });
             break;
           case "auth/invalid-email":
             errorMessage = "Invalid email format.";
+            setErrors({ email: "Invalid email", password: "", resetEmail: "" });
             break;
           default:
             errorMessage = error.message || errorMessage;
@@ -90,22 +144,27 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const handleResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({ email: "", password: "", resetEmail: "" });
+
     if (!resetEmail) {
+      setErrors({ email: "", password: "", resetEmail: "Required" });
       toast.error("Please enter your email.");
       return;
     }
     if (!validateEmail(resetEmail)) {
+      setErrors({ email: "", password: "", resetEmail: "Invalid email format" });
       toast.error("Please enter a valid email.");
       return;
     }
+
     setIsProcessing(true);
     try {
       await resetPassword(resetEmail);
       toast.success("Password reset email sent! Check your inbox.");
       setShowResetForm(false);
       setResetEmail("");
-    } catch (error: unknown) {
-      console.error("Reset password error:", error);
+    } catch (error) {
+      console.error("Password reset error:", error);
       toast.error("Failed to send reset email. Check if the email is registered.");
     } finally {
       setIsProcessing(false);
@@ -119,9 +178,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setSocialLoading((prev) => ({ ...prev, [provider]: true }));
     try {
       await signInFn();
+      toast.success(`Signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
       onClose();
-    } catch (error: unknown) {
-      console.error(`${provider} sign-in error:`, error);
+    } catch (error) {
+      console.error(`Social sign-in error (${provider}):`, error);
       toast.error(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in failed. Try again.`);
     } finally {
       setSocialLoading((prev) => ({ ...prev, [provider]: false }));
@@ -137,97 +197,88 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       exit={{ opacity: 0 }}
       className="fixed inset-0 flex items-center justify-center z-50 bg-black/30"
       onClick={onClose}
+      aria-modal="true"
+      role="dialog"
     >
       <motion.div
-        initial={{ scale: 0.9, y: 50 }}
-        animate={{ scale: 1, y: 0 }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
         exit={{ scale: 0.9, y: 50 }}
-        className="p-6 rounded-xl shadow-xl border border-[var(--accent)]/30 bg-[var(--primary)]/80 backdrop-blur-md max-w-sm w-full mx-4"
+        className="p-8 rounded-xl shadow-xl border border-[var(--light)]/30 bg-[var(--primary)] backdrop-blur-md max-w-sm w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2
-          className="text-xl font-bold text-center mb-4"
-          style={{ color: "var(--white)", textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
-        >
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 font-heading text-[var(--text-accent)] text-shadow" style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}>
           {mode === "signup" ? "Sign Up" : "Sign In"} to Eventopic
         </h2>
-        <div className="space-y-3 mb-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        <motion.div className="space-y-4 mb-6" variants={containerVariants}>
+          <SocialButton
+            icon={<FaGoogle />}
+            label={`Sign ${mode === "signup" ? "Up" : "In"} with Google`}
             onClick={() => handleSocialSignIn(signInWithGoogle, "google")}
             disabled={socialLoading.google}
-            className="w-full p-2 rounded-lg flex items-center justify-center gap-2 font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
-          >
-            {socialLoading.google ? <FaSpinner className="animate-spin" /> : <FaGoogle />}
-            Sign {mode === "signup" ? "Up" : "In"} with Google
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          />
+          <SocialButton
+            icon={<FaFacebookF />}
+            label={`Sign ${mode === "signup" ? "Up" : "In"} with Facebook`}
             onClick={() => handleSocialSignIn(signInWithFacebook, "facebook")}
             disabled={socialLoading.facebook}
-            className="w-full p-2 rounded-lg flex items-center justify-center gap-2 font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
-          >
-            {socialLoading.facebook ? <FaSpinner className="animate-spin" /> : <FaFacebookF />}
-            Sign {mode === "signup" ? "Up" : "In"} with Facebook
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          />
+          <SocialButton
+            icon={<FaApple />}
+            label={`Sign ${mode === "signup" ? "Up" : "In"} with Apple`}
             onClick={() => handleSocialSignIn(signInWithApple, "apple")}
             disabled={socialLoading.apple}
-            className="w-full p-2 rounded-lg flex items-center justify-center gap-2 font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
-          >
-            {socialLoading.apple ? <FaSpinner className="animate-spin" /> : <FaApple />}
-            Sign {mode === "signup" ? "Up" : "In"} with Apple
-          </motion.button>
-        </div>
-        <div className="text-center my-3 text-sm" style={{ color: "var(--light)" }}>
+          />
+        </motion.div>
+        <div className="text-center my-4 text-lg font-body text-[var(--text-body)]">
           or
         </div>
         {!showResetForm ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: "var(--light)" }}>
-                <FaEnvelope className="inline mr-1" /> Email
+          <motion.form onSubmit={handleSubmit} className="space-y-4" variants={containerVariants}>
+            <motion.div variants={cardVariants}>
+              <label className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
+                <FaEnvelope className="inline mr-2 text-2xl" /> Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
+                className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
                 placeholder="Enter your email"
                 required
+                aria-invalid={!!errors.email}
+                aria-describedby="email-error"
               />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: "var(--light)" }}>
-                <FaLock className="inline mr-1" /> Password
+              {errors.email && <p id="email-error" className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            </motion.div>
+            <motion.div variants={cardVariants}>
+              <label className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
+                <FaLock className="inline mr-2 text-2xl" /> Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
+                className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
                 placeholder="Enter your password"
                 required
+                aria-invalid={!!errors.password}
+                aria-describedby="password-error"
               />
-            </div>
+              {errors.password && <p id="password-error" className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            </motion.div>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              variants={buttonVariants}
               type="submit"
               disabled={isProcessing}
-              className="w-full p-2 rounded-lg font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
+              className="w-full px-10 py-4 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative disabled:opacity-50"
+              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+              aria-busy={isProcessing}
             >
               {isProcessing ? (
                 <>
-                  <FaSpinner className="animate-spin inline mr-2" />
+                  <FaSpinner className="animate-spin inline mr-2 text-2xl" />
                   Processing...
                 </>
               ) : mode === "signup" ? (
@@ -235,76 +286,84 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               ) : (
                 "Sign In"
               )}
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
             </motion.button>
-          </form>
+          </motion.form>
         ) : (
-          <form onSubmit={handleResetSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: "var(--light)" }}>
-                <FaEnvelope className="inline mr-1" /> Email
+          <motion.form onSubmit={handleResetSubmit} className="space-y-4" variants={containerVariants}>
+            <motion.div variants={cardVariants}>
+              <label className="block mb-2 text-lg font-semibold font-body text-[var(--text-accent)]">
+                <FaEnvelope className="inline mr-2 text-2xl" /> Email
               </label>
               <input
                 type="email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full p-2 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--accent)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
+                className="w-full p-4 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
                 placeholder="Enter your email"
                 required
+                aria-invalid={!!errors.resetEmail}
+                aria-describedby="reset-email-error"
               />
-            </div>
+              {errors.resetEmail && <p id="reset-email-error" className="text-red-500 text-sm mt-1">{errors.resetEmail}</p>}
+            </motion.div>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              variants={buttonVariants}
               type="submit"
               disabled={isProcessing}
-              className="w-full p-2 rounded-lg font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--primary)" }}
+              className="w-full px-10 py-4 rounded-full text-xl font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative disabled:opacity-50"
+              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+              aria-busy={isProcessing}
             >
               {isProcessing ? (
                 <>
-                  <FaSpinner className="animate-spin inline mr-2" />
+                  <FaSpinner className="animate-spin inline mr-2 text-2xl" />
                   Sending...
                 </>
               ) : (
                 "Send Reset Link"
               )}
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
             </motion.button>
-          </form>
+          </motion.form>
         )}
         {mode === "signin" && !showResetForm && (
-          <p className="text-center mt-3 text-xs" style={{ color: "var(--light)" }}>
+          <p className="text-center mt-4 text-lg font-body text-[var(--text-body)]">
             <span
               onClick={() => setShowResetForm(true)}
-              className="cursor-pointer hover:text-[var(--color-accent)] transition-colors duration-200 underline"
+              className="cursor-pointer hover:text-[var(--text-accent)] transition-colors duration-200 underline"
+              aria-label="Forgot password"
             >
               Forgot Password?
             </span>
           </p>
         )}
         {showResetForm && (
-          <p className="text-center mt-3 text-xs" style={{ color: "var(--light)" }}>
+          <p className="text-center mt-4 text-lg font-body text-[var(--text-body)]">
             <span
               onClick={() => setShowResetForm(false)}
-              className="cursor-pointer hover:text-[var(--color-accent)] transition-colors duration-200 underline"
+              className="cursor-pointer hover:text-[var(--text-accent)] transition-colors duration-200 underline"
+              aria-label="Back to sign in"
             >
               Back to Sign In
             </span>
           </p>
         )}
-        <p className="text-center mt-3 text-xs" style={{ color: "var(--light)" }}>
+        <p className="text-center mt-4 text-lg font-body text-[var(--text-body)]">
           {mode === "signup" ? "Already have an account?" : "Don't have an account?"}
           <span
             onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-            className="ml-1 cursor-pointer hover:text-[var(--color-accent)] transition-colors duration-200 underline"
+            className="ml-1 cursor-pointer hover:text-[var(--text-accent)] transition-colors duration-200 underline"
+            aria-label={mode === "signup" ? "Switch to sign in" : "Switch to sign up"}
           >
             {mode === "signup" ? "Sign In" : "Sign Up"}
           </span>
         </p>
-        <div className="flex justify-between mt-4 text-xs" style={{ color: "var(--light)" }}>
-          <Link href="/terms" className="hover:text-[var(--color-accent)] transition-colors duration-200">
+        <div className="flex justify-between mt-4 text-lg font-body text-[var(--text-body)]">
+          <Link href="/terms" className="hover:text-[var(--text-accent)] transition-colors duration-200">
             Terms
           </Link>
-          <Link href="/privacy" className="hover:text-[var(--color-accent)] transition-colors duration-200">
+          <Link href="/privacy" className="hover:text-[var(--text-accent)] transition-colors duration-200">
             Privacy
           </Link>
         </div>
@@ -312,3 +371,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     </motion.div>
   );
 }
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, type: "spring", stiffness: 100 } },
+};

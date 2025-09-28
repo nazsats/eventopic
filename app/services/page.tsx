@@ -1,11 +1,10 @@
-// Updated app/services/page.tsx
-// Enhancements: Service cards with icons and gradient hovers. Better grid with even spacing.
 
 "use client";
 
 import Navbar from "../../components/Navbar";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { FaBullhorn, FaUsers, FaTools, FaHandshake, FaChartLine, FaBullseye, FaBuilding, FaSearch } from "react-icons/fa";
+import Footer from "../../components/Footer";
 
 export default function Services() {
   const services = [
@@ -19,49 +18,60 @@ export default function Services() {
     { title: "Job Opportunities", desc: "Part-time and short-term roles in event management – join our team as promoters, volunteers, or staff.", icon: <FaSearch /> },
   ];
 
+  const containerVariants: Variants = {
+    visible: { transition: { staggerChildren: 0.2 } },
+  };
+
+  const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, type: "spring" as const, stiffness: 100 } },
+  };
+
   return (
     <>
       <Navbar />
-      {/* Services Section: Enhanced grid with icons */}
-      <section className="py-20 bg-[var(--secondary)] relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)]/10 to-[var(--teal-accent)]/5"></div>
+      <section className="py-24 relative" style={{ backgroundColor: "var(--secondary)" }}>
+        <div className="absolute inset-0 bg-[var(--color-accent)]/5"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl md:text-5xl font-bold text-center mb-16 font-heading relative" 
-            style={{ color: "var(--white)", textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}
+            transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+            className="text-5xl md:text-6xl font-bold text-center mb-16 font-heading text-[var(--text-accent)] text-shadow"
+            style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
           >
-            Our Services – Comprehensive Event Solutions in Dubai
+            Our Services
           </motion.h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {services.map((service, index) => (
-              <motion.div 
+              <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: (index % 4) * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -10, scale: 1.02, transition: { duration: 0.3 } }}
-                className="card p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 text-center border border-[var(--accent)]/20 bg-[var(--primary)]/50 backdrop-blur-sm relative overflow-hidden group"
+                variants={cardVariants}
+                whileHover={{ y: -10, scale: 1.05 }}
+                className="card p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border max-w-sm mx-auto bg-[var(--primary)]/80 backdrop-blur-sm relative overflow-hidden group"
+                style={{ borderColor: "var(--light)/30" }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-accent)]/10 to-[var(--teal-accent)]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative z-10 text-4xl mb-4 mx-auto" style={{ color: "var(--color-accent)" }}>{service.icon}</div>
-                <h3 className="text-xl font-semibold mb-4 font-heading relative z-10" style={{ color: "var(--white)" }}>{service.title}</h3>
-                <p className="text-base leading-relaxed relative z-10" style={{ color: "var(--light)" }}>{service.desc}</p>
+                <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-accent)]/10 to-[var(--teal-accent)]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="flex justify-center items-center h-16 w-16 mx-auto mb-6 relative z-10">
+                  <div className="text-5xl text-[var(--color-accent)]">{service.icon}</div>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-semibold mb-4 font-heading text-center text-[var(--text-accent)] relative z-10">
+                  {service.title}
+                </h3>
+                <p className="text-lg leading-relaxed font-body text-center text-[var(--text-body)] relative z-10">
+                  {service.desc}
+                </p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-10 relative" style={{ backgroundColor: "var(--primary)", color: "var(--white)", borderTop: "1px solid var(--color-accent)" }}>
-        <div className="container mx-auto text-center px-4">
-          <p className="text-lg font-medium">&copy; 2025 Eventopic. All rights reserved. | Tailored Event Services for Dubai.</p>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }

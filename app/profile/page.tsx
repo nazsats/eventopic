@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -6,7 +7,7 @@ import { useState, useEffect, Suspense } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { toast } from "react-toastify";
 import {
   FaUser,
@@ -29,8 +30,25 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import Link from "next/link";
-import Image from "next/image"; // Added import for Image
+import Image from "next/image";
 import axios from "axios";
+
+const buttonVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+  hover: {
+    scale: 1.1,
+    y: -5,
+    boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
+    backgroundColor: "var(--teal-accent)",
+    borderColor: "var(--teal-accent)",
+    transition: { duration: 0.3 },
+  },
+};
+
+const containerVariants: Variants = {
+  visible: { transition: { staggerChildren: 0.2 } },
+};
 
 function ProfileContent() {
   const { user, loading } = useAuth();
@@ -76,7 +94,7 @@ function ProfileContent() {
 
   useEffect(() => {
     if (!loading && !user) {
-      console.log("Redirecting to homepage: user is null, loading:", loading);
+      console.log("Redirecting to homepage: user is null, loading: " + loading);
       router.push("/");
       return;
     }
@@ -87,101 +105,122 @@ function ProfileContent() {
           const skillsDoc = await getDoc(doc(db, "user_skills", user.uid));
           if (userDoc.exists()) {
             const profileData = userDoc.data();
-            console.log("Fetched profile data from Firestore:", profileData);
+            console.log("Fetched profile data from Firestore: ", profileData);
             setProfile((prev) => ({ ...prev, ...profileData }));
             setIsProfileLoaded(true);
           } else {
-            console.log("No profile data found in Firestore for user:", user.uid);
+            console.log("No profile data found in Firestore for user: " + user.uid);
             setIsProfileLoaded(true);
           }
           if (skillsDoc.exists()) {
             const skillsData = skillsDoc.data().skills || [];
-            console.log("Fetched skills data from Firestore:", skillsData);
+            console.log("Fetched skills data from Firestore: ", skillsData);
             setSkills(skillsData);
           } else {
-            console.log("No skills data found in Firestore for user:", user.uid);
+            console.log("No skills data found in Firestore for user: " + user.uid);
           }
         } catch (error: unknown) {
-          console.error("Fetch profile error:", error instanceof Error ? error.message : error);
-          toast.error("Error fetching profile. Please try again.");
+          console.error("Fetch profile error: ", error instanceof Error ? error.message : error);
+          toast.error("Error fetching profile. Please try again.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
         }
       };
       fetchProfile();
     }
   }, [user, loading, router, isEditMode]);
 
-  const validateField = (name: string, value: string | string[] | boolean) => {
-    const newErrors = { ...errors };
-    let isValid = true;
-
-    if (
-      [
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "phoneNumber",
-        "nationality",
-        "city",
-        "visaType",
-        "gender",
-        "hourlyRate",
-        "yearsOfExperience",
-      ].includes(name) &&
-      !value
-    ) {
-      newErrors[name] = `${name.replace(/([A-Z])/g, " $1").trim()} is required`;
-      isValid = false;
-    } else if (
-      name === "phoneNumber" &&
-      typeof value === "string" &&
-      value &&
-      !/^\+971\d{9}$/.test(value)
-    ) {
-      newErrors[name] = "Phone must be +971xxxxxxxxx (no spaces, e.g., +971501234567)";
-      isValid = false;
-    } else if (
-      name === "hourlyRate" &&
-      typeof value === "string" &&
-      value &&
-      (isNaN(Number(value)) || Number(value) <= 0)
-    ) {
-      newErrors[name] = "Hourly rate must be > 0 (e.g., 50)";
-      isValid = false;
-    } else if (Array.isArray(value) && value.length === 0) {
-      newErrors[name] = `${name.replace(/([A-Z])/g, " $1").trim()} cannot be empty`;
-      isValid = false;
-    } else {
-      delete newErrors[name];
+  const validateField = (name: string, value: string | string[] | boolean | number) => {
+    let error = "";
+    switch (name) {
+      case "firstName":
+      case "lastName":
+      case "nationality":
+      case "city":
+      case "visaType":
+      case "gender":
+      case "hourlyRate":
+      case "yearsOfExperience":
+        if (typeof value === "string" && !value) error = name.replace(/([A-Z])/g, " $1").trim() + " is required";
+        break;
+      case "dateOfBirth":
+        if (typeof value === "string" && !value) error = "Date of Birth is required";
+        break;
+      case "phoneNumber":
+        if (typeof value === "string") {
+          if (!value) error = "Phone Number is required";
+          else if (!/^\+971\d{9}$/.test(value)) error = "Phone must be +971xxxxxxxxx (no spaces, e.g., +971501234567)";
+        }
+        break;
+      case "languagesSpoken":
+      case "openToWorkIn":
+      case "talents":
+        if (Array.isArray(value) && value.length === 0) error = name.replace(/([A-Z])/g, " $1").trim() + " cannot be empty";
+        break;
+      case "skills":
+        if (Array.isArray(value) && value.length === 0) error = "Please select at least one skill";
+        break;
+      case "hourlyRate":
+      case "yearsOfExperience":
+        if (typeof value === "string" && value && (isNaN(Number(value)) || Number(value) <= 0)) error = name.replace(/([A-Z])/g, " $1").trim() + " must be > 0 (e.g., 50)";
+        break;
+      default:
+        break;
     }
+    return error;
+  };
 
-    setErrors(newErrors);
-    return isValid;
+  const validateStep = (currentStep: number) => {
+    const stepFields = steps[currentStep - 1].fields;
+    const newErrors: Record<string, string> = {};
+    stepFields.forEach((field) => {
+      if (field === "skills") {
+        const error = validateField(field, skills);
+        if (error) newErrors[field] = error;
+      } else {
+        const value = profile[field as keyof typeof profile];
+        const error = validateField(field, value);
+        if (error) newErrors[field] = error;
+      }
+    });
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(step)) {
+      setStep(step + 1);
+    } else {
+      toast.error("Please fix the errors before proceeding.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
+    }
   };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    console.log(`Input changed: ${name} = ${value}`);
+    console.log("Input changed: " + name + " = " + value);
     setProfile({ ...profile, [name]: value });
-    validateField(name, value);
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleMultiSelectChange = (name: string, values: string[]) => {
-    console.log(`Multi-select changed: ${name} =`, values);
+    console.log("Multi-select changed: " + name + " = ", values);
     setProfile({ ...profile, [name]: values });
-    validateField(name, values);
+    const error = validateField(name, values);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const toggleSkill = (skill: string) => {
-    console.log("Toggling skill:", skill);
+    console.log("Toggling skill: " + skill);
     setSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     );
+    const error = validateField("skills", skills);
+    setErrors((prev) => ({ ...prev, skills: error }));
   };
 
   const toggleCategory = (category: string) => {
-    console.log("Toggling category:", category);
+    console.log("Toggling category: " + category);
     setOpenCategories((prev) =>
       prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
     );
@@ -189,24 +228,23 @@ function ProfileContent() {
 
   const handleFileUpload = async (file: File | null, type: "image" | "resume") => {
     if (!file) {
-      console.log(`No ${type} file selected for upload`);
-      toast.error("Please select a file to upload.");
+      console.log("No " + type + " file selected for upload");
+      toast.error("Please select a file to upload.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
       return;
     }
 
-    // Validate file size (200KB = 200 * 1024 bytes)
     if (file.size > 200 * 1024) {
-      console.log(`${type} file too large: ${file.size} bytes`);
+      console.log(type + " file too large: " + file.name + ", size: " + file.size + " bytes");
       toast.error(
-        `${type === "image" ? "Profile image" : "Resume"} is too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Must be under 200KB.`
+        (type === "image" ? "Profile image" : "Resume") + " is too large (" + (file.size / 1024 / 1024).toFixed(2) + "MB). Must be under 200KB."
       );
       return;
     }
 
     try {
+      console.log("Uploading " + type + " to Cloudinary: " + file.name);
       setUploadingImage(type === "image" ? true : uploadingImage);
       setUploadingResume(type === "resume" ? true : uploadingResume);
-
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "eventopic_unsigned");
@@ -214,26 +252,25 @@ function ProfileContent() {
       formData.append("api_key", "381131836444186");
       formData.append("resource_type", type === "image" ? "image" : "raw");
 
-      console.log(`Uploading ${type} to Cloudinary:`, file.name);
       const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${type === "image" ? "image" : "raw"}/upload`,
+        "https://api.cloudinary.com/v1_1/" + process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME + "/" + (type === "image" ? "image" : "raw") + "/upload",
         formData
       );
 
       const url = response.data.secure_url;
-      console.log(`${type} uploaded successfully, URL:`, url);
+      console.log(type + " uploaded successfully, URL: " + url);
       setProfile((prev) => {
         const updatedProfile = { ...prev, [type === "image" ? "profileImageUrl" : "resumeUrl"]: url };
-        console.log(`Updated profile state with ${type} URL:`, updatedProfile);
+        console.log("Updated profile state with " + type + " URL: ", updatedProfile);
         return updatedProfile;
       });
-      toast.success(`${type === "image" ? "Profile image" : "Resume"} uploaded successfully!`);
+      toast.success((type === "image" ? "Profile image" : "Resume") + " uploaded successfully!");
     } catch (error: unknown) {
-      console.error(`Error uploading ${type}:`, error instanceof Error ? error.message : error);
+      console.error("Error uploading " + type + ": ", error instanceof Error ? error.message : error);
       toast.error(
         error instanceof Error
-          ? error.message || `Failed to upload ${type === "image" ? "profile image" : "resume"}. Please try again.`
-          : `Failed to upload ${type === "image" ? "profile image" : "resume"}. Please try again.`
+          ? error.message || "Failed to upload " + (type === "image" ? "profile image" : "resume") + ". Please try again."
+          : "Failed to upload " + (type === "image" ? "profile image" : "resume") + ". Please try again."
       );
     } finally {
       setUploadingImage(type === "image" ? false : uploadingImage);
@@ -253,48 +290,41 @@ function ProfileContent() {
 
     setUpdating(true);
 
-    const requiredFields = [
-      "firstName",
-      "lastName",
-      "dateOfBirth",
-      "phoneNumber",
-      "nationality",
-      "city",
-      "visaType",
-      "gender",
-      "hourlyRate",
-      "yearsOfExperience",
-    ];
     const newErrors: Record<string, string> = {};
-    requiredFields.forEach((field) => {
-      const value = profile[field as keyof typeof profile];
-      if (!value || (Array.isArray(value) && value.length === 0)) {
-        newErrors[field] = `${field.replace(/([A-Z])/g, " $1").trim()} is required`;
+    steps.flatMap((step) => step.fields).forEach((field) => {
+      if (field === "skills") {
+        const error = validateField(field, skills);
+        if (error) newErrors[field] = error;
+      } else {
+        const value = profile[field as keyof typeof profile];
+        const error = validateField(field, value);
+        if (error) newErrors[field] = error;
       }
     });
 
+    setErrors(newErrors);
+
     if (Object.keys(newErrors).length > 0) {
-      console.log("Form validation errors:", newErrors);
-      setErrors(newErrors);
-      toast.error(`Please fix: ${Object.keys(newErrors).map((key) => key.replace(/([A-Z])/g, " $1").trim()).join(", ")}`);
+      console.log("Form validation errors: ", newErrors);
+      toast.error("Please fix: " + Object.keys(newErrors).map((key) => key.replace(/([A-Z])/g, " $1").trim()).join(", "));
       setUpdating(false);
       return;
     }
 
     try {
-      console.log("Saving profile to Firestore:", profile);
+      console.log("Saving profile to Firestore: ", profile);
       await setDoc(
         doc(db, "users", user.uid),
         { ...profile, isProfileComplete: true },
         { merge: true }
       );
-      console.log("Profile saved to Firestore for user:", user.uid);
+      console.log("Profile saved to Firestore for user: " + user.uid);
       await setDoc(doc(db, "user_skills", user.uid), { skills }, { merge: true });
-      console.log("Skills saved to Firestore:", skills);
+      console.log("Skills saved to Firestore: ", skills);
       toast.success("Profile saved successfully!");
       router.push("/profile");
     } catch (error: unknown) {
-      console.error("Save profile error:", error instanceof Error ? error.message : error);
+      console.error("Save profile error: ", error instanceof Error ? error.message : error);
       toast.error("Failed to save profile. Please try again.");
     } finally {
       setUpdating(false);
@@ -416,7 +446,6 @@ function ProfileContent() {
     },
   ];
 
-  // Map skills to nice names
   const niceSkills = skills.map((skill) =>
     skill
       .split("_")
@@ -432,21 +461,21 @@ function ProfileContent() {
     return (
       <div
         className="pt-20 text-center flex items-center justify-center min-h-screen"
-        style={{ color: "var(--white)" }}
+        style={{ color: "var(--text-body)" }}
       >
         Loading...
       </div>
     );
 
-  console.log("Rendering profile view - profileImageUrl:", profile.profileImageUrl);
-  console.log("Rendering profile view - resumeUrl:", profile.resumeUrl);
+  console.log("Rendering profile view - profileImageUrl: " + profile.profileImageUrl);
+  console.log("Rendering profile view - resumeUrl: " + profile.resumeUrl);
 
   return (
     <>
       <Navbar />
       <section className="pt-20 bg-[var(--primary)] min-h-screen relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/10 to-[var(--teal-accent)]/5"></div>
-        <div className="container mx-auto px-4 max-w-3xl relative z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-accent)]/10 to-[var(--teal-accent)]/5"></div>
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -454,15 +483,11 @@ function ProfileContent() {
             className="mb-8"
           >
             <h1
-              className="text-3xl font-bold font-heading flex items-center gap-2"
-              style={{ color: "var(--white)", textShadow: "1px 1px 2px rgba(0,0,0,0.5)" }}
+              className="text-4xl font-bold font-heading flex items-center gap-2"
+              style={{ color: "var(--text-accent)", textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
+              aria-label={profile.isProfileComplete && !isEditMode ? "Your Profile" : isEditMode ? "Edit Your Profile" : "Create Your Profile"}
             >
-              <FaUser />{" "}
-              {profile.isProfileComplete && !isEditMode
-                ? "Your Profile"
-                : isEditMode
-                ? "Edit Your Profile"
-                : "Create Your Profile"}
+              <FaUser /> {profile.isProfileComplete && !isEditMode ? "Your Profile" : isEditMode ? "Edit Your Profile" : "Create Your Profile"}
             </h1>
           </motion.div>
 
@@ -473,15 +498,13 @@ function ProfileContent() {
                   {steps.map((s, index) => (
                     <div
                       key={index}
-                      className={`text-sm flex items-center gap-1 ${
-                        step >= index + 1 ? "text-[var(--color-accent)]" : "text-[var(--light)]"
-                      }`}
+                      className={`text-sm flex items-center gap-1 ${step >= index + 1 ? "text-[var(--text-accent)]" : "text-[var(--text-body)]"} font-semibold`}
                     >
                       {s.icon} {s.title}
                     </div>
                   ))}
                 </div>
-                <div className="bg-[var(--soft)] h-3 rounded-full overflow-hidden">
+                <div className="bg-[var(--primary)]/50 h-3 rounded-full overflow-hidden border border-[var(--light)]/20">
                   <div
                     className="progress-bar h-full bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] rounded-full transition-all duration-500"
                     style={{ width: `${(step / steps.length) * 100}%` }}
@@ -494,7 +517,7 @@ function ProfileContent() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
                 onSubmit={handleSubmit}
-                className="form-container p-8 rounded-2xl shadow-2xl border border-[var(--accent)]/30 bg-[var(--secondary)]/80 backdrop-blur-md"
+                className="p-8 rounded-2xl shadow-lg border border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md"
               >
                 <AnimatePresence mode="wait">
                   {step === 1 && (
@@ -510,7 +533,7 @@ function ProfileContent() {
                           <label
                             htmlFor="firstName"
                             className="block text-sm font-medium mb-2 flex items-center gap-2"
-                            style={{ color: "var(--light)" }}
+                            style={{ color: "var(--text-body)" }}
                           >
                             <FaUser /> First Name*
                           </label>
@@ -520,7 +543,7 @@ function ProfileContent() {
                             name="firstName"
                             value={profile.firstName}
                             onChange={handleInputChange}
-                            className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
                             required
                             aria-describedby={errors.firstName ? "firstName-error" : undefined}
                           />
@@ -528,7 +551,7 @@ function ProfileContent() {
                             <p
                               id="firstName-error"
                               className="text-sm mt-1 flex items-center gap-1"
-                              style={{ color: "var(--color-accent)" }}
+                              style={{ color: "var(--error)" }}
                             >
                               <FaExclamationTriangle /> {errors.firstName}
                             </p>
@@ -538,7 +561,7 @@ function ProfileContent() {
                           <label
                             htmlFor="lastName"
                             className="block text-sm font-medium mb-2 flex items-center gap-2"
-                            style={{ color: "var(--light)" }}
+                            style={{ color: "var(--text-body)" }}
                           >
                             <FaUser /> Last Name*
                           </label>
@@ -548,7 +571,7 @@ function ProfileContent() {
                             name="lastName"
                             value={profile.lastName}
                             onChange={handleInputChange}
-                            className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
                             required
                             aria-describedby={errors.lastName ? "lastName-error" : undefined}
                           />
@@ -556,7 +579,7 @@ function ProfileContent() {
                             <p
                               id="lastName-error"
                               className="text-sm mt-1 flex items-center gap-1"
-                              style={{ color: "var(--color-accent)" }}
+                              style={{ color: "var(--error)" }}
                             >
                               <FaExclamationTriangle /> {errors.lastName}
                             </p>
@@ -567,7 +590,7 @@ function ProfileContent() {
                         <label
                           htmlFor="dateOfBirth"
                           className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
+                          style={{ color: "var(--text-body)" }}
                         >
                           <FaCalendar /> Date of Birth* (YYYY-MM-DD)
                         </label>
@@ -577,7 +600,7 @@ function ProfileContent() {
                           name="dateOfBirth"
                           value={profile.dateOfBirth}
                           onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
+                          className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
                           required
                           aria-describedby={errors.dateOfBirth ? "dateOfBirth-error" : undefined}
                         />
@@ -585,1035 +608,1035 @@ function ProfileContent() {
                           <p
                             id="dateOfBirth-error"
                             className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
+                            style={{ color: "var(--error)" }}
                           >
                             <FaExclamationTriangle /> {errors.dateOfBirth}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="phoneNumber"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaPhone /> Phone Number* (+971xxxxxxxxx)
-                        </label>
-                        <input
-                          type="tel"
-                          id="phoneNumber"
-                          name="phoneNumber"
-                          value={profile.phoneNumber}
-                          onChange={handleInputChange}
-                          placeholder="+971501234567"
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          required
-                          aria-describedby={errors.phoneNumber ? "phoneNumber-error" : undefined}
-                        />
-                        {errors.phoneNumber && (
-                          <p
-                            id="phoneNumber-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="phoneNumber"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
                           >
-                            <FaExclamationTriangle /> {errors.phoneNumber}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="nationality"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaGlobe /> Nationality*
-                        </label>
-                        <select
-                          id="nationality"
-                          name="nationality"
-                          value={profile.nationality}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          required
-                          aria-describedby={errors.nationality ? "nationality-error" : undefined}
-                        >
-                          <option value="">Select Nationality</option>
-                          <option value="UAE">UAE</option>
-                          <option value="India">India</option>
-                          <option value="USA">USA</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        {errors.nationality && (
-                          <p
-                            id="nationality-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
-                          >
-                            <FaExclamationTriangle /> {errors.nationality}
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                  {step === 2 && (
-                    <motion.div
-                      key="step2"
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      className="space-y-6"
-                    >
-                      <div>
-                        <label
-                          htmlFor="countryOfResidence"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaGlobeAmericas /> Country of Residence*
-                        </label>
-                        <input
-                          type="text"
-                          id="countryOfResidence"
-                          name="countryOfResidence"
-                          value={profile.countryOfResidence}
-                          disabled
-                          className="neumorphic-input w-full opacity-50 border border-[var(--light)]/50"
-                          aria-describedby="countryOfResidence-info"
-                        />
-                        <p
-                          id="countryOfResidence-info"
-                          className="text-sm mt-1"
-                          style={{ color: "var(--light)" }}
-                        >
-                          Fixed to UAE for this platform.
-                        </p>
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="city"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaMapMarkerAlt /> City*
-                        </label>
-                        <select
-                          id="city"
-                          name="city"
-                          value={profile.city}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          required
-                          aria-describedby={errors.city ? "city-error" : undefined}
-                        >
-                          <option value="">Select City</option>
-                          {cities.map((city) => (
-                            <option key={city} value={city}>
-                              {city}
-                            </option>
-                          ))}
-                        </select>
-                        {errors.city && (
-                          <p
-                            id="city-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
-                          >
-                            <FaExclamationTriangle /> {errors.city}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="visaType"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaIdCard /> Visa Type*
-                        </label>
-                        <select
-                          id="visaType"
-                          name="visaType"
-                          value={profile.visaType}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          required
-                          aria-describedby={errors.visaType ? "visaType-error" : undefined}
-                        >
-                          <option value="">Select Visa Type</option>
-                          <option value="employment">Employment</option>
-                          <option value="family">Family</option>
-                          <option value="freelance">Freelance</option>
-                          <option value="golden">Golden</option>
-                          <option value="investor">Investor</option>
-                          <option value="student">Student</option>
-                        </select>
-                        {errors.visaType && (
-                          <p
-                            id="visaType-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
-                          >
-                            <FaExclamationTriangle /> {errors.visaType}
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                  {step === 3 && (
-                    <motion.div
-                      key="step3"
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      className="space-y-6"
-                    >
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaGlobe /> What are you good at? (Select all that apply)*
-                        </label>
-                        {Object.entries(skillCategories).map(([category, options]) => (
-                          <div key={category} className="mb-6">
-                            <div
-                              className="collapsible-header flex justify-between items-center p-4 rounded-xl mb-2 cursor-pointer transition-all duration-300 hover:bg-[var(--accent)]/50"
-                              onClick={() => toggleCategory(category)}
-                              style={{ backgroundColor: "var(--soft)", color: "var(--accent)" }}
-                              role="button"
-                              aria-expanded={openCategories.includes(category)}
-                              aria-controls={`skills-${category}`}
+                            <FaPhone /> Phone Number* (+971xxxxxxxxx)
+                          </label>
+                          <input
+                            type="tel"
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            value={profile.phoneNumber}
+                            onChange={handleInputChange}
+                            placeholder="+971501234567"
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
+                            required
+                            aria-describedby={errors.phoneNumber ? "phoneNumber-error" : undefined}
+                          />
+                          {errors.phoneNumber && (
+                            <p
+                              id="phoneNumber-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
                             >
-                              <span className="font-semibold">
-                                {category.charAt(0).toUpperCase() + category.slice(1)}
-                              </span>
-                              <span dangerouslySetInnerHTML={{ __html: openCategories.includes(category) ? "&minus;" : "&plus;" }} />
-                            </div>
-                            {openCategories.includes(category) && (
-                              <motion.div
-                                id={`skills-${category}`}
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-2 flex flex-wrap gap-2 p-4 bg-[var(--soft)] rounded-xl"
+                              <FaExclamationTriangle /> {errors.phoneNumber}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="nationality"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaGlobe /> Nationality*
+                          </label>
+                          <select
+                            id="nationality"
+                            name="nationality"
+                            value={profile.nationality}
+                            onChange={handleInputChange}
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
+                            required
+                            aria-describedby={errors.nationality ? "nationality-error" : undefined}
+                          >
+                            <option value="">Select Nationality</option>
+                            <option value="UAE">UAE</option>
+                            <option value="India">India</option>
+                            <option value="USA">USA</option>
+                            <option value="Other">Other</option>
+                          </select>
+                          {errors.nationality && (
+                            <p
+                              id="nationality-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.nationality}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                    {step === 2 && (
+                      <motion.div
+                        key="step2"
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        className="space-y-6"
+                      >
+                        <div>
+                          <label
+                            htmlFor="countryOfResidence"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaGlobeAmericas /> Country of Residence*
+                          </label>
+                          <input
+                            type="text"
+                            id="countryOfResidence"
+                            name="countryOfResidence"
+                            value={profile.countryOfResidence}
+                            disabled
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 opacity-50 text-[var(--text-body)]"
+                            aria-describedby="countryOfResidence-info"
+                          />
+                          <p
+                            id="countryOfResidence-info"
+                            className="text-sm mt-1"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            Fixed to UAE for this platform.
+                          </p>
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="city"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaMapMarkerAlt /> City*
+                          </label>
+                          <select
+                            id="city"
+                            name="city"
+                            value={profile.city}
+                            onChange={handleInputChange}
+                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.city ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
+                            required
+                            aria-required="true"
+                            aria-describedby={errors.city ? "city-error" : undefined}
+                          >
+                            <option value="">Select City</option>
+                            {cities.map((city) => (
+                              <option key={city} value={city}>
+                                {city}
+                              </option>
+                            ))}
+                          </select>
+                          {errors.city && (
+                            <p
+                              id="city-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.city}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="visaType"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaIdCard /> Visa Type*
+                          </label>
+                          <select
+                            id="visaType"
+                            name="visaType"
+                            value={profile.visaType}
+                            onChange={handleInputChange}
+                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.visaType ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
+                            required
+                            aria-required="true"
+                            aria-describedby={errors.visaType ? "visaType-error" : undefined}
+                          >
+                            <option value="">Select Visa Type</option>
+                            <option value="employment">Employment</option>
+                            <option value="family">Family</option>
+                            <option value="freelance">Freelance</option>
+                            <option value="golden">Golden</option>
+                            <option value="investor">Investor</option>
+                            <option value="student">Student</option>
+                          </select>
+                          {errors.visaType && (
+                            <p
+                              id="visaType-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.visaType}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                    {step === 3 && (
+                      <motion.div
+                        key="step3"
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        className="space-y-6"
+                      >
+                        <div>
+                          <label
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaGlobe /> What are you good at? (Select all that apply)*
+                          </label>
+                          {Object.entries(skillCategories).map(([category, options]) => (
+                            <div key={category} className="mb-6">
+                              <div
+                                className="flex justify-between items-center p-4 rounded-xl mb-2 cursor-pointer transition-all duration-300 hover:bg-[var(--color-accent)]/30"
+                                onClick={() => toggleCategory(category)}
+                                style={{ backgroundColor: "var(--primary)/50", color: "var(--text-accent)" }}
+                                role="button"
+                                aria-expanded={openCategories.includes(category)}
+                                aria-controls={`skills-${category}`}
                               >
-                                {options.map((skill) => {
-                                  const skillId = `${category}_${skill.toLowerCase().replace(/ /g, "_")}`;
-                                  return (
-                                    <motion.div
-                                      key={skillId}
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      className={`skill-tag px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
-                                        skills.includes(skillId)
-                                          ? "bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-[var(--primary)] shadow-md"
-                                          : "bg-[var(--accent)] text-[var(--white)] hover:bg-[var(--color-accent)] hover:text-[var(--primary)]"
-                                      }`}
-                                      onClick={() => toggleSkill(skillId)}
-                                      role="checkbox"
-                                      aria-checked={skills.includes(skillId)}
-                                      tabIndex={0}
-                                      onKeyDown={(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                          e.preventDefault();
-                                          toggleSkill(skillId);
-                                        }
-                                      }}
-                                    >
-                                      {skill}
-                                    </motion.div>
-                                  );
-                                })}
-                              </motion.div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaStar /> Talents (Select all that apply)
-                        </label>
-                        <motion.div className="flex flex-wrap gap-2 p-4 bg-[var(--soft)] rounded-xl">
-                          {[
-                            "Public Speaking",
-                            "Event Planning",
-                            "Photography",
-                            "Videography",
-                            "Music Production",
-                            "Graphic Design",
-                          ].map((talent) => (
-                            <motion.div
-                              key={talent}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className={`skill-tag px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
-                                profile.talents.includes(talent)
-                                  ? "bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-[var(--primary)] shadow-md"
-                                  : "bg-[var(--accent)] text-[var(--white)] hover:bg-[var(--color-accent)] hover:text-[var(--primary)]"
-                              }`}
-                              onClick={() =>
-                                handleMultiSelectChange(
-                                  "talents",
+                                <span className="font-semibold">
+                                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                                </span>
+                                <span dangerouslySetInnerHTML={{ __html: openCategories.includes(category) ? "&minus;" : "&plus;" }} />
+                              </div>
+                              {openCategories.includes(category) && (
+                                <motion.div
+                                  id={`skills-${category}`}
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="mt-2 flex flex-wrap gap-2 p-4 bg-[var(--primary)]/50 rounded-xl border border-[var(--light)]/20"
+                                >
+                                  {options.map((skill) => {
+                                    const skillId = `${category}_${skill.toLowerCase().replace(/ /g, "_")}`;
+                                    return (
+                                      <motion.div
+                                        key={skillId}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className={`px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
+                                          skills.includes(skillId)
+                                            ? "bg-[var(--color-accent)] text-[var(--white)] shadow-md"
+                                            : "bg-[var(--primary)]/50 text-[var(--text-body)] hover:bg-[var(--color-accent)] hover:text-[var(--white)]"
+                                        }`}
+                                        onClick={() => toggleSkill(skillId)}
+                                        role="checkbox"
+                                        aria-checked={skills.includes(skillId)}
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            toggleSkill(skillId);
+                                          }
+                                        }}
+                                      >
+                                        {skill}
+                                      </motion.div>
+                                    );
+                                  })}
+                                </motion.div>
+                              )}
+                            </div>
+                          ))}
+                          {errors.skills && (
+                            <p
+                              id="skills-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.skills}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaStar /> Talents (Select at least one)*
+                          </label>
+                          <motion.div className="flex flex-wrap gap-2 p-4 bg-[var(--primary)]/50 rounded-xl border border-[var(--light)]/20">
+                            {[
+                              "Public Speaking",
+                              "Event Planning",
+                              "Photography",
+                              "Videography",
+                              "Music Production",
+                              "Graphic Design",
+                            ].map((talent) => (
+                              <motion.div
+                                key={talent}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
                                   profile.talents.includes(talent)
-                                    ? profile.talents.filter((t) => t !== talent)
-                                    : [...profile.talents, talent]
-                                )
-                              }
-                              role="checkbox"
-                              aria-checked={profile.talents.includes(talent)}
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
+                                    ? "bg-[var(--color-accent)] text-[var(--white)] shadow-md"
+                                    : "bg-[var(--primary)]/50 text-[var(--text-body)] hover:bg-[var(--color-accent)] hover:text-[var(--white)]"
+                                }`}
+                                onClick={() =>
                                   handleMultiSelectChange(
                                     "talents",
                                     profile.talents.includes(talent)
                                       ? profile.talents.filter((t) => t !== talent)
                                       : [...profile.talents, talent]
-                                  );
+                                  )
                                 }
-                              }}
+                                role="checkbox"
+                                aria-checked={profile.talents.includes(talent)}
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    handleMultiSelectChange(
+                                      "talents",
+                                      profile.talents.includes(talent)
+                                        ? profile.talents.filter((t) => t !== talent)
+                                        : [...profile.talents, talent]
+                                    );
+                                  }
+                                }}
+                              >
+                                {talent}
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                          {errors.talents && (
+                            <p
+                              id="talents-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
                             >
-                              {talent}
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  )}
-                  {step === 4 && (
-                    <motion.div
-                      key="step4"
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      className="space-y-8"
-                    >
-                      <div>
-                        <label
-                          htmlFor="gender"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaVenusMars /> Gender*
-                        </label>
-                        <select
-                          id="gender"
-                          name="gender"
-                          value={profile.gender}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          required
-                          aria-describedby={errors.gender ? "gender-error" : undefined}
-                        >
-                          <option value="">Select Gender</option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
-                        </select>
-                        {errors.gender && (
-                          <p
-                            id="gender-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
+                              <FaExclamationTriangle /> {errors.talents}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                    {step === 4 && (
+                      <motion.div
+                        key="step4"
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        className="space-y-8"
+                      >
+                        <div>
+                          <label
+                            htmlFor="gender"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
                           >
-                            <FaExclamationTriangle /> {errors.gender}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="languagesSpoken"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaGlobe /> Languages Spoken*
-                        </label>
-                        <select
-                          id="languagesSpoken"
-                          multiple
-                          name="languagesSpoken"
-                          value={profile.languagesSpoken}
-                          onChange={(e) =>
-                            handleMultiSelectChange(
-                              "languagesSpoken",
-                              Array.from(e.target.selectedOptions, (option) => option.value)
-                            )
-                          }
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          size={3}
-                          aria-describedby={errors.languagesSpoken ? "languagesSpoken-error" : undefined}
-                        >
-                          <option value="English">English</option>
-                          <option value="Arabic">Arabic</option>
-                          <option value="Hindi">Hindi</option>
-                          <option value="French">French</option>
-                        </select>
-                        {errors.languagesSpoken && (
-                          <p
-                            id="languagesSpoken-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
+                            <FaVenusMars /> Gender*
+                          </label>
+                          <select
+                            id="gender"
+                            name="gender"
+                            value={profile.gender}
+                            onChange={handleInputChange}
+                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.gender ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
+                            required
+                            aria-describedby={errors.gender ? "gender-error" : undefined}
                           >
-                            <FaExclamationTriangle /> {errors.languagesSpoken}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="whatsappNumber"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaPhone /> WhatsApp Number
-                        </label>
-                        <input
-                          type="tel"
-                          id="whatsappNumber"
-                          name="whatsappNumber"
-                          value={profile.whatsappNumber}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="openToWorkIn"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaMapMarkerAlt /> Open to Work In*
-                        </label>
-                        <select
-                          id="openToWorkIn"
-                          multiple
-                          name="openToWorkIn"
-                          value={profile.openToWorkIn}
-                          onChange={(e) =>
-                            handleMultiSelectChange(
-                              "openToWorkIn",
-                              Array.from(e.target.selectedOptions, (option) => option.value)
-                            )
-                          }
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          size={2}
-                          aria-describedby={errors.openToWorkIn ? "openToWorkIn-error" : undefined}
-                        >
-                          <option value="UAE">UAE</option>
-                        </select>
-                        {errors.openToWorkIn && (
-                          <p
-                            id="openToWorkIn-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                          </select>
+                          {errors.gender && (
+                            <p
+                              id="gender-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.gender}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="languagesSpoken"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
                           >
-                            <FaExclamationTriangle /> {errors.openToWorkIn}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="hourlyRate"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaMoneyBillWave /> Average Rate Per Hour (AED)*
-                        </label>
-                        <input
-                          type="number"
-                          id="hourlyRate"
-                          name="hourlyRate"
-                          value={profile.hourlyRate}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          required
-                          aria-describedby={errors.hourlyRate ? "hourlyRate-error" : undefined}
-                        />
-                        {errors.hourlyRate && (
-                          <p
-                            id="hourlyRate-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
+                            <FaGlobe /> Languages Spoken*
+                          </label>
+                          <select
+                            id="languagesSpoken"
+                            multiple
+                            name="languagesSpoken"
+                            value={profile.languagesSpoken}
+                            onChange={(e) =>
+                              handleMultiSelectChange(
+                                "languagesSpoken",
+                                Array.from(e.target.selectedOptions, (option) => option.value)
+                              )
+                            }
+                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.languagesSpoken ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
+                            size={3}
+                            aria-describedby={errors.languagesSpoken ? "languagesSpoken-error" : undefined}
                           >
-                            <FaExclamationTriangle /> {errors.hourlyRate}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="highestEducation"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaGraduationCap /> Highest Education
-                        </label>
-                        <select
-                          id="highestEducation"
-                          name="highestEducation"
-                          value={profile.highestEducation}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                        >
-                          <option value="">Select Education</option>
-                          <option value="High School">High School</option>
-                          <option value="Bachelor&apos;s">Bachelor&apos;s</option>
-                          <option value="Master&apos;s">Master&apos;s</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="yearsOfExperience"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaClock /> Years of Experience*
-                        </label>
-                        <input
-                          type="number"
-                          id="yearsOfExperience"
-                          name="yearsOfExperience"
-                          value={profile.yearsOfExperience}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          required
-                          aria-describedby={errors.yearsOfExperience ? "yearsOfExperience-error" : undefined}
-                        />
-                        {errors.yearsOfExperience && (
-                          <p
-                            id="yearsOfExperience-error"
-                            className="text-sm mt-1 flex items-center gap-1"
-                            style={{ color: "var(--color-accent)" }}
+                            <option value="English">English</option>
+                            <option value="Arabic">Arabic</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="French">French</option>
+                          </select>
+                          {errors.languagesSpoken && (
+                            <p
+                              id="languagesSpoken-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.languagesSpoken}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="whatsappNumber"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
                           >
-                            <FaExclamationTriangle /> {errors.yearsOfExperience}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="previousRelatedExperience"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaGlobe /> Previous Related Experience
-                        </label>
-                        <textarea
-                          id="previousRelatedExperience"
-                          name="previousRelatedExperience"
-                          value={profile.previousRelatedExperience}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                          rows={4}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="availability"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaClock /> Availability
-                        </label>
-                        <input
-                          type="text"
-                          id="availability"
-                          name="availability"
-                          value={profile.availability}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="secondNationality"
-                          className="block text-sm font-medium mb-2 flex items-center gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
-                          <FaGlobe /> Second Nationality
-                        </label>
-                        <select
-                          id="secondNationality"
-                          name="secondNationality"
-                          value={profile.secondNationality}
-                          onChange={handleInputChange}
-                          className="neumorphic-input w-full border border-[var(--light)]/50 focus:border-[var(--color-accent)] transition-colors duration-300"
-                        >
-                          <option value="">None</option>
-                          <option value="UAE">UAE</option>
-                          <option value="India">India</option>
-                          <option value="USA">USA</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label
-                          className="flex items-center text-sm font-medium mb-2 gap-2"
-                          style={{ color: "var(--light)" }}
-                        >
+                            <FaPhone /> WhatsApp Number
+                          </label>
                           <input
-                            type="checkbox"
-                            name="hasCarInUAE"
-                            checked={profile.hasCarInUAE}
-                            onChange={(e) => {
-                              console.log("hasCarInUAE changed:", e.target.checked);
-                              setProfile({ ...profile, hasCarInUAE: e.target.checked });
-                              validateField("hasCarInUAE", e.target.checked);
-                            }}
-                            className="mr-2 rounded"
+                            type="tel"
+                            id="whatsappNumber"
+                            name="whatsappNumber"
+                            value={profile.whatsappNumber}
+                            onChange={handleInputChange}
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
                           />
-                          <FaCar /> Car in UAE
-                        </label>
-                      </div>
-                      {/* Enhanced Profile Image Upload */}
-                      <motion.div
-                        className="p-8 rounded-2xl border-4 border-[var(--color-accent)]/60 bg-[var(--secondary)]/60 backdrop-blur-md shadow-xl"
-                        whileHover={{ scale: 1.03, boxShadow: "0 0 15px rgba(0, 196, 180, 0.5)" }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <label
-                          className="block text-lg font-bold mb-4 flex items-center gap-3"
-                          style={{ color: "var(--white)" }}
-                        >
-                          <FaImage size={24} /> Profile Image
-                        </label>
-                        {profile.profileImageUrl ? (
-                          <div className="flex flex-col items-start">
-                            <Image
-                              src={profile.profileImageUrl || "/placeholder.png"}
-                              alt="Profile Preview"
-                              width={192} // Matches w-48 (48 * 4px = 192px)
-                              height={192} // Matches h-48
-                              className="rounded-full object-cover mb-4 border-4 border-[var(--color-accent)] shadow-md"
-                              quality={85}
-                            />
-                            <button
-                              onClick={() => {
-                                console.log("Removing profile image, current URL:", profile.profileImageUrl);
-                                setProfile({ ...profile, profileImageUrl: "" });
-                              }}
-                              className="px-8 py-3 rounded-full font-semibold font-body text-lg transition-all duration-300 hover:scale-105"
-                              style={{
-                                background: "var(--accent)",
-                                color: "var(--white)",
-                              }}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="openToWorkIn"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaMapMarkerAlt /> Open to Work In*
+                          </label>
+                          <select
+                            id="openToWorkIn"
+                            multiple
+                            name="openToWorkIn"
+                            value={profile.openToWorkIn}
+                            onChange={(e) =>
+                              handleMultiSelectChange(
+                                "openToWorkIn",
+                                Array.from(e.target.selectedOptions, (option) => option.value)
+                              )
+                            }
+                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.openToWorkIn ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
+                            size={2}
+                            aria-describedby={errors.openToWorkIn ? "openToWorkIn-error" : undefined}
+                          >
+                            <option value="UAE">UAE</option>
+                          </select>
+                          {errors.openToWorkIn && (
+                            <p
+                              id="openToWorkIn-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
                             >
-                              Remove Image
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-start">
+                              <FaExclamationTriangle /> {errors.openToWorkIn}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="hourlyRate"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaMoneyBillWave /> Average Rate Per Hour (AED)*
+                          </label>
+                          <input
+                            type="number"
+                            id="hourlyRate"
+                            name="hourlyRate"
+                            value={profile.hourlyRate}
+                            onChange={handleInputChange}
+                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.hourlyRate ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
+                            required
+                            aria-describedby={errors.hourlyRate ? "hourlyRate-error" : undefined}
+                          />
+                          {errors.hourlyRate && (
+                            <p
+                              id="hourlyRate-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.hourlyRate}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="highestEducation"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaGraduationCap /> Highest Education
+                          </label>
+                          <select
+                            id="highestEducation"
+                            name="highestEducation"
+                            value={profile.highestEducation}
+                            onChange={handleInputChange}
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
+                          >
+                            <option value="">Select Education</option>
+                            <option value="High School">High School</option>
+                            <option value="Bachelor&apos;s">Bachelor&apos;s</option>
+                            <option value="Master&apos;s">Master&apos;s</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="yearsOfExperience"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaClock /> Years of Experience*
+                          </label>
+                          <input
+                            type="number"
+                            id="yearsOfExperience"
+                            name="yearsOfExperience"
+                            value={profile.yearsOfExperience}
+                            onChange={handleInputChange}
+                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.yearsOfExperience ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
+                            required
+                            aria-describedby={errors.yearsOfExperience ? "yearsOfExperience-error" : undefined}
+                          />
+                          {errors.yearsOfExperience && (
+                            <p
+                              id="yearsOfExperience-error"
+                              className="text-sm mt-1 flex items-center gap-1"
+                              style={{ color: "var(--error)" }}
+                            >
+                              <FaExclamationTriangle /> {errors.yearsOfExperience}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="previousRelatedExperience"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaGlobe /> Previous Related Experience
+                          </label>
+                          <textarea
+                            id="previousRelatedExperience"
+                            name="previousRelatedExperience"
+                            value={profile.previousRelatedExperience}
+                            onChange={handleInputChange}
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
+                            rows={4}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="availability"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaClock /> Availability
+                          </label>
+                          <input
+                            type="text"
+                            id="availability"
+                            name="availability"
+                            value={profile.availability}
+                            onChange={handleInputChange}
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="secondNationality"
+                            className="block text-sm font-medium mb-2 flex items-center gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
+                            <FaGlobe /> Second Nationality
+                          </label>
+                          <select
+                            id="secondNationality"
+                            name="secondNationality"
+                            value={profile.secondNationality}
+                            onChange={handleInputChange}
+                            className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
+                          >
+                            <option value="">None</option>
+                            <option value="UAE">UAE</option>
+                            <option value="India">India</option>
+                            <option value="USA">USA</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label
+                            className="flex items-center text-sm font-medium mb-2 gap-2"
+                            style={{ color: "var(--text-body)" }}
+                          >
                             <input
-                              type="file"
-                              id="profileImage"
-                              accept="image/*"
+                              type="checkbox"
+                              name="hasCarInUAE"
+                              checked={profile.hasCarInUAE}
                               onChange={(e) => {
-                                const file = e.target.files?.[0] || null;
-                                console.log("Profile image selected:", file?.name, file?.size);
-                                setProfileImage(file);
+                                console.log("hasCarInUAE changed: " + e.target.checked);
+                                setProfile({ ...profile, hasCarInUAE: e.target.checked });
+                                validateField("hasCarInUAE", e.target.checked);
                               }}
-                              className="mb-4 text-base text-[var(--white)] bg-[var(--soft)] p-4 rounded-lg border-2 border-[var(--light)]/60 focus:border-[var(--color-accent)] w-full cursor-pointer"
+                              className="mr-2 rounded"
                             />
-                            {profileImage && (
-                              <p className="text-base mb-4 font-medium" style={{ color: "var(--light)" }}>
-                                Selected: {profileImage.name} ({(profileImage.size / 1024).toFixed(2)}KB)
-                              </p>
-                            )}
-                            <motion.button
-                              onClick={() => handleFileUpload(profileImage, "image")}
-                              disabled={!profileImage || uploadingImage}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-8 py-4 rounded-full font-semibold font-body text-xl transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
-                              style={{
-                                background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))",
-                                color: "var(--white)",
-                              }}
-                            >
-                              {uploadingImage ? (
-                                <>
-                                  <FaSpinner className="animate-spin" size={20} /> Uploading...
-                                </>
-                              ) : (
-                                "Upload Profile Image"
-                              )}
-                            </motion.button>
-                            <p className="text-sm mt-3 font-body" style={{ color: "var(--light)" }}>
-                              Max size: 200KB (PNG, JPEG)
-                            </p>
-                          </div>
-                        )}
-                      </motion.div>
-                      {/* Enhanced Resume Upload */}
-                      <motion.div
-                        className="p-8 rounded-2xl border-4 border-[var(--color-accent)]/60 bg-[var(--secondary)]/60 backdrop-blur-md shadow-xl"
-                        whileHover={{ scale: 1.03, boxShadow: "0 0 15px rgba(0, 196, 180, 0.5)" }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <label
-                          className="block text-lg font-bold mb-4 flex items-center gap-3"
-                          style={{ color: "var(--white)" }}
+                            <FaCar /> Car in UAE
+                          </label>
+                        </div>
+                        <motion.div
+                          className="p-8 rounded-2xl border-2 border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md shadow-lg group"
+                          whileHover={{ scale: 1.03, y: -10, boxShadow: "0 0 15px rgba(0, 196, 180, 0.3)" }}
+                          transition={{ duration: 0.3 }}
                         >
-                          <FaFileAlt size={24} /> Resume
-                        </label>
-                        {profile.resumeUrl ? (
-                          <div className="flex flex-col items-start">
-                            <p className="text-base mb-4 font-medium" style={{ color: "var(--light)" }}>
-                              Resume uploaded. Click to download.
-                            </p>
-                            <button
-                              onClick={() => {
-                                console.log("Downloading resume, URL:", profile.resumeUrl);
-                                const link = document.createElement("a");
-                                link.href = profile.resumeUrl!;
-                                link.download = "resume";
-                                link.click();
-                              }}
-                              className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold font-body text-xl transition-all duration-300 hover:scale-105"
-                              style={{
-                                background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))",
-                                color: "#ffffff",
-                              }}
-                            >
-                              <FaDownload /> Download Resume
-                            </button>
-                            <button
-                              onClick={() => {
-                                console.log("Removing resume, current URL:", profile.resumeUrl);
-                                setProfile({ ...profile, resumeUrl: "" });
-                              }}
-                              className="px-8 py-3 rounded-full font-semibold font-body text-lg transition-all duration-300 mt-4 hover:scale-105"
-                              style={{
-                                background: "var(--accent)",
-                                color: "var(--white)",
-                              }}
-                            >
-                              Remove Resume
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-start">
-                            <input
-                              type="file"
-                              id="resume"
-                              accept=".pdf,.doc,.docx"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0] || null;
-                                console.log("Resume selected:", file?.name, file?.size);
-                                setResume(file);
-                              }}
-                              className="mb-4 text-base text-[var(--white)] bg-[var(--soft)] p-4 rounded-lg border-2 border-[var(--light)]/60 focus:border-[var(--color-accent)] w-full cursor-pointer"
-                            />
-                            {resume && (
-                              <p className="text-base mb-4 font-medium" style={{ color: "var(--light)" }}>
-                                Selected: {resume.name} ({(resume.size / 1024).toFixed(2)}KB)
-                              </p>
-                            )}
-                            <motion.button
-                              onClick={() => handleFileUpload(resume, "resume")}
-                              disabled={!resume || uploadingResume}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-8 py-4 rounded-full font-semibold font-body text-xl transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
-                              style={{
-                                background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))",
-                                color: "var(--white)",
-                              }}
-                            >
-                              {uploadingResume ? (
-                                <>
-                                  <FaSpinner className="animate-spin" size={20} /> Uploading...
-                                </>
-                              ) : (
-                                "Upload Resume"
+                          <label
+                            className="block text-lg font-bold mb-4 flex items-center gap-3"
+                            style={{ color: "var(--text-accent)" }}
+                          >
+                            <FaImage size={24} /> Profile Image
+                          </label>
+                          {profile.profileImageUrl ? (
+                            <div className="flex flex-col items-start">
+                              <Image
+                                src={profile.profileImageUrl || "/placeholder.png"}
+                                alt="Profile Preview"
+                                width={192}
+                                height={192}
+                                className="rounded-full object-cover mb-4 border-2 border-[var(--color-accent)] shadow-md aspect-[1/1]"
+                                quality={85}
+                              />
+                              <motion.button
+                                variants={buttonVariants}
+                                onClick={() => {
+                                  console.log("Removing profile image, current URL: " + profile.profileImageUrl);
+                                  setProfile({ ...profile, profileImageUrl: "" });
+                                }}
+                                className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+                                style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                              >
+                                Remove Image
+                                <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                              </motion.button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-start">
+                              <input
+                                type="file"
+                                id="profileImage"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0] || null;
+                                  console.log("Profile image selected: " + file?.name + ", " + file?.size);
+                                  setProfileImage(file);
+                                }}
+                                className="mb-4 text-base text-[var(--text-body)] bg-[var(--primary)]/50 p-4 rounded-lg border border-[var(--light)]/20 focus:border-[var(--color-accent)] w-full cursor-pointer"
+                              />
+                              {profileImage && (
+                                <p className="text-base mb-4 font-medium" style={{ color: "var(--text-body)" }}>
+                                  Selected: {profileImage.name} ({(profileImage.size / 1024).toFixed(2)}KB)
+                                </p>
                               )}
-                            </motion.button>
-                            <p className="text-sm mt-3 font-body" style={{ color: "var(--light)" }}>
-                              Max size: 200KB (PDF, DOC, DOCX)
-                            </p>
-                          </div>
-                        )}
+                              <motion.button
+                                variants={buttonVariants}
+                                onClick={() => handleFileUpload(profileImage, "image")}
+                                disabled={!profileImage || uploadingImage}
+                                className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 group relative"
+                                style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                              >
+                                {uploadingImage ? (
+                                  <>
+                                    <FaSpinner className="animate-spin" size={20} /> Uploading...
+                                  </>
+                                ) : (
+                                  "Upload Profile Image"
+                                )}
+                                <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                              </motion.button>
+                              <p className="text-sm mt-3 font-body" style={{ color: "var(--text-body)" }}>
+                                Max size: 200KB (PNG, JPEG)
+                              </p>
+                            </div>
+                          )}
+                        </motion.div>
+                        <motion.div
+                          className="p-8 rounded-2xl border-2 border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md shadow-lg group"
+                          whileHover={{ scale: 1.03, y: -10, boxShadow: "0 0 15px rgba(0, 196, 180, 0.3)" }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <label
+                            className="block text-lg font-bold mb-4 flex items-center gap-3"
+                            style={{ color: "var(--text-accent)" }}
+                          >
+                            <FaFileAlt size={24} /> Resume
+                          </label>
+                          {profile.resumeUrl ? (
+                            <div className="flex flex-col items-start">
+                              <p className="text-base mb-4 font-medium" style={{ color: "var(--text-body)" }}>
+                                Resume uploaded. Click to download.
+                              </p>
+                              <motion.button
+                                variants={buttonVariants}
+                                onClick={() => {
+                                  console.log("Downloading resume, URL: " + profile.resumeUrl);
+                                  const link = document.createElement("a");
+                                  link.href = profile.resumeUrl!;
+                                  link.download = "resume";
+                                  link.click();
+                                }}
+                                className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+                                style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                              >
+                                <FaDownload /> Download Resume
+                                <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                              </motion.button>
+                              <motion.button
+                                variants={buttonVariants}
+                                onClick={() => {
+                                  console.log("Removing resume, current URL: " + profile.resumeUrl);
+                                  setProfile({ ...profile, resumeUrl: "" });
+                                }}
+                                className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 mt-4 group relative"
+                                style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                              >
+                                Remove Resume
+                                <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                              </motion.button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-start">
+                              <input
+                                type="file"
+                                id="resume"
+                                accept=".pdf,.doc,.docx"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0] || null;
+                                  console.log("Resume selected: " + file?.name + ", " + file?.size);
+                                  setResume(file);
+                                }}
+                                className="mb-4 text-base text-[var(--text-body)] bg-[var(--primary)]/50 p-4 rounded-lg border border-[var(--light)]/20 focus:border-[var(--color-accent)] w-full cursor-pointer"
+                              />
+                              {resume && (
+                                <p className="text-base mb-4 font-medium" style={{ color: "var(--text-body)" }}>
+                                  Selected: {resume.name} ({(resume.size / 1024).toFixed(2)}KB)
+                                </p>
+                              )}
+                              <motion.button
+                                variants={buttonVariants}
+                                onClick={() => handleFileUpload(resume, "resume")}
+                                disabled={!resume || uploadingResume}
+                                className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 group relative"
+                                style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                              >
+                                {uploadingResume ? (
+                                  <>
+                                    <FaSpinner className="animate-spin" size={20} /> Uploading...
+                                  </>
+                                ) : (
+                                  "Upload Resume"
+                                )}
+                                <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                              </motion.button>
+                              <p className="text-sm mt-3 font-body" style={{ color: "var(--text-body)" }}>
+                                Max size: 200KB (PDF, DOC, DOCX)
+                              </p>
+                            </div>
+                          )}
+                        </motion.div>
                       </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    )}
+                  </AnimatePresence>
 
-                <div className="flex justify-between mt-8">
-                  {step > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setStep(step - 1)}
-                      className="px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105"
-                      style={{
-                        background: "var(--accent)",
-                        color: "var(--white)",
-                        border: "1px solid var(--light)",
-                      }}
-                    >
-                      Previous
-                    </button>
-                  )}
-                  {step < steps.length ? (
-                    <button
-                      type="button"
-                      onClick={() => setStep(step + 1)}
-                      className="px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105"
-                      style={{
-                        background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))",
-                        color: "var(--primary)",
-                      }}
-                    >
-                      Next
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={updating || Object.keys(errors).length > 0}
-                      className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
-                        updating || Object.keys(errors).length > 0
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:scale-105"
-                      }`}
-                      style={{
-                        background:
-                          updating || Object.keys(errors).length > 0
-                            ? "var(--soft)"
-                            : "linear-gradient(135deg, var(--color-accent), var(--teal-accent))",
-                        color:
-                          updating || Object.keys(errors).length > 0
-                            ? "var(--accent)"
-                            : "var(--primary)",
-                      }}
-                    >
-                      {updating ? "Saving..." : "Save Profile"}
-                    </button>
-                  )}
-                </div>
-              </motion.form>
-            </>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="card p-8 rounded-2xl shadow-2xl border border-[var(--accent)]/30 bg-[var(--secondary)]/80 backdrop-blur-md"
-            >
-              {/* Profile Image */}
-              <div className="mb-8 flex flex-col items-center">
-                <h2
-                  className="text-xl font-semibold mb-4 font-heading flex items-center gap-2"
-                  style={{ color: "var(--accent)" }}
-                >
-                  <FaImage /> Profile Image
-                </h2>
-                {profile.profileImageUrl ? (
-                  <div className="flex flex-col items-center">
-                    <Image
-                      src={profile.profileImageUrl || "/placeholder.png"}
-                      alt="Profile"
-                      width={128} // Matches w-32 (32 * 4px = 128px)
-                      height={128} // Matches h-32
-                      className="rounded-full object-cover mb-4 border-2 border-[var(--accent)]"
-                      quality={85}
-                    />
-                    <button
-                      onClick={() => {
-                        console.log("Downloading profile image, URL:", profile.profileImageUrl);
-                        const link = document.createElement("a");
-                        link.href = profile.profileImageUrl!;
-                        link.download = "profile-image";
-                        link.click();
-                      }}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold font-body transition-all duration-300"
-                      style={{
-                        background: "linear-gradient(135deg, var(--accent), var(--teal-accent))",
-                        color: "#ffffff",
-                      }}
-                    >
-                      <FaDownload /> Download Profile Image
-                    </button>
-                  </div>
-                ) : (
-                  <p className="text-sm font-body" style={{ color: "var(--light)" }}>
-                    No profile image uploaded.
-                  </p>
-                )}
-              </div>
-
-              {/* Resume */}
-              <div className="mb-8 flex flex-col items-center">
-                <h2
-                  className="text-xl font-semibold mb-4 font-heading flex items-center gap-2"
-                  style={{ color: "var(--accent)" }}
-                >
-                  <FaFileAlt /> Resume
-                </h2>
-                {profile.resumeUrl ? (
-                  <div className="flex flex-col items-center">
-                    <p className="text-sm mb-4" style={{ color: "var(--light)" }}>
-                      Resume uploaded. Click to download.
-                    </p>
-                    <button
-                      onClick={() => {
-                        console.log("Downloading resume, URL:", profile.resumeUrl);
-                        const link = document.createElement("a");
-                        link.href = profile.resumeUrl!;
-                        link.download = "resume";
-                        link.click();
-                      }}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold font-body transition-all duration-300"
-                      style={{
-                        background: "linear-gradient(135deg, var(--accent), var(--teal-accent))",
-                        color: "#ffffff",
-                      }}
-                    >
-                      <FaDownload /> Download Resume
-                    </button>
-                  </div>
-                ) : (
-                  <p className="text-sm font-body" style={{ color: "var(--light)" }}>
-                    No resume uploaded.
-                  </p>
-                )}
-              </div>
-
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="space-y-4">
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaUser className="text-[var(--accent)]" /> <strong>Name:</strong>{" "}
-                    {profile.firstName} {profile.lastName}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaCalendar className="text-[var(--accent)]" /> <strong>Date of Birth:</strong>{" "}
-                    {profile.dateOfBirth || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaPhone className="text-[var(--accent)]" /> <strong>Phone Number:</strong>{" "}
-                    {profile.phoneNumber || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaPhone className="text-[var(--accent)]" /> <strong>WhatsApp Number:</strong>{" "}
-                    {profile.whatsappNumber || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaGlobe className="text-[var(--accent)]" /> <strong>Nationality:</strong>{" "}
-                    {profile.nationality || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaGlobe className="text-[var(--accent)]" /> <strong>Second Nationality:</strong>{" "}
-                    {profile.secondNationality || "None"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaVenusMars className="text-[var(--accent)]" /> <strong>Gender:</strong>{" "}
-                    {profile.gender || "Not set"}
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaMapMarkerAlt className="text-[var(--accent)]" /> <strong>Location:</strong>{" "}
-                    {profile.city}, {profile.countryOfResidence}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaIdCard className="text-[var(--accent)]" /> <strong>Visa Type:</strong>{" "}
-                    {profile.visaType || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaGlobe className="text-[var(--accent)]" /> <strong>Languages:</strong>{" "}
-                    {profile.languagesSpoken.length > 0 ? profile.languagesSpoken.join(", ") : "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaMapMarkerAlt className="text-[var(--accent)]" />{" "}
-                    <strong>Open to Work In:</strong>{" "}
-                    {profile.openToWorkIn.length > 0 ? profile.openToWorkIn.join(", ") : "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaMoneyBillWave className="text-[var(--accent)]" />{" "}
-                    <strong>Hourly Rate (AED):</strong> {profile.hourlyRate || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaGraduationCap className="text-[var(--accent)]" /> <strong>Education:</strong>{" "}
-                    {profile.highestEducation || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaCar className="text-[var(--accent)]" /> <strong>Car in UAE:</strong>{" "}
-                    {profile.hasCarInUAE ? "Yes" : "No"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Skills Section */}
-              <h2
-                className="text-2xl font-semibold mb-6 font-heading flex items-center gap-2"
-                style={{ color: "var(--accent)" }}
+                  <motion.div className="flex justify-between mt-8" variants={containerVariants} initial="hidden" animate="visible">
+                    {step > 1 && (
+                      <motion.button
+                        variants={buttonVariants}
+                        type="button"
+                        onClick={() => setStep(step - 1)}
+                        className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+                        style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                      >
+                        Previous
+                        <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                      </motion.button>
+                    )}
+                    {step < steps.length ? (
+                      <motion.button
+                        variants={buttonVariants}
+                        type="button"
+                        onClick={handleNext}
+                        className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+                        style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                      >
+                        Next
+                        <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                      </motion.button>
+                    ) : (
+                      <motion.button
+                        variants={buttonVariants}
+                        type="submit"
+                        disabled={updating || Object.keys(errors).length > 0}
+                        className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 group relative"
+                        style={{
+                          backgroundColor: updating || Object.keys(errors).length > 0
+                            ? "var(--primary)/50"
+                            : "var(--accent)",
+                          color: updating || Object.keys(errors).length > 0 ? "var(--text-body)" : "var(--white)",
+                          border: "2px solid var(--light)"
+                        }}
+                      >
+                        {updating ? "Saving..." : "Save Profile"}
+                        <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                      </motion.button>
+                    )}
+                  </motion.div>
+                </motion.form>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="p-8 rounded-2xl shadow-lg border border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md"
               >
-                <FaStar /> Your Skills & Experience
-              </h2>
-              <div className="bg-[var(--secondary)]/50 p-6 rounded-xl border border-[var(--accent)]/20 mb-6">
-                <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--accent)] scrollbar-track-[var(--primary)]">
-                  {niceSkills.length > 0 ? (
-                    niceSkills.map((skill, index) => (
-                      <motion.span
-                        key={index}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-body font-medium bg-[var(--accent)] text-white hover:bg-[var(--teal-accent)] transition-all duration-200"
-                        aria-label={`Skill: ${skill}`}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="flex flex-col items-center">
+                    <div className="mb-8">
+                      <h2
+                        className="text-xl font-semibold mb-4 font-heading flex items-center gap-2"
+                        style={{ color: "var(--text-accent)" }}
                       >
-                        <FaStar className="text-xs" /> {skill}
-                      </motion.span>
-                    ))
-                  ) : (
-                    <p className="text-sm font-body" style={{ color: "var(--light)" }}>
-                      No skills added yet.
+                        <FaImage /> Profile Image
+                      </h2>
+                      {profile.profileImageUrl ? (
+                        <div className="flex flex-col items-center">
+                          <Image
+                            src={profile.profileImageUrl || "/placeholder.png"}
+                            alt="Profile"
+                            width={256}
+                            height={256}
+                            className="rounded-full object-cover mb-4 border-2 border-[var(--color-accent)] aspect-[1/1]"
+                            quality={85}
+                          />
+                          <motion.button
+                            variants={buttonVariants}
+                            onClick={() => {
+                              console.log("Downloading profile image, URL: " + profile.profileImageUrl);
+                              const link = document.createElement("a");
+                              link.href = profile.profileImageUrl!;
+                              link.download = "profile-image";
+                              link.click();
+                            }}
+                            className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+                            style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                          >
+                            <FaDownload /> Download Profile Image
+                            <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-body" style={{ color: "var(--text-body)" }}>
+                          No profile image uploaded.
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <h2
+                        className="text-xl font-semibold mb-4 font-heading flex items-center gap-2"
+                        style={{ color: "var(--text-accent)" }}
+                      >
+                        <FaFileAlt /> Resume
+                      </h2>
+                      {profile.resumeUrl ? (
+                        <div className="flex flex-col items-center">
+                          <p className="text-sm mb-4" style={{ color: "var(--text-body)" }}>
+                            Resume uploaded. Click to download.
+                          </p>
+                          <motion.button
+                            variants={buttonVariants}
+                            onClick={() => {
+                              console.log("Downloading resume, URL: " + profile.resumeUrl);
+                              const link = document.createElement("a");
+                              link.href = profile.resumeUrl!;
+                              link.download = "resume";
+                              link.click();
+                            }}
+                            className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+                            style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+                          >
+                            <FaDownload /> Download Resume
+                            <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-body" style={{ color: "var(--text-body)" }}>
+                          No resume uploaded.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h2
+                      className="text-2xl font-semibold mb-6 font-heading flex items-center gap-2"
+                      style={{ color: "var(--text-accent)" }}
+                    >
+                      <FaUser /> Basic Information
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <div className="space-y-4">
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaUser className="text-[var(--text-accent)]" /> <strong>Name:</strong>{" "}
+                          {profile.firstName} {profile.lastName}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaCalendar className="text-[var(--text-accent)]" /> <strong>Date of Birth:</strong>{" "}
+                          {profile.dateOfBirth || "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaPhone className="text-[var(--text-accent)]" /> <strong>Phone Number:</strong>{" "}
+                          {profile.phoneNumber || "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaPhone className="text-[var(--text-accent)]" /> <strong>WhatsApp Number:</strong>{" "}
+                          {profile.whatsappNumber || "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaGlobe className="text-[var(--text-accent)]" /> <strong>Nationality:</strong>{" "}
+                          {profile.nationality || "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaGlobe className="text-[var(--text-accent)]" /> <strong>Second Nationality:</strong>{" "}
+                          {profile.secondNationality || "None"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaVenusMars className="text-[var(--text-accent)]" /> <strong>Gender:</strong>{" "}
+                          {profile.gender || "Not set"}
+                        </p>
+                      </div>
+                      <div className="space-y-4">
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaMapMarkerAlt className="text-[var(--text-accent)]" /> <strong>Location:</strong>{" "}
+                          {profile.city}, {profile.countryOfResidence}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaIdCard className="text-[var(--text-accent)]" /> <strong>Visa Type:</strong>{" "}
+                          {profile.visaType || "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaGlobe className="text-[var(--text-accent)]" /> <strong>Languages:</strong>{" "}
+                          {profile.languagesSpoken.length > 0 ? profile.languagesSpoken.join(", ") : "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaMapMarkerAlt className="text-[var(--text-accent)]" /> <strong>Open to Work In:</strong>{" "}
+                          {profile.openToWorkIn.length > 0 ? profile.openToWorkIn.join(", ") : "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaMoneyBillWave className="text-[var(--text-accent)]" /> <strong>Hourly Rate (AED):</strong>{" "}
+                          {profile.hourlyRate || "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaGraduationCap className="text-[var(--text-accent)]" /> <strong>Education:</strong>{" "}
+                          {profile.highestEducation || "Not set"}
+                        </p>
+                        <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                          <FaCar className="text-[var(--text-accent)]" /> <strong>Car in UAE:</strong>{" "}
+                          {profile.hasCarInUAE ? "Yes" : "No"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <h2
+                      className="text-2xl font-semibold mb-6 font-heading flex items-center gap-2"
+                      style={{ color: "var(--text-accent)" }}
+                    >
+                      <FaStar /> Your Skills & Experience
+                    </h2>
+                    <div className="bg-[var(--primary)]/50 p-6 rounded-xl border border-[var(--light)]/20 mb-6">
+                      <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-accent)] scrollbar-track-[var(--primary)]">
+                        {niceSkills.length > 0 ? (
+                          niceSkills.map((skill, index) => (
+                            <motion.span
+                              key={index}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: index * 0.1 }}
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-body font-medium bg-[var(--color-accent)] text-[var(--white)] hover:bg-[var(--teal-accent)] transition-all duration-200"
+                              aria-label={`Skill: ${skill}`}
+                            >
+                              <FaStar className="text-xs" /> {skill}
+                            </motion.span>
+                          ))
+                        ) : (
+                          <p className="text-sm font-body" style={{ color: "var(--text-body)" }}>
+                            No skills added yet.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                  <div className="space-y-4">
+                    <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                      <FaClock className="text-[var(--text-accent)]" /> <strong>Years of Experience:</strong>{" "}
+                      {profile.yearsOfExperience || "Not set"}
                     </p>
-                  )}
+                    <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                      <FaClock className="text-[var(--text-accent)]" /> <strong>Availability:</strong>{" "}
+                      {profile.availability || "Not set"}
+                    </p>
+                    <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                      <FaStar className="text-[var(--text-accent)]" /> <strong>Talents:</strong>{" "}
+                      {profile.talents.length > 0 ? profile.talents.join(", ") : "Not set"}
+                    </p>
+                    <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                      <FaGlobe className="text-[var(--text-accent)]" /> <strong>Previous Experience:</strong>{" "}
+                      {profile.previousRelatedExperience || "Not set"}
+                    </p>
+                    <p className="flex items-center gap-2" style={{ color: "var(--text-body)" }}>
+                      <FaGlobe className="text-[var(--text-accent)]" /> <strong>Experience Description:</strong>{" "}
+                      {profile.experienceDescription || "Not set"}
+                    </p>
+                  </div>
                 </div>
               </div>
-
-              {/* Experience Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaClock className="text-[var(--accent)]" /> <strong>Years of Experience:</strong>{" "}
-                    {profile.yearsOfExperience || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaClock className="text-[var(--accent)]" /> <strong>Availability:</strong>{" "}
-                    {profile.availability || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaStar className="text-[var(--accent)]" /> <strong>Talents:</strong>{" "}
-                    {profile.talents.length > 0 ? profile.talents.join(", ") : "Not set"}
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaGlobe className="text-[var(--accent)]" /> <strong>Previous Experience:</strong>{" "}
-                    {profile.previousRelatedExperience || "Not set"}
-                  </p>
-                  <p className="flex items-center gap-2" style={{ color: "var(--light)" }}>
-                    <FaGlobe className="text-[var(--accent)]" /> <strong>Experience Description:</strong>{" "}
-                    {profile.experienceDescription || "Not set"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Edit Button */}
               <div className="mt-8 text-center">
-                <Link
-                  href="/profile?edit=true"
-                  className="px-6 py-3 rounded-full font-semibold font-body transition-all duration-300 hover:scale-105"
-                  style={{
-                    background: "linear-gradient(135deg, var(--accent), var(--teal-accent))",
-                    color: "#ffffff",
-                  }}
-                  aria-label="Edit Profile"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="group"
                 >
-                  Edit Profile
-                </Link>
+                  <Link
+                    href="/profile?edit=true"
+                    className="px-6 py-3 rounded-full font-semibold font-body text-lg transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-[var(--color-accent)] group-hover:to-[var(--teal-accent)]"
+                    style={{ background: "var(--accent)", color: "var(--white)", border: "1px solid var(--light)" }}
+                    aria-label="Edit Profile"
+                  >
+                    Edit Profile
+                  </Link>
+                </motion.div>
               </div>
             </motion.div>
           )}
@@ -1629,7 +1652,7 @@ export default function Profile() {
       fallback={
         <div
           className="pt-20 text-center flex items-center justify-center min-h-screen"
-          style={{ color: "var(--white)" }}
+          style={{ color: "var(--text-body)" }}
         >
           Loading...
         </div>

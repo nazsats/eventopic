@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
 import { motion } from "framer-motion";
@@ -31,7 +32,7 @@ interface Application {
   mobile: string;
   coverLetter: string;
   timestamp: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
 }
 
 interface JobFormData {
@@ -51,7 +52,7 @@ export default function Admin() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [admins, setAdmins] = useState<string[]>([]);
-  const [selectedTab, setSelectedTab] = useState("jobs");
+  const [selectedTab, setSelectedTab] = useState<"jobs" | "applications" | "admins">("jobs");
   const [isLoading, setIsLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [jobSearch, setJobSearch] = useState("");
@@ -64,7 +65,9 @@ export default function Admin() {
   const [newAdminEmail, setNewAdminEmail] = useState("");
 
   useEffect(() => {
+    console.log("Admin useEffect: user =", user?.email, "loading =", loading);
     if (!loading && !user) {
+      console.log("Admin: Redirecting to homepage (user is null, loading:", loading, ")");
       router.push("/");
       return;
     }
@@ -74,14 +77,14 @@ export default function Admin() {
         try {
           // Fetch admins
           const adminsSnapshot = await getDocs(collection(db, "admins"));
-          const adminEmails = adminsSnapshot.docs.map(doc => doc.data().email as string);
-          console.log("User email:", user.email); // Debug
-          console.log("Admin emails:", adminEmails); // Debug
+          let adminEmails = adminsSnapshot.docs.map(doc => doc.data().email as string);
+          console.log("Admin: User email:", user.email);
+          console.log("Admin: Admin emails:", adminEmails);
 
           // Seed initial admins from .env if collection is empty
           if (adminsSnapshot.empty) {
             const initialAdmins = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(",").map(email => email.trim()) || ["ansarinazrul91@gmail.com"];
-            console.log("Seeding admins:", initialAdmins); // Debug
+            console.log("Admin: Seeding admins:", initialAdmins);
             for (const email of initialAdmins) {
               if (!adminEmails.includes(email)) {
                 await addDoc(collection(db, "admins"), { email });
@@ -89,13 +92,16 @@ export default function Admin() {
             }
             // Refetch admins after seeding
             const updatedAdminsSnapshot = await getDocs(collection(db, "admins"));
-            setAdmins(updatedAdminsSnapshot.docs.map(doc => doc.data().email as string));
+            adminEmails = updatedAdminsSnapshot.docs.map(doc => doc.data().email as string);
+            setAdmins(adminEmails);
           } else {
             setAdmins(adminEmails);
           }
 
-          if (!adminEmails.includes(user.email!)) {
-            toast.error("Access denied. You are not an admin.");
+          // Check if user.email exists and is in adminEmails
+          if (!user.email || !adminEmails.includes(user.email)) {
+            console.log("Admin: Access denied. Redirecting to /portal. User email:", user.email, "Admin emails:", adminEmails);
+            toast.error("Access denied. You are not an admin.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
             router.push("/portal");
             return;
           }
@@ -111,11 +117,11 @@ export default function Admin() {
           setApplications(appsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Application)));
 
         } catch (error: unknown) {
-          console.error("Error fetching data:", error instanceof Error ? error.message : "Unknown error");
+          console.error("Admin: Error fetching data:", error instanceof Error ? error.message : "Unknown error");
           if (retries > 0) {
             setTimeout(() => fetchData(retries - 1), 2000);
           } else {
-            toast.error("Failed to load data after retries.");
+            toast.error("Failed to load data after retries.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
           }
         } finally {
           setIsLoading(false);
@@ -130,26 +136,25 @@ export default function Admin() {
       const docRef = await addDoc(collection(db, "jobs"), data);
       setJobs([...jobs, { id: docRef.id, ...data }]);
       reset();
-      toast.success("Job added successfully!");
+      toast.success("Job added successfully!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: unknown) {
-      console.error("Error adding job:", error instanceof Error ? error.message : "Unknown error");
-      toast.error("Failed to add job.");
+      console.error("Admin: Error adding job:", error instanceof Error ? error.message : "Unknown error");
+      toast.error("Failed to add job.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     }
   };
 
-  const onUpdateJob: SubmitHandler<JobFormData> = async (data: JobFormData) => {
+  const onUpdateJob: SubmitHandler<JobFormData> = async (data) => {
     if (!editingJob) return;
     try {
-      // Explicitly type the update data as Partial<Job> to match Firestore's expectations
       const updateData: Partial<Job> = { ...data };
       await updateDoc(doc(db, "jobs", editingJob.id), updateData);
       setJobs(jobs.map(j => j.id === editingJob.id ? { ...editingJob, ...data } : j));
       setEditingJob(null);
       reset();
-      toast.success("Job updated successfully!");
+      toast.success("Job updated successfully!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: unknown) {
-      console.error("Error updating job:", error instanceof Error ? error.message : "Unknown error");
-      toast.error("Failed to update job.");
+      console.error("Admin: Error updating job:", error instanceof Error ? error.message : "Unknown error");
+      toast.error("Failed to update job.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     }
   };
 
@@ -157,39 +162,39 @@ export default function Admin() {
     try {
       await deleteDoc(doc(db, "jobs", id));
       setJobs(jobs.filter(j => j.id !== id));
-      toast.success("Job deleted successfully!");
+      toast.success("Job deleted successfully!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: unknown) {
-      console.error("Error deleting job:", error instanceof Error ? error.message : "Unknown error");
-      toast.error("Failed to delete job.");
+      console.error("Admin: Error deleting job:", error instanceof Error ? error.message : "Unknown error");
+      toast.error("Failed to delete job.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } finally {
       setDeleteConfirmId(null);
     }
   };
 
-  const handleUpdateApplicationStatus = async (appId: string, newStatus: Application['status']) => {
+  const handleUpdateApplicationStatus = async (appId: string, newStatus: Application["status"]) => {
     try {
       await updateDoc(doc(db, "applications", appId), { status: newStatus });
       setApplications(applications.map(app => app.id === appId ? { ...app, status: newStatus } : app));
-      toast.success("Application status updated!");
+      toast.success("Application status updated!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: unknown) {
-      console.error("Error updating application status:", error instanceof Error ? error.message : "Unknown error");
-      toast.error("Failed to update status.");
+      console.error("Admin: Error updating application status:", error instanceof Error ? error.message : "Unknown error");
+      toast.error("Failed to update status.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     }
   };
 
   const handleAddAdmin = async () => {
     if (!newAdminEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newAdminEmail)) {
-      toast.error("Valid email is required.");
+      toast.error("Valid email is required.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
       return;
     }
     try {
       await addDoc(collection(db, "admins"), { email: newAdminEmail });
       setAdmins([...admins, newAdminEmail]);
       setNewAdminEmail("");
-      toast.success("Admin added successfully!");
+      toast.success("Admin added successfully!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: unknown) {
-      console.error("Error adding admin:", error instanceof Error ? error.message : "Unknown error");
-      toast.error("Failed to add admin.");
+      console.error("Admin: Error adding admin:", error instanceof Error ? error.message : "Unknown error");
+      toast.error("Failed to add admin.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     }
   };
 
@@ -202,15 +207,15 @@ export default function Admin() {
         await deleteDoc(docSnap.ref);
       });
       setAdmins(admins.filter(a => a !== email));
-      toast.success("Admin removed successfully!");
+      toast.success("Admin removed successfully!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: unknown) {
-      console.error("Error removing admin:", error instanceof Error ? error.message : "Unknown error");
-      toast.error("Failed to remove admin.");
+      console.error("Admin: Error removing admin:", error instanceof Error ? error.message : "Unknown error");
+      toast.error("Failed to remove admin.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     }
   };
 
-  const filteredJobs = jobs.filter(j => 
-    j.title.toLowerCase().includes(jobSearch.toLowerCase()) || 
+  const filteredJobs = jobs.filter(j =>
+    j.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
     j.category.toLowerCase().includes(jobSearch.toLowerCase())
   );
   const paginatedJobs = filteredJobs.slice(0, jobsPage * itemsPerPage);
@@ -218,7 +223,7 @@ export default function Admin() {
 
   if (loading || isLoading || !isAdmin) {
     return (
-      <div className="py-20 text-center flex items-center justify-center min-h-screen" style={{ color: "#333333", backgroundColor: "#f5f5f5" }}>
+      <div className="py-20 text-center flex items-center justify-center min-h-screen bg-[var(--secondary)] text-[var(--text-body)]">
         Loading...
       </div>
     );
@@ -227,96 +232,93 @@ export default function Admin() {
   return (
     <>
       <Navbar />
-      <section className="py-20 min-h-screen relative" style={{ backgroundColor: "#f5f5f5" }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-[#800020]/10 to-[#800080]/5"></div>
+      <section className="py-24 min-h-screen bg-[var(--secondary)] relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-accent)]/10 to-[var(--teal-accent)]/5"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <motion.h1 
-            initial={{ opacity: 0, y: 50 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            className="text-4xl md:text-5xl font-bold text-center mb-16 font-poppins"
-            style={{ color: "#333333", textShadow: "1px 1px 2px rgba(0,0,0,0.2)" }}
+          <motion.h1
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+            className="text-5xl md:text-6xl font-bold text-center mb-16 font-heading text-[var(--text-accent)] text-shadow"
+            aria-label="Admin Dashboard"
           >
             Admin Dashboard
           </motion.h1>
           <div className="flex flex-col md:flex-row justify-center mb-12 space-y-4 md:space-y-0 md:space-x-4">
             {["jobs", "applications", "admins"].map(tab => (
-              <button
+              <motion.button
                 key={tab}
-                onClick={() => setSelectedTab(tab)}
-                className={`px-6 py-3 rounded-full font-semibold font-inter ${
-                  selectedTab === tab 
-                    ? "bg-gradient-to-r from-[#800020] to-[#800080] text-white" 
-                    : "bg-[#ffffff] text-[#800020] border border-[#800020]"
+                onClick={() => setSelectedTab(tab as typeof selectedTab)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-6 py-3 rounded-full font-semibold font-body transition-all duration-300 animate-pulse ${
+                  selectedTab === tab
+                    ? "bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-white shadow-lg"
+                    : "bg-[var(--secondary)] text-[var(--text-accent)] border border-[var(--light)]/50 hover:bg-[var(--soft)]"
                 }`}
                 aria-label={`Manage ${tab} Tab`}
               >
                 Manage {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
+              </motion.button>
             ))}
           </div>
 
           {selectedTab === "jobs" && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-semibold font-poppins" style={{ color: "#800020" }}>
+              <h2 className="text-3xl font-semibold font-heading text-[var(--text-accent)]">
                 {editingJob ? "Edit Job" : "Add New Job"}
               </h2>
               <form onSubmit={handleSubmit(editingJob ? onUpdateJob : onAddJob)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <input 
-                    {...register("title", { required: "Title is required" })} 
-                    placeholder="Title" 
-                    className="neumorphic-input w-full font-inter" 
-                    style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  <input
+                    {...register("title", { required: "Title is required" })}
+                    placeholder="Title"
+                    className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                     aria-label="Job Title"
                   />
-                  {errors.title && <p className="text-[#800020] text-sm mt-1">{errors.title.message}</p>}
+                  {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
                 </div>
                 <div>
-                  <input 
-                    {...register("location", { required: "Location is required" })} 
-                    placeholder="Location" 
-                    className="neumorphic-input w-full font-inter" 
-                    style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  <input
+                    {...register("location", { required: "Location is required" })}
+                    placeholder="Location"
+                    className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                     aria-label="Job Location"
                   />
-                  {errors.location && <p className="text-[#800020] text-sm mt-1">{errors.location.message}</p>}
+                  {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location.message}</p>}
                 </div>
                 <div>
-                  <input 
-                    {...register("type", { required: "Type is required" })} 
-                    placeholder="Type" 
-                    className="neumorphic-input w-full font-inter" 
-                    style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  <input
+                    {...register("type", { required: "Type is required" })}
+                    placeholder="Type"
+                    className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                     aria-label="Job Type"
                   />
-                  {errors.type && <p className="text-[#800020] text-sm mt-1">{errors.type.message}</p>}
+                  {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type.message}</p>}
                 </div>
                 <div>
-                  <input 
-                    {...register("duration", { required: "Duration is required" })} 
-                    placeholder="Duration" 
-                    className="neumorphic-input w-full font-inter" 
-                    style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  <input
+                    {...register("duration", { required: "Duration is required" })}
+                    placeholder="Duration"
+                    className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                     aria-label="Job Duration"
                   />
-                  {errors.duration && <p className="text-[#800020] text-sm mt-1">{errors.duration.message}</p>}
+                  {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration.message}</p>}
                 </div>
                 <div>
-                  <input 
-                    type="number" 
-                    {...register("rate", { required: "Rate is required", min: { value: 0, message: "Rate must be positive" } })} 
-                    placeholder="Rate" 
-                    className="neumorphic-input w-full font-inter" 
-                    style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  <input
+                    type="number"
+                    {...register("rate", { required: "Rate is required", min: { value: 0, message: "Rate must be positive" } })}
+                    placeholder="Rate"
+                    className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                     aria-label="Job Rate"
                   />
-                  {errors.rate && <p className="text-[#800020] text-sm mt-1">{errors.rate.message}</p>}
+                  {errors.rate && <p className="text-red-500 text-sm mt-1">{errors.rate.message}</p>}
                 </div>
                 <div>
-                  <select 
-                    {...register("category", { required: "Category is required" })} 
-                    className="neumorphic-input w-full font-inter"
-                    style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  <select
+                    {...register("category", { required: "Category is required" })}
+                    className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                     aria-label="Job Category"
                   >
                     <option value="">Select Category</option>
@@ -325,89 +327,92 @@ export default function Admin() {
                     <option value="promotions">Promotions</option>
                     <option value="other">Other</option>
                   </select>
-                  {errors.category && <p className="text-[#800020] text-sm mt-1">{errors.category.message}</p>}
+                  {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>}
                 </div>
                 <div className="md:col-span-2">
-                  <textarea 
-                    {...register("description", { required: "Description is required" })} 
-                    placeholder="Description" 
-                    className="neumorphic-input w-full font-inter" 
+                  <textarea
+                    {...register("description", { required: "Description is required" })}
+                    placeholder="Description"
+                    className="w-full p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                     rows={4}
-                    style={{ backgroundColor: "#ffffff", color: "#333333" }}
                     aria-label="Job Description"
                   />
-                  {errors.description && <p className="text-[#800020] text-sm mt-1">{errors.description.message}</p>}
+                  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
                 </div>
-                <button 
-                  type="submit" 
-                  className="px-6 py-3 rounded-2xl font-semibold font-inter col-span-2"
-                  style={{ background: "linear-gradient(135deg, #800020, #800080)", color: "#ffffff" }}
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-6 py-3 rounded-2xl font-semibold font-body bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-white shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse col-span-2"
                   aria-label={editingJob ? "Update Job" : "Add Job"}
                 >
                   {editingJob ? "Update Job" : <><FaPlus className="inline mr-2" /> Add Job</>}
-                </button>
+                </motion.button>
                 {editingJob && (
-                  <button 
+                  <motion.button
                     type="button"
-                    onClick={() => { setEditingJob(null); reset(); }} 
-                    className="px-6 py-3 rounded-2xl font-semibold font-inter col-span-2"
-                    style={{ backgroundColor: "#ffffff", color: "#800020", border: "1px solid #800020" }}
+                    onClick={() => { setEditingJob(null); reset(); }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-3 rounded-2xl font-semibold font-body bg-[var(--secondary)] text-[var(--text-accent)] border border-[var(--light)]/50 hover:bg-[var(--soft)] transition-all duration-300 col-span-2"
                     aria-label="Cancel Edit"
                   >
                     Cancel
-                  </button>
+                  </motion.button>
                 )}
               </form>
 
-              <h2 className="text-2xl font-semibold mt-8 font-poppins" style={{ color: "#800020" }}>Existing Jobs</h2>
+              <h2 className="text-3xl font-semibold mt-8 font-heading text-[var(--text-accent)]">Existing Jobs</h2>
               <div className="flex gap-4 mb-4">
                 <input
                   placeholder="Search jobs..."
                   value={jobSearch}
                   onChange={(e) => setJobSearch(e.target.value)}
-                  className="neumorphic-input flex-1 font-inter"
-                  style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  className="flex-1 p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                   aria-label="Search Jobs"
                 />
-                <FaSearch style={{ color: "#800020", fontSize: "1.5rem" }} />
+                <FaSearch className="text-[var(--text-accent)] text-xl self-center" />
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {paginatedJobs.map((job) => (
-                  <div key={job.id} className="p-4 rounded-xl border border-[#800020]/20" style={{ backgroundColor: "#ffffff" }}>
-                    <h3 className="font-semibold font-poppins" style={{ color: "#333333" }}>{job.title}</h3>
-                    <p className="font-inter" style={{ color: "#666666" }}>{job.category}</p>
+                  <div key={job.id} className="p-4 rounded-xl border border-[var(--light)]/30 bg-[var(--secondary)] card">
+                    <h3 className="font-semibold font-heading text-[var(--text-body)]">{job.title}</h3>
+                    <p className="font-body text-[var(--text-body)] opacity-80">{job.category}</p>
                     <div className="flex gap-2 mt-2">
-                      <button 
+                      <motion.button
                         onClick={() => {
                           setEditingJob(job);
                           Object.entries(job).forEach(([key, value]) => setValue(key as keyof JobFormData, value));
-                        }} 
-                        className="text-[#800020]"
+                        }}
+                        whileHover={{ scale: 1.1 }}
+                        className="text-[var(--text-accent)]"
                         aria-label={`Edit ${job.title}`}
                       >
                         <FaEdit />
-                      </button>
-                      <button 
-                        onClick={() => setDeleteConfirmId(job.id)} 
-                        className="text-[#800020]"
+                      </motion.button>
+                      <motion.button
+                        onClick={() => setDeleteConfirmId(job.id)}
+                        whileHover={{ scale: 1.1 }}
+                        className="text-[var(--text-accent)]"
                         aria-label={`Delete ${job.title}`}
                       >
                         <FaTrash />
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
                 ))}
               </div>
               {paginatedJobs.length < filteredJobs.length && (
                 <div className="text-center mt-4">
-                  <button 
+                  <motion.button
                     onClick={() => setJobsPage(p => p + 1)}
-                    className="px-6 py-3 rounded-2xl font-semibold font-inter"
-                    style={{ background: "linear-gradient(135deg, #800020, #800080)", color: "#ffffff" }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-3 rounded-2xl font-semibold font-body bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-white shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
                     aria-label="Load More Jobs"
                   >
                     Load More
-                  </button>
+                  </motion.button>
                 </div>
               )}
             </div>
@@ -415,19 +420,18 @@ export default function Admin() {
 
           {selectedTab === "applications" && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-semibold font-poppins" style={{ color: "#800020" }}>Manage Applications</h2>
+              <h2 className="text-3xl font-semibold font-heading text-[var(--text-accent)]">Manage Applications</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 {paginatedApps.map((app) => (
-                  <div key={app.id} className="p-4 rounded-xl border border-[#800020]/20" style={{ backgroundColor: "#ffffff" }}>
-                    <p className="font-inter" style={{ color: "#333333" }}><strong>Job ID:</strong> {app.jobId}</p>
-                    <p className="font-inter" style={{ color: "#333333" }}><strong>Applicant:</strong> {app.name} ({app.email})</p>
-                    <p className="font-inter" style={{ color: "#333333" }}>
-                      <strong>Status:</strong> 
-                      <select 
-                        value={app.status} 
-                        onChange={(e) => handleUpdateApplicationStatus(app.id, e.target.value as Application['status'])} 
-                        className="ml-2 neumorphic-input font-inter"
-                        style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  <div key={app.id} className="p-4 rounded-xl border border-[var(--light)]/30 bg-[var(--secondary)] card">
+                    <p className="font-body text-[var(--text-body)]"><strong>Job ID:</strong> {app.jobId}</p>
+                    <p className="font-body text-[var(--text-body)]"><strong>Applicant:</strong> {app.name} ({app.email})</p>
+                    <p className="font-body text-[var(--text-body)]">
+                      <strong>Status:</strong>
+                      <select
+                        value={app.status}
+                        onChange={(e) => handleUpdateApplicationStatus(app.id, e.target.value as Application["status"])}
+                        className="ml-2 p-2 rounded-lg focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50"
                         aria-label={`Update status for ${app.name}`}
                       >
                         <option value="pending">Pending</option>
@@ -440,14 +444,15 @@ export default function Admin() {
               </div>
               {paginatedApps.length < applications.length && (
                 <div className="text-center mt-4">
-                  <button 
+                  <motion.button
                     onClick={() => setAppsPage(p => p + 1)}
-                    className="px-6 py-3 rounded-2xl font-semibold font-inter"
-                    style={{ background: "linear-gradient(135deg, #800020, #800080)", color: "#ffffff" }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-3 rounded-2xl font-semibold font-body bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-white shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
                     aria-label="Load More Applications"
                   >
                     Load More
-                  </button>
+                  </motion.button>
                 </div>
               )}
             </div>
@@ -455,36 +460,37 @@ export default function Admin() {
 
           {selectedTab === "admins" && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-semibold font-poppins" style={{ color: "#800020" }}>Manage Admins</h2>
+              <h2 className="text-3xl font-semibold font-heading text-[var(--text-accent)]">Manage Admins</h2>
               <div className="flex gap-4">
                 <input
                   placeholder="New Admin Email"
                   value={newAdminEmail}
                   onChange={(e) => setNewAdminEmail(e.target.value)}
-                  className="neumorphic-input flex-1 font-inter"
-                  style={{ backgroundColor: "#ffffff", color: "#333333" }}
+                  className="flex-1 p-4 rounded-xl focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-300 bg-[var(--soft)] text-[var(--text-body)] border border-[var(--light)]/50 hover:border-[var(--teal-accent)]/50"
                   aria-label="New Admin Email"
                 />
-                <button 
+                <motion.button
                   onClick={handleAddAdmin}
-                  className="px-6 py-3 rounded-2xl font-semibold font-inter"
-                  style={{ background: "linear-gradient(135deg, #800020, #800080)", color: "#ffffff" }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-6 py-3 rounded-2xl font-semibold font-body bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-white shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
                   aria-label="Add Admin"
                 >
                   <FaPlus className="inline mr-2" /> Add Admin
-                </button>
+                </motion.button>
               </div>
               <div className="space-y-4">
                 {admins.map((email) => (
-                  <div key={email} className="flex justify-between items-center p-4 rounded-xl" style={{ backgroundColor: "#ffffff", border: "1px solid #800020/20" }}>
-                    <p className="font-inter" style={{ color: "#333333" }}>{email}</p>
-                    <button 
-                      onClick={() => handleRemoveAdmin(email)} 
-                      className="text-[#800020]"
+                  <div key={email} className="flex justify-between items-center p-4 rounded-xl border border-[var(--light)]/30 bg-[var(--secondary)] card">
+                    <p className="font-body text-[var(--text-body)]">{email}</p>
+                    <motion.button
+                      onClick={() => handleRemoveAdmin(email)}
+                      whileHover={{ scale: 1.1 }}
+                      className="text-[var(--text-accent)]"
                       aria-label={`Remove ${email} as admin`}
                     >
                       <FaTrash />
-                    </button>
+                    </motion.button>
                   </div>
                 ))}
               </div>
@@ -493,25 +499,27 @@ export default function Admin() {
 
           {deleteConfirmId && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-              <div className="p-6 rounded-lg" style={{ backgroundColor: "#ffffff" }}>
-                <p className="font-inter mb-4" style={{ color: "#333333" }}>Are you sure you want to delete this job?</p>
+              <div className="p-6 rounded-2xl bg-[var(--secondary)] card">
+                <p className="font-body mb-4 text-[var(--text-body)]">Are you sure you want to delete this job?</p>
                 <div className="flex gap-4">
-                  <button 
+                  <motion.button
                     onClick={() => handleDeleteJob(deleteConfirmId)}
-                    className="px-4 py-2 rounded-full font-inter"
-                    style={{ background: "linear-gradient(135deg, #800020, #800080)", color: "#ffffff" }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded-full font-body bg-gradient-to-r from-[var(--color-accent)] to-[var(--teal-accent)] text-white"
                     aria-label="Confirm Delete"
                   >
                     Yes
-                  </button>
-                  <button 
+                  </motion.button>
+                  <motion.button
                     onClick={() => setDeleteConfirmId(null)}
-                    className="px-4 py-2 rounded-full font-inter"
-                    style={{ backgroundColor: "#ffffff", color: "#800020", border: "1px solid #800020" }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded-full font-body bg-[var(--secondary)] text-[var(--text-accent)] border border-[var(--light)]/50"
                     aria-label="Cancel Delete"
                   >
                     No
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>

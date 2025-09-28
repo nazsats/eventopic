@@ -4,31 +4,44 @@
 @import "tailwindcss";
 
 
+/* app/globals.css */
 :root {
   --font-heading: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --primary: #4b0082; /* Indigo for headers */
-  --secondary: #3c0764; /* Deep indigo for text */
-  --accent: #dda0dd; /* Soft orchid for highlights */
-  --light: #f5f6ff; /* Pearl white for backgrounds */
-  --soft: #f5f6ff; /* Same as light for subtle elements */
-  --white: #ffffff; /* Pure white */
-  --color-accent: #b19cd9; /* Pale indigo for buttons */
-  --teal-accent: #6a0dad; /* Vibrant indigo for secondary accents */
-  --dark-bg: #1f0a44; /* Dark indigo for contrast */
-  --dark-text: #e6ccff; /* Light purple for text on dark */
+  --primary: #F5F6FF; /* Whitish background */
+  --secondary: #FFFFFF; /* Card background */
+  --accent: #4B0082; /* Indigo for subtle elements */
+  --light: #E6E6FA; /* Lavender for borders */
+  --soft: #F8F8FF; /* Ghost white for inputs */
+  --white: #FFFFFF;
+  --color-accent: #800080; /* Magenta for gradients */
+  --teal-accent: #4B0082; /* Indigo for gradients */
+  --text-body: #333333; /* Blackish body text */
+  --text-accent: #800080; /* Purple for headings/links */
 }
 
-
-/* Dark mode */
 .dark {
-  --primary: #121212;
-  --secondary: #1e1e1e;
-  --accent: #00c4b4; /* Use teal-accent in dark mode for contrast */
-  --light: #b0bec5;
-  --soft: #2d2d2d;
-  --white: #ffffff;
+  --primary: #12123A; /* Dark purple background */
+  --secondary: #1E1E5A;
+  --accent: #DDA0DD; /* Light purple */
+  --light: #B0BEC5;
+  --soft: #2D2D5A;
+  --white: #FFFFFF;
+  --color-accent: #DDA0DD;
+  --teal-accent: #9370DB;
+  --text-body: #E6E6FA; /* Lavender text */
+  --text-accent: #DDA0DD;
 }
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+
+.text-shadow { text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+.card { box-shadow: 4px 4px 8px rgba(0,0,0,0.1), -4px -4px 8px rgba(255,255,255,0.05); }
 
 /* Body */
 body {
