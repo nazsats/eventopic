@@ -8,6 +8,7 @@ import { doc, getDoc, collection, getDocs, query, where, addDoc } from "firebase
 import { db } from "../../../../lib/firebase";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import Confetti from "react-confetti";
 import AuthModal from "../../../../components/AuthModal";
 import Navbar from "../../../../components/Navbar";
 import Footer from "../../../../components/Footer";
@@ -38,6 +39,7 @@ export default function JobDetails() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false); // State for confetti trigger
 
   // Sync applicationData with user data when user changes
   useEffect(() => {
@@ -51,6 +53,7 @@ export default function JobDetails() {
     }
   }, [user]);
 
+  // Fetch job and application data
   useEffect(() => {
     if (!loading && !user) {
       console.log("JobDetails: No user, allowing job details view");
@@ -101,6 +104,7 @@ export default function JobDetails() {
     fetchJobAndApplication();
   }, [jobId, user, loading, router]);
 
+  // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     console.log("JobDetails: Input changed:", { name: e.target.name, value: e.target.value });
     setApplicationData((prev) => ({
@@ -109,6 +113,7 @@ export default function JobDetails() {
     }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("JobDetails: Form submitted with data:", applicationData);
@@ -142,6 +147,8 @@ export default function JobDetails() {
       console.log("JobDetails: Application submitted successfully");
       toast.success("Application submitted successfully!");
       setApplication({ id: "", status: "pending" });
+      setShowConfetti(true); // Trigger confetti
+      setTimeout(() => setShowConfetti(false), 3000); // Stop after 3 seconds
     } catch (error) {
       console.error("JobDetails: Error submitting application:", error);
       toast.error("Failed to submit application. Please try again.");
@@ -150,7 +157,7 @@ export default function JobDetails() {
     }
   };
 
-  // Simplified animation variants to avoid conflicts
+  // Simplified animation variants
   const textVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.5 } },
@@ -309,6 +316,17 @@ export default function JobDetails() {
         <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} mode="signin" />
       </section>
       <Footer />
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          numberOfPieces={100} // Reduced for mobile performance
+          recycle={false} // Single burst
+          gravity={0.2} // Slower fall for visibility
+          initialVelocityY={10} // Controlled speed
+          colors={["#00C4B4", "#00E676", "#FFEB3B", "#FF5722", "#9C27B0"]} // Match app theme
+        />
+      )}
       <style jsx>{`
         input, textarea {
           pointer-events: auto !important;
