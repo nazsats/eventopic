@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, Suspense } from "react"; // Added Suspense import
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
@@ -32,7 +33,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
-
 
 const buttonVariants: Variants = {
   hidden: { opacity: 0, scale: 0.9 },
@@ -82,6 +82,7 @@ function CustomAlert({ type, message, onClose }: { type: "success" | "error"; me
 function ProfileContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get("edit") === "true";
   const [profile, setProfile] = useState({
@@ -131,6 +132,11 @@ function ProfileContent() {
   };
 
   useEffect(() => {
+    console.log("ProfileContent useEffect triggered, pathname:", pathname, "user:", user, "loading:", loading);
+    if (pathname !== "/profile") {
+      console.log("Not on /profile route, skipping redirect logic");
+      return;
+    }
     if (!loading && !user) {
       console.log("Redirecting to homepage: user is null, loading:", loading);
       router.push("/");
@@ -165,7 +171,7 @@ function ProfileContent() {
       };
       fetchProfile();
     }
-  }, [user, loading, router, isEditMode]);
+  }, [user, loading, router, isEditMode, pathname]);
 
   const validateField = (name: string, value: string | string[] | boolean | number) => {
     let error = "";
@@ -867,7 +873,7 @@ function ProfileContent() {
                         )}
                       </div>
                       <div>
-                        <label htmlFor="highestEducation" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
+                        <label htmlFor="highestzingEducation" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
                           <FaGraduationCap /> Highest Education
                         </label>
                         <select

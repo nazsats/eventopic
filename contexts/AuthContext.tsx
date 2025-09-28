@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
@@ -18,7 +17,7 @@ import {
 import { toast } from "react-toastify";
 import { auth, db } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 interface AuthContextType {
   user: User | null;
@@ -63,26 +62,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
 
       if (newUser) {
-        // Fetch admin emails to check if the user is an admin
         try {
+          // Fetch admin emails to check if the user is an admin
           const adminsSnapshot = await getDocs(collection(db, "admins"));
           const adminEmails = adminsSnapshot.docs.map(doc => doc.data().email as string);
+
+          // Define protected routes where no redirect to /profile is needed
+          const protectedRoutes = ["/profile", "/portal", "/dashboard", "/admin"];
           
-          // Only redirect to /profile if the user is not on /admin and is not an admin
-          if (pathname !== "/admin" && !adminEmails.includes(newUser.email!)) {
-            console.log("AuthContext: Redirecting to /profile for non-admin user:", newUser.email);
+          // Define public routes where redirect to /profile is allowed if profile is incomplete
+          const publicRoutes = ["/", "/about", "/services", "/gallery"];
+
+          // Check if the user’s profile is complete
+          const userDoc = await getDoc(doc(db, "users", newUser.uid));
+          const isProfileComplete = userDoc.exists() ? userDoc.data().isProfileComplete : false;
+
+          // Redirect to /profile only if:
+          // 1. The user is not an admin
+          // 2. The profile is incomplete
+          // 3. The current route is a public route (not a protected route)
+          if (
+            !adminEmails.includes(newUser.email!) &&
+            !isProfileComplete &&
+            publicRoutes.includes(pathname) &&
+            !protectedRoutes.includes(pathname)
+          ) {
+            console.log(`AuthContext: Redirecting to /profile for non-admin user with incomplete profile: ${newUser.email}, current path: ${pathname}`);
             router.replace("/profile");
           } else {
-            console.log("AuthContext: No redirect - user is on /admin or is an admin:", newUser.email);
+            console.log(`AuthContext: No redirect needed for user: ${newUser.email}, current path: ${pathname}, isProfileComplete: ${isProfileComplete}`);
           }
         } catch (error: unknown) {
-          console.error("AuthContext: Error fetching admins:", error instanceof Error ? error.message : error);
-          // Fallback to /profile if there's an error fetching admins, but not for /admin
-          if (pathname !== "/admin") {
-            console.log("AuthContext: Fallback redirect to /profile due to error, user:", newUser.email);
+          console.error("AuthContext: Error checking profile or admins:", error instanceof Error ? error.message : error);
+          // Avoid redirect in error case unless profile is incomplete and route is public
+          const userDoc = await getDoc(doc(db, "users", newUser.uid));
+          const isProfileComplete = userDoc.exists() ? userDoc.data().isProfileComplete : false;
+          const publicRoutes = ["/", "/about", "/services", "/gallery"];
+          const protectedRoutes = ["/profile", "/portal", "/dashboard", "/admin"];
+          if (
+            !isProfileComplete &&
+            publicRoutes.includes(pathname) &&
+            !protectedRoutes.includes(pathname)
+          ) {
+            console.log(`AuthContext: Fallback redirect to /profile due to error, user: ${newUser.email}, path: ${pathname}, isProfileComplete: ${isProfileComplete}`);
             router.replace("/profile");
           }
         }
+      } else if (pathname === "/profile") {
+        // Redirect unauthenticated users away from /profile
+        console.log("AuthContext: Redirecting to / for unauthenticated user, current path: /profile");
+        router.replace("/");
       }
     });
     return () => unsubscribe();
