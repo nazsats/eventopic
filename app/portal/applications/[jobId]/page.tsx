@@ -224,7 +224,7 @@ export default function JobDetails() {
               <FaClock className="text-2xl" /> <strong>Duration:</strong> {job.duration}
             </p>
             <p className="mb-6 flex items-center gap-2 text-lg font-body text-[var(--text-body)]">
-              <FaMoneyBillWave className="text-2xl" /> <strong>Rate:</strong> AED {job.rate}/hour
+              <FaMoneyBillWave className="text-2xl" /> <strong>Rate:</strong> AED {job.rate}/day
             </p>
             <p className="mb-6 text-lg font-body text-[var(--text-body)]">
               <strong>Description:</strong> {job.description}
