@@ -19,7 +19,7 @@ const buttonVariants: Variants = {
     scale: 1.1,
     y: -5,
     boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
-    backgroundColor: "var(--teal-accent)",
+    background: "linear-gradient(135deg, var(--teal-accent), var(--color-accent))",
     borderColor: "var(--teal-accent)",
     transition: { duration: 0.3 },
   },
@@ -27,6 +27,17 @@ const buttonVariants: Variants = {
 
 const containerVariants: Variants = {
   visible: { transition: { staggerChildren: 0.2 } },
+};
+
+const logoContainerVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
+  hover: {
+    scale: 1.1,
+    boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
+    background: "linear-gradient(135deg, var(--teal-accent), var(--color-accent))",
+    transition: { duration: 0.3 },
+  },
 };
 
 export default function Navbar() {
@@ -87,22 +98,32 @@ export default function Navbar() {
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <Image
-                src={isDarkMode ? "/logoWhite.png" : "/logo.png"}
-                alt="Eventopic Logo - Event Management and Staffing in Dubai"
-                width={56}
-                height={56}
-                className="w-14 h-14 md:w-16 md:h-16 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300"
-                priority
-              />
+              <motion.div
+                variants={logoContainerVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                className="relative w-14 h-14 md:w-16 md:h-16 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+                style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))" }}
+              >
+                <Image
+                  src={isDarkMode ? "/logoWhite.png" : "/logo.png"}
+                  alt="Eventopic Logo - Event Management and Staffing in Dubai"
+                  fill
+                  sizes="(max-width: 768px) 56px, 64px"
+                  className="object-contain"
+                  priority
+                />
+                <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+              </motion.div>
             </Link>
           </div>
           <div className="flex items-center space-x-4">
             <motion.button
               variants={buttonVariants}
               onClick={handleAuthClick}
-              className="px-6 py-2 rounded-full text-base font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative md:px-8 md:py-3 md:text-lg"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+              className="px-4 py-1.5 text-sm font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative sm:px-6 sm:py-2 sm:text-base md:px-8 md:py-3 md:text-lg"
+              style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--white)", border: "2px solid var(--light)" }}
             >
               {user ? "Sign Out" : "Sign In"}
               <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
@@ -135,7 +156,7 @@ export default function Navbar() {
               variants={buttonVariants}
               onClick={toggleDarkMode}
               className="p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+              style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))", color: "var(--white)", border: "2px solid var(--light)" }}
               aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
               aria-pressed={isDarkMode}
             >
@@ -149,7 +170,7 @@ export default function Navbar() {
             variants={containerVariants}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            className="md:hidden mt-4 space-y-3 bg-[var(--primary)]/80 p-4 rounded-xl shadow-xl border border-[var(--light)]/30 mb-16 backdrop-blur-sm"
+            className="md:hidden mt-4 space-y-3 bg-[var(--primary)]/80 p-4 rounded-xl shadow-xl border border-[var(--light)]/30 mb-16 backdrop-blur-sm divide-y divide-[var(--light)]/20"
             id="mobile-menu"
           >
             {menuItems.map((item) => (
