@@ -1,4 +1,4 @@
-
+//app/portal/applications/page.tsx
 "use client";
 
 import { useAuth } from "../../../contexts/AuthContext";

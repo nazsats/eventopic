@@ -1,4 +1,4 @@
-//components/Navbar.tsx 
+// components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -96,7 +96,7 @@ export default function Navbar() {
             </button>
             <Link href="/" className="flex items-center">
               <Image
-                src="/logoWhite.png"
+                src={isDarkMode ? "/logoWhite.png" : "/logo.png"}
                 alt="Eventopic Logo - Event Management and Staffing in Dubai"
                 width={56}
                 height={56}

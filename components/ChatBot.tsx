@@ -1,4 +1,4 @@
-
+//components/ChatBot.tsx
 "use client";
 
 import React, { useState, ReactNode } from "react";
