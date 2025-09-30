@@ -107,7 +107,7 @@ export default function Navbar() {
                 style={{ background: "linear-gradient(135deg, var(--color-accent), var(--teal-accent))" }}
               >
                 <Image
-                  src={isDarkMode ? "/logo.png" : "/logo.png"}
+                  src={isDarkMode ? "/logoWhite.png" : "/logoWhite.png"}
                   alt="Eventopic Logo - Event Management and Staffing in Dubai"
                   fill
                   sizes="(max-width: 768px) 56px, 64px"
