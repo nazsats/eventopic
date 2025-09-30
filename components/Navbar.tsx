@@ -1,3 +1,4 @@
+
 // components/Navbar.tsx
 "use client";
 
@@ -84,16 +85,7 @@ export default function Navbar() {
     <>
       <nav className="fixed top-0 z-50 p-4 shadow-xl w-full bg-[var(--primary)]/80 border-b border-[var(--light)]/20 backdrop-blur-sm">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              className="md:hidden text-2xl text-[var(--text-body)]"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label={isMenuOpen ? "Close mobile menu" : "Open mobile menu"}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              ☰
-            </button>
+          <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Image
                 src={isDarkMode ? "/logoWhite.png" : "/logo.png"}
@@ -104,6 +96,26 @@ export default function Navbar() {
                 priority
               />
             </Link>
+          </div>
+          <div className="flex items-center space-x-4">
+            <motion.button
+              variants={buttonVariants}
+              onClick={handleAuthClick}
+              className="px-6 py-2 rounded-full text-base font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative md:px-8 md:py-3 md:text-lg"
+              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
+            >
+              {user ? "Sign Out" : "Sign In"}
+              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+            </motion.button>
+            <button
+              className="md:hidden text-2xl text-[var(--text-body)]"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              ☰
+            </button>
           </div>
           <motion.div className="hidden md:flex items-center space-x-6" variants={containerVariants} initial="hidden" animate="visible">
             {menuItems.map((item) => (
@@ -121,15 +133,6 @@ export default function Navbar() {
             ))}
             <motion.button
               variants={buttonVariants}
-              onClick={handleAuthClick}
-              className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-            >
-              {user ? "Sign Out" : "Sign In"}
-              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-            </motion.button>
-            <motion.button
-              variants={buttonVariants}
               onClick={toggleDarkMode}
               className="p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
               style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
@@ -137,28 +140,6 @@ export default function Navbar() {
               aria-pressed={isDarkMode}
             >
               {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
-              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-            </motion.button>
-          </motion.div>
-          <motion.div className="flex items-center space-x-4 md:hidden" variants={containerVariants} initial="hidden" animate="visible">
-            <motion.button
-              variants={buttonVariants}
-              onClick={toggleDarkMode}
-              className="p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-              aria-pressed={isDarkMode}
-            >
-              {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
-              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-            </motion.button>
-            <motion.button
-              variants={buttonVariants}
-              onClick={handleAuthClick}
-              className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-            >
-              {user ? "Sign Out" : "Sign In"}
               <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
             </motion.button>
           </motion.div>
@@ -183,6 +164,17 @@ export default function Navbar() {
                 </Link>
               </motion.div>
             ))}
+            <motion.div variants={buttonVariants}>
+              <button
+                onClick={toggleDarkMode}
+                className="w-full text-left text-lg font-medium py-1 text-[var(--text-body)] hover:text-[var(--text-accent)] transition-colors duration-300 flex items-center gap-2"
+                aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+                aria-pressed={isDarkMode}
+              >
+                {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+                {isDarkMode ? "Light Mode" : "Dark Mode"}
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </nav>

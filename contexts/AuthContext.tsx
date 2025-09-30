@@ -1,3 +1,4 @@
+// contexts/AuthContext.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
@@ -17,7 +18,7 @@ import {
 import { toast } from "react-toastify";
 import { auth, db } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
 
 interface AuthContextType {
   user: User | null;
@@ -53,6 +54,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Function to save user email to Firestore
+  const saveUserToFirestore = async (user: User) => {
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          isProfileComplete: false, // Default value for new users
+        });
+        console.log(`Saved user email ${user.email} to Firestore`);
+      }
+    } catch (error) {
+      console.error("Error saving user to Firestore:", error);
+      toast.error("Failed to save user data.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (newUser) => {
       if (!navigator.onLine) {
@@ -62,6 +82,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
 
       if (newUser) {
+        // Save user email to Firestore on login
+        await saveUserToFirestore(newUser);
+
         try {
           // Fetch admin emails to check if the user is an admin
           const adminsSnapshot = await getDocs(collection(db, "admins"));
@@ -120,7 +143,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const { user } = await signInWithPopup(auth, provider);
+      await saveUserToFirestore(user); // Save user email on Google sign-in
       toast.success("Signed in with Google!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: any) {
       toast.error("Failed to sign in with Google.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
@@ -131,7 +155,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithFacebook = async () => {
     try {
       const provider = new FacebookAuthProvider();
-      await signInWithPopup(auth, provider);
+      const { user } = await signInWithPopup(auth, provider);
+      await saveUserToFirestore(user); // Save user email on Facebook sign-in
       toast.success("Signed in with Facebook!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: any) {
       toast.error("Failed to sign in with Facebook.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
@@ -142,7 +167,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithApple = async () => {
     try {
       const provider = new OAuthProvider("apple.com");
-      await signInWithPopup(auth, provider);
+      const { user } = await signInWithPopup(auth, provider);
+      await saveUserToFirestore(user); // Save user email on Apple sign-in
       toast.success("Signed in with Apple!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     } catch (error: any) {
       toast.error("Failed to sign in with Apple.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
@@ -154,10 +180,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (isSignUp) {
         const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        await saveUserToFirestore(user); // Save user email on email sign-up
         await sendEmailVerification(user);
         toast.info("Verification email sent! Please check your inbox.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const { user } = await signInWithEmailAndPassword(auth, email, password);
+        await saveUserToFirestore(user); // Save user email on email sign-in
         toast.success("Signed in with email!", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
       }
     } catch (error: any) {
