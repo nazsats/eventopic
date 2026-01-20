@@ -1,40 +1,52 @@
-// app/layout.tsx
+// app/layout.tsx (Updated for better SEO with more meta tags and structured data)
 import type { Metadata } from "next";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Inter, Poppins } from "next/font/google";
+import { Inter } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import { AuthProvider } from "../contexts/AuthContext";
 import Script from "next/script";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-inter",
   display: "swap",
 });
 
-const poppins = Poppins({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://eventopic.com"),
-  title: "Eventopic - Event Management & Staffing Solutions in Dubai",
+  title: "Eventopic - Professional Event Staffing Solutions in Dubai | Hire Promoters, Models & Staff",
   description:
-    "Eventopic – Where Ideas Become Experiences. Full-service event management, staffing, promoters, and volunteers in Dubai. Plan unforgettable events with our expert team.",
+    "Leading event staffing agency in Dubai. Hire verified promoters, models, event staff, waitstaff, and hospitality professionals quickly. Trusted by top brands for premium staffing services.",
   keywords:
-    "event management Dubai, event staffing, promoters Dubai, event volunteers, corporate events, wedding planning Dubai, part-time jobs events",
+    "event staffing Dubai, hire promoters Dubai, event staff agency, models for hire Dubai, hospitality staffing, brand ambassadors Dubai, waitstaff Dubai, event jobs Dubai, temporary staff Dubai, professional staffing services",
   openGraph: {
-    title: "Eventopic - The Future of Showcasing Your Events",
+    title: "Eventopic - Premium Event Staffing Platform in Dubai",
     description:
-      "Professional event planning and staffing services in Dubai for businesses, individuals, and government.",
+      "Connect with 2,500+ verified professionals for events. Quick hiring for promoters, models, staff in 24-48 hours. Reliable & efficient.",
     images: ["/og-image.png"],
     type: "website",
+    url: "https://eventopic.com",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Eventopic - Event Staffing Experts in Dubai",
+    description: "Hire top-tier event staff, promoters, and models instantly. Verified professionals for your events.",
+    images: ["/og-image.png"],
+  },
+  robots: "index, follow",
+  alternates: {
+    canonical: "https://eventopic.com",
   },
 };
 
@@ -44,9 +56,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <head>
-        {/* Google Analytics Script */}
+        {/* Enhanced Google Analytics */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
           strategy="afterInteractive"
@@ -59,6 +71,28 @@ export default function RootLayout({
             gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
           `}
         </Script>
+        {/* Structured Data for SEO */}
+        <Script id="schema-struct" type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Eventopic",
+            url: "https://eventopic.com",
+            logo: "https://eventopic.com/logo.png",
+            description: "Premier event staffing platform in Dubai connecting businesses with verified professionals.",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Dubai",
+              addressRegion: "Dubai",
+              addressCountry: "AE",
+            },
+            contactPoint: {
+              "@type": "ContactPoint",
+              contactType: "Customer Support",
+              email: "info@eventopic.com",
+            },
+          })}
+        </Script>
       </head>
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
@@ -67,7 +101,8 @@ export default function RootLayout({
             position="top-right"
             autoClose={3000}
             hideProgressBar={false}
-            theme="dark"
+            theme="colored"
+            style={{ zIndex: 9999 }}
           />
           <Analytics />
         </AuthProvider>

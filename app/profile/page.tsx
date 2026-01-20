@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+//app/profile/page.tsx
 "use client";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -7,7 +7,7 @@ import { useState, useEffect, Suspense } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaUser,
   FaPhone,
@@ -15,68 +15,52 @@ import {
   FaMapMarkerAlt,
   FaIdCard,
   FaVenusMars,
-  FaGlobeAmericas,
   FaMoneyBillWave,
   FaGraduationCap,
   FaClock,
   FaCar,
   FaCalendar,
-  FaExclamationTriangle,
   FaStar,
   FaImage,
   FaFileAlt,
-  FaDownload,
-  FaSpinner,
   FaCheckCircle,
-  FaTimesCircle,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaCamera,
+  FaUpload,
+  FaTrophy,
+  FaChartLine,
+  FaDownload
 } from "react-icons/fa";
-import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
 
-const buttonVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring", stiffness: 80 } },
-  hover: {
-    scale: 1.1,
-    y: -5,
-    boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
-    backgroundColor: "var(--teal-accent)",
-    borderColor: "var(--teal-accent)",
-    transition: { duration: 0.3 },
-  },
-};
-
-const containerVariants: Variants = {
-  visible: { transition: { staggerChildren: 0.2 } },
-};
-
-const alertVariants: Variants = {
-  hidden: { opacity: 0, y: -50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  exit: { opacity: 0, y: -50, transition: { duration: 0.3 } },
-};
-
-function CustomAlert({ type, message, onClose }: { type: "success" | "error"; message: string; onClose: () => void }) {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  return (
-    <motion.div
-      variants={alertVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 ${
-        type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-      }`}
-    >
-      {type === "success" ? <FaCheckCircle /> : <FaTimesCircle />}
-      <span>{message}</span>
-    </motion.div>
-  );
+interface Profile {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+  nationality: string;
+  countryOfResidence: string;
+  city: string;
+  visaType: string;
+  gender: string;
+  languagesSpoken: string[];
+  whatsappNumber: string;
+  openToWorkIn: string[];
+  hourlyRate: string;
+  talents: string[];
+  highestEducation: string;
+  yearsOfExperience: string;
+  previousRelatedExperience: string;
+  availability: string;
+  experienceDescription: string;
+  secondNationality: string;
+  hasCarInUAE: boolean;
+  isProfileComplete: boolean;
+  profileImageUrl?: string;
+  resumeUrl?: string;
 }
 
 function ProfileContent() {
@@ -85,7 +69,8 @@ function ProfileContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get("edit") === "true";
-  const [profile, setProfile] = useState({
+
+  const [profile, setProfile] = useState<Profile>({
     firstName: "",
     lastName: "",
     dateOfBirth: "",
@@ -95,11 +80,11 @@ function ProfileContent() {
     city: "",
     visaType: "",
     gender: "",
-    languagesSpoken: [] as string[],
+    languagesSpoken: [],
     whatsappNumber: "",
-    openToWorkIn: [] as string[],
+    openToWorkIn: [],
     hourlyRate: "",
-    talents: [] as string[],
+    talents: [],
     highestEducation: "",
     yearsOfExperience: "",
     previousRelatedExperience: "",
@@ -111,15 +96,108 @@ function ProfileContent() {
     profileImageUrl: "",
     resumeUrl: "",
   });
+
   const [skills, setSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+  const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
+
+  // Global skills database - comprehensive list
+  const globalSkills = [
+    // Hospitality & Events
+    "Event Planning", "Event Coordination", "Guest Relations", "Front Desk", "Concierge",
+    "Hospitality Management", "Customer Service", "VIP Services", "Conference Management",
+
+    // Food & Beverage
+    "Bartending", "Mixology", "Waitress/Waiter", "F&B Service", "Restaurant Management",
+    "Catering", "Wine Service", "Barista", "Food Safety", "Menu Planning",
+
+    // Sales & Marketing
+    "Sales", "Retail", "Merchandising", "Brand Ambassador", "Promotions", "Cold Calling",
+    "Lead Generation", "Customer Acquisition", "Social Media Marketing", "Digital Marketing",
+    "Content Creation", "SEO", "Email Marketing", "Market Research", "Brand Management",
+
+    // Creative & Entertainment
+    "Modeling", "Acting", "Dancing", "Singing", "Photography", "Videography",
+    "Video Editing", "Graphic Design", "UI/UX Design", "Web Design", "Animation",
+    "Sound Engineering", "Music Production", "DJ", "MC/Hosting", "Voice Over",
+
+    // Technical Skills
+    "Microsoft Office", "Excel", "PowerPoint", "Google Suite", "Data Entry",
+    "CRM Software", "Project Management", "Salesforce", "QuickBooks", "SAP",
+    "HTML/CSS", "JavaScript", "Python", "Java", "SQL", "WordPress",
+
+    // Beauty & Wellness
+    "Hair Styling", "Makeup Artistry", "Nail Art", "Spa Therapy", "Massage",
+    "Beauty Consulting", "Personal Training", "Yoga Instruction", "Nutrition",
+
+    // Languages
+    "English", "Arabic", "Hindi", "Urdu", "French", "Spanish", "Mandarin",
+    "Russian", "German", "Italian", "Japanese", "Korean", "Portuguese",
+
+    // Soft Skills
+    "Communication", "Leadership", "Team Management", "Time Management",
+    "Problem Solving", "Critical Thinking", "Adaptability", "Multitasking",
+    "Attention to Detail", "Conflict Resolution", "Negotiation", "Public Speaking",
+
+    // Office & Admin
+    "Administrative Support", "Scheduling", "Bookkeeping", "Receptionist",
+    "Document Management", "Meeting Coordination", "Travel Coordination",
+
+    // Security & Safety
+    "Security Management", "Crowd Control", "First Aid", "CPR Certified",
+    "Risk Assessment", "Emergency Response", "Access Control",
+
+    // Other Professional
+    "Bilingual", "Multilingual", "Driver's License", "Car Available",
+    "Flexible Schedule", "Weekend Availability", "Night Shifts",
+  ];
+
+  const handleSkillInput = (value: string) => {
+    setSkillInput(value);
+
+    if (value.length >= 2) {
+      const filtered = globalSkills.filter(skill =>
+        skill.toLowerCase().includes(value.toLowerCase()) &&
+        !skills.includes(skill)
+      ).slice(0, 8); // Show top 8 suggestions
+      setSuggestedSkills(filtered);
+    } else {
+      setSuggestedSkills([]);
+    }
+  };
+
+  const addSkill = (skill: string) => {
+    const trimmedSkill = skill.trim();
+    if (trimmedSkill && !skills.includes(trimmedSkill)) {
+      setSkills([...skills, trimmedSkill]);
+      setSkillInput("");
+      setSuggestedSkills([]);
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setSkills(skills.filter(skill => skill !== skillToRemove));
+  };
+
+  const handleSkillKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (suggestedSkills.length > 0) {
+        addSkill(suggestedSkills[0]); // Add first suggestion
+      } else {
+        addSkill(skillInput); // Add custom skill
+      }
+    }
+  };
+
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [updating, setUpdating] = useState(false);
   const [isProfileLoaded, setIsProfileLoaded] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [resume, setResume] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
+  const [currentSection, setCurrentSection] = useState(0);
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string; visible: boolean }>({
     type: "success",
     message: "",
@@ -127,1376 +205,1009 @@ function ProfileContent() {
   });
 
   const showAlert = (type: "success" | "error", message: string) => {
-    console.log("Showing alert:", { type, message });
     setAlert({ type, message, visible: true });
+    setTimeout(() => setAlert({ type, message, visible: false }), 3000);
   };
 
+  const cities = ["Abu Dhabi", "Dubai", "Sharjah", "Ajman", "Umm Al Quwain", "Fujairah", "Ras Al Khaimah"];
+
+  // FIXED: Properly load skills from user_skills collection
   useEffect(() => {
-    console.log("ProfileContent useEffect triggered, pathname:", pathname, "user:", user, "loading:", loading);
-    if (pathname !== "/profile") {
-      console.log("Not on /profile route, skipping redirect logic");
-      return;
-    }
+    if (pathname !== "/profile") return;
     if (!loading && !user) {
-      console.log("Redirecting to homepage: user is null, loading:", loading);
       router.push("/");
       return;
     }
+
     if (user) {
       const fetchProfile = async () => {
         try {
-          console.log("Fetching profile for user:", user.uid);
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          const skillsDoc = await getDoc(doc(db, "user_skills", user.uid));
+          const [userDoc, skillsDoc] = await Promise.all([
+            getDoc(doc(db, "users", user.uid)),
+            getDoc(doc(db, "user_skills", user.uid))
+          ]);
+
           if (userDoc.exists()) {
-            const profileData = userDoc.data();
-            console.log("Fetched profile data from Firestore:", profileData);
-            setProfile((prev) => ({ ...prev, ...profileData }));
-            setIsProfileLoaded(true);
-          } else {
-            console.log("No profile data found in Firestore for user:", user.uid);
-            setIsProfileLoaded(true);
+            setProfile((prev) => ({ ...prev, ...userDoc.data() }));
           }
+
+          // FIXED: Load skills from user_skills collection
           if (skillsDoc.exists()) {
             const skillsData = skillsDoc.data().skills || [];
-            console.log("Fetched skills data from Firestore:", skillsData);
             setSkills(skillsData);
-          } else {
-            console.log("No skills data found in Firestore for user:", user.uid);
           }
-        } catch (error: unknown) {
-          console.error("Fetch profile error:", error instanceof Error ? error.message : error);
+
+          setIsProfileLoaded(true);
+        } catch (error) {
+          console.error("Fetch profile error:", error);
           showAlert("error", "Error fetching profile. Please try again.");
         }
       };
       fetchProfile();
     }
-  }, [user, loading, router, isEditMode, pathname]);
-
-  const validateField = (name: string, value: string | string[] | boolean | number) => {
-    let error = "";
-    switch (name) {
-      case "firstName":
-      case "lastName":
-      case "nationality":
-      case "city":
-      case "visaType":
-      case "gender":
-      case "hourlyRate":
-      case "yearsOfExperience":
-        if (typeof value === "string" && !value) error = name.replace(/([A-Z])/g, " $1").trim() + " is required";
-        break;
-      case "dateOfBirth":
-        if (typeof value === "string" && !value) error = "Date of Birth is required";
-        break;
-      case "phoneNumber":
-        if (typeof value === "string") {
-          if (!value) error = "Phone Number is required";
-          else if (!/^\+971\d{9}$/.test(value)) error = "Phone must be +971xxxxxxxxx (no spaces, e.g., +971501234567)";
-        }
-        break;
-      case "languagesSpoken":
-      case "openToWorkIn":
-      case "talents":
-        if (Array.isArray(value) && value.length === 0) error = name.replace(/([A-Z])/g, " $1").trim() + " cannot be empty";
-        break;
-      case "skills":
-        if (Array.isArray(value) && value.length === 0) error = "Please select at least one skill";
-        break;
-      case "hourlyRate":
-      case "yearsOfExperience":
-        if (typeof value === "string" && value && (isNaN(Number(value)) || Number(value) <= 0)) error = name.replace(/([A-Z])/g, " $1").trim() + " must be > 0 (e.g., 50)";
-        break;
-      default:
-        break;
-    }
-    console.log(`Validating ${name}:`, { value, error });
-    setErrors((prev) => {
-      if (!error) {
-        const { [name]: _, ...rest } = prev;
-        return rest;
-      }
-      return { ...prev, [name]: error };
-    });
-    return error;
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    console.log("Input changed:", name, value);
-    setProfile({ ...profile, [name]: value });
-    validateField(name, value);
-  };
-
-  const handleMultiSelectChange = (name: string, values: string[]) => {
-    console.log("Multi-select changed:", name, values);
-    setProfile({ ...profile, [name]: values });
-    validateField(name, values);
-  };
-
-  const toggleSkill = (skill: string) => {
-    console.log("Toggling skill:", skill);
-    const updatedSkills = skills.includes(skill)
-      ? skills.filter((s) => s !== skill)
-      : [...skills, skill];
-    setSkills(updatedSkills);
-    validateField("skills", updatedSkills);
-  };
-
-  const toggleCategory = (category: string) => {
-    console.log("Toggling category:", category);
-    setOpenCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
-    );
-  };
+  }, [user, loading, router, pathname]);
 
   const handleFileUpload = async (file: File | null, type: "image" | "resume") => {
     if (!file) {
-      console.log("No " + type + " file selected for upload");
       showAlert("error", "Please select a file to upload.");
       return;
     }
 
-    if (file.size > 200 * 1024) {
-      console.log(type + " file too large:", file.name, file.size / 1024 / 1024, "MB");
-      showAlert("error", `${type === "image" ? "Profile image" : "Resume"} is too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Must be under 200KB.`);
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      showAlert("error", `${type === "image" ? "Image" : "Resume"} must be under 5MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      return;
+    }
+
+    // Validate file types
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const validDocTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+    if (type === "image" && !validImageTypes.includes(file.type)) {
+      showAlert("error", "Please upload a valid image file (JPG, PNG, WEBP)");
+      return;
+    }
+
+    if (type === "resume" && !validDocTypes.includes(file.type)) {
+      showAlert("error", "Please upload a valid document (PDF, DOC, DOCX)");
+      return;
+    }
+
+    // Check for Cloudinary configuration
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || cloudName === 'root' || !uploadPreset) {
+      showAlert("error", "⚠️ Cloudinary is not configured. Please set up your environment variables.");
+      console.error("Missing Cloudinary config:", { cloudName, uploadPreset });
       return;
     }
 
     try {
-      console.log("Uploading " + type + " to Cloudinary:", file.name);
-      console.log("Cloudinary config:", {
-        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-        preset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET,
-      });
-      setUploadingImage(type === "image" ? true : uploadingImage);
-      setUploadingResume(type === "resume" ? true : uploadingResume);
+      type === "image" ? setUploadingImage(true) : setUploadingResume(true);
+
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "eventopic_unsigned");
+      formData.append("upload_preset", uploadPreset);
       formData.append("folder", "eventopic");
-      formData.append("api_key", "381131836444186");
-      formData.append("resource_type", type === "image" ? "image" : "raw");
 
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${type === "image" ? "image" : "raw"}/upload`,
-        formData
-      );
+      // Use auto upload endpoint (works for both images and documents)
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+
+      console.log(`Uploading ${type} to Cloudinary...`, { cloudName, uploadPreset, fileType: file.type });
+
+      const response = await axios.post(uploadUrl, formData, {
+        timeout: 60000,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+          console.log(`Upload progress: ${percentCompleted}%`);
+        }
+      });
+
+      if (!response.data || !response.data.secure_url) {
+        throw new Error("Invalid response from Cloudinary");
+      }
 
       const url = response.data.secure_url;
-      console.log(type + " uploaded successfully, URL:", url);
-      setProfile((prev) => {
-        const updatedProfile = { ...prev, [type === "image" ? "profileImageUrl" : "resumeUrl"]: url };
-        console.log("Updated profile state with " + type + " URL:", updatedProfile);
-        return updatedProfile;
-      });
+      console.log(`Upload successful! URL: ${url}`);
+
+      // Update Firestore
+      await setDoc(doc(db, "users", user!.uid), {
+        [type === "image" ? "profileImageUrl" : "resumeUrl"]: url,
+      }, { merge: true });
+
+      // Update local state
+      setProfile((prev) => ({
+        ...prev,
+        [type === "image" ? "profileImageUrl" : "resumeUrl"]: url,
+      }));
+
+      // Clear file input
+      if (type === "image") {
+        setProfileImage(null);
+      } else {
+        setResume(null);
+      }
+
       showAlert("success", `${type === "image" ? "Profile image" : "Resume"} uploaded successfully!`);
-    } catch (error: unknown) {
-      console.error("Error uploading " + type + ":", error instanceof Error ? error.message : error);
-      showAlert(
-        "error",
-        error instanceof Error
-          ? error.message || `Failed to upload ${type === "image" ? "profile image" : "resume"}. Please try again.`
-          : `Failed to upload ${type === "image" ? "profile image" : "resume"}. Please try again.`
-      );
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      console.error(`Upload error:`, error);
+
+      let errorMessage = "Upload failed. Please try again.";
+
+      if (error.response) {
+        // Cloudinary returned an error
+        const cloudinaryError = error.response.data?.error?.message || error.response.data?.message;
+        if (cloudinaryError) {
+          errorMessage = `Cloudinary error: ${cloudinaryError}`;
+        }
+        console.error("Cloudinary error response:", error.response.data);
+      } else if (error.request) {
+        errorMessage = "Network error. Please check your connection.";
+      }
+
+      showAlert("error", errorMessage);
     } finally {
-      setUploadingImage(type === "image" ? false : uploadingImage);
-      setUploadingResume(type === "resume" ? false : uploadingResume);
+      setUploadingImage(false);
+      setUploadingResume(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted, user:", user?.uid, "profile:", profile, "skills:", skills);
 
-    if (!user || !user.uid) {
-      console.log("Submit attempted without valid user");
+    if (!user?.uid) {
       showAlert("error", "Please sign in with a valid account.");
-      setUpdating(false);
       return;
     }
 
     setUpdating(true);
-    console.log("Updating set to true, validating fields...");
-
-    const newErrors: Record<string, string> = {};
-    const allFields = [
-      "firstName",
-      "lastName",
-      "dateOfBirth",
-      "phoneNumber",
-      "nationality",
-      "countryOfResidence",
-      "city",
-      "visaType",
-      "gender",
-      "languagesSpoken",
-      "openToWorkIn",
-      "hourlyRate",
-      "yearsOfExperience",
-      "talents",
-      "skills",
-    ];
-    allFields.forEach((field) => {
-      if (field === "skills") {
-        const error = validateField(field, skills);
-        if (error) newErrors[field] = error;
-      } else {
-        const value = profile[field as keyof typeof profile];
-        const error = validateField(field, value);
-        if (error) newErrors[field] = error;
-      }
-    });
-
-    setErrors(newErrors);
-    console.log("Validation errors:", newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      console.log("Form validation failed:", Object.keys(newErrors));
-      showAlert("error", "Please fix: " + Object.keys(newErrors).map((key) => key.replace(/([A-Z])/g, " $1").trim()).join(", "));
-      setUpdating(false);
-      return;
-    }
 
     try {
-      console.log("Saving profile to Firestore...");
-      await setDoc(
-        doc(db, "users", user.uid),
-        { ...profile, isProfileComplete: true },
-        { merge: true }
-      );
-      console.log("Profile saved for user:", user.uid);
-
-      try {
-        console.log("Saving skills to Firestore...");
-        await setDoc(doc(db, "user_skills", user.uid), { skills }, { merge: true });
-        console.log("Skills saved:", skills);
-      } catch (skillError: unknown) {
-        console.error("Error saving skills:", skillError);
-        showAlert("error", "Failed to save skills, but profile saved.");
-      }
-
-      console.log("Profile and skills saved, fetching updated profile...");
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const skillsDoc = await getDoc(doc(db, "user_skills", user.uid));
-      if (userDoc.exists()) {
-        setProfile((prev) => ({ ...prev, ...userDoc.data() }));
-      }
-      if (skillsDoc.exists()) {
-        setSkills(skillsDoc.data().skills || []);
-      }
+      await setDoc(doc(db, "users", user.uid), { ...profile, isProfileComplete: true }, { merge: true });
+      // FIXED: Save skills to user_skills collection
+      await setDoc(doc(db, "user_skills", user.uid), { skills }, { merge: true });
 
       showAlert("success", "Profile saved successfully!");
-      console.log("Redirecting to /profile");
-      router.push("/profile", { scroll: false });
-    } catch (error: unknown) {
-      console.error("Save profile error:", error instanceof Error ? error.message : error);
+      router.push("/profile");
+    } catch (error) {
+      console.error("Save error:", error);
       showAlert("error", "Failed to save profile. Please try again.");
     } finally {
-      console.log("Setting updating to false");
       setUpdating(false);
     }
   };
 
-  const skillCategories = {
-    hospitality: [
-      "Hostess/Host",
-      "Multilingual Guide",
-      "Ticketing Officer",
-      "Security",
-      "Front Desk Officer",
-      "Guest Service Representative",
-      "Housekeeping Attendant",
-      "Concierge",
-      "Event Manager",
-      "Event Coordinator",
-      "Tour Guide",
-      "Translator",
-    ],
-    officeWork: [
-      "Customer Service Representative",
-      "Data Entry Clerk",
-      "Receptionist",
-      "Office Assistant",
-      "Bookkeeper",
-      "Social Media Coordinator",
-      "Content Writer",
-      "Human Resource Assistant",
-      "Accountant",
-      "Recruiter",
-      "Auditor",
-    ],
-    fAndB: [
-      "Bartender",
-      "Waitress/Waiter",
-      "Bar Supervisor",
-      "F&B Supervisor",
-      "Commis",
-      "Steward",
-      "Front of House Attendant",
-      "Sous Chef",
-      "Chef de Partie",
-      "Dishwasher",
-    ],
-    sales: ["Retail Staff", "Promoter", "Cashier", "Sales Representative"],
-    beautyService: [
-      "Hairdresser",
-      "Makeup Artist",
-      "Wardrobe Stylist",
-      "Stylist",
-      "Beauty Consultant",
-      "Spa Therapist",
-    ],
-    entertainment: [
-      "Model",
-      "Singer",
-      "Dancer",
-      "Actor",
-      "Musician",
-      "Entertainer",
-      "Photographer",
-      "Videographer",
-      "Magician",
-      "Clown",
-      "Event Staff",
-      "Costume Character",
-      "Stagehand",
-      "Audio Visual Technician",
-      "DJ",
-      "MC",
-      "Editor",
-      "Production Assistant",
-    ],
+  const toggleSkill = (skill: string) => {
+    setSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]);
   };
 
-  const cities = [
-    "Abu Dhabi",
-    "Dubai",
-    "Sharjah",
-    "Ajman",
-    "Umm Al Quwain",
-    "Fujairah",
-    "Ras Al Khaimah",
-  ];
+  const calculateProfileCompletion = () => {
+    const fields = [
+      profile.firstName, profile.lastName, profile.dateOfBirth, profile.phoneNumber,
+      profile.nationality, profile.city, profile.visaType, profile.gender,
+      profile.whatsappNumber, profile.hourlyRate, profile.highestEducation,
+      profile.yearsOfExperience, profile.availability, profile.profileImageUrl, profile.resumeUrl
+    ].filter(Boolean).length;
 
-  const niceSkills = skills.map((skill) =>
-    skill
-      .split("_")
-      .slice(1)
-      .join(" ")
-      .replace(/\//g, "/")
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ")
-  );
+    const arrays = [
+      profile.languagesSpoken.length > 0,
+      profile.openToWorkIn.length > 0,
+      profile.talents.length > 0,
+      skills.length > 0
+    ].filter(Boolean).length;
 
-  if (loading || !user || !isProfileLoaded)
+    return Math.round(((fields + arrays) / 19) * 100);
+  };
+
+  // FIXED: Resume download function
+  const handleDownloadResume = async (resumeUrl: string) => {
+    try {
+      const response = await fetch(resumeUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${profile.firstName}_${profile.lastName}_Resume.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading resume:', error);
+      // Fallback to opening in new tab if download fails
+      window.open(resumeUrl, '_blank');
+    }
+  };
+
+  const profileCompletion = calculateProfileCompletion();
+
+  if (loading || !user || !isProfileLoaded) {
     return (
-      <div className="pt-20 text-center flex items-center justify-center min-h-screen text-[var(--text-body)]">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[var(--primary)]"></div>
       </div>
     );
+  }
 
-  console.log("Rendering profile view - profileImageUrl:", profile.profileImageUrl);
-  console.log("Rendering profile view - resumeUrl:", profile.resumeUrl);
-  console.log("Current errors state:", errors);
+  // View Mode - MOBILE RESPONSIVE
+  if (!isEditMode && profile.isProfileComplete) {
+    return (
+      <>
+        <Navbar />
+        <section className="pt-20 sm:pt-24 pb-12 sm:pb-16 min-h-screen bg-[var(--background)] relative overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-1/4 w-64 h-64 bg-[var(--primary)]/10 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+          </div>
 
-  return (
-    <>
-      <Navbar />
-      <section className="pt-20 bg-[var(--primary)] min-h-screen relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-accent)]/10 to-[var(--teal-accent)]/5"></div>
-        <div className="container mx-auto px-4 max-w-6xl relative z-10">
-          <AnimatePresence>
-            {alert.visible && (
-              <CustomAlert
-                type={alert.type}
-                message={alert.message}
-                onClose={() => setAlert((prev) => ({ ...prev, visible: false }))}
-              />
-            )}
-          </AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mb-8"
-          >
-            <h1
-              className="text-4xl font-bold font-heading flex items-center gap-2"
-              style={{ color: "var(--text-accent)", textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
-              aria-label={profile.isProfileComplete && !isEditMode ? "Your Profile" : isEditMode ? "Edit Your Profile" : "Create Your Profile"}
-            >
-              <FaUser /> {profile.isProfileComplete && !isEditMode ? "Your Profile" : isEditMode ? "Edit Your Profile" : "Create Your Profile"}
-            </h1>
-          </motion.div>
-
-          {(!profile.isProfileComplete || isEditMode) ? (
-            <motion.form
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              onSubmit={handleSubmit}
-              className="p-8 rounded-2xl shadow-lg border border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md"
-            >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Column: Personal Info, Location & Visa, Professional Details */}
-                <div className="space-y-8">
-                  {/* Personal Info Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-[var(--text-accent)]">
-                      <FaUser /> Personal Info
-                    </h2>
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="firstName" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                            <FaUser /> First Name*
-                          </label>
-                          <input
-                            type="text"
-                            id="firstName"
-                            name="firstName"
-                            value={profile.firstName}
-                            onChange={handleInputChange}
-                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.firstName ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                            required
-                            aria-describedby={errors.firstName ? "firstName-error" : undefined}
-                          />
-                          {errors.firstName && (
-                            <p id="firstName-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                              <FaExclamationTriangle /> {errors.firstName}
-                            </p>
-                          )}
-                        </div>
-                        <div>
-                          <label htmlFor="lastName" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                            <FaUser /> Last Name*
-                          </label>
-                          <input
-                            type="text"
-                            id="lastName"
-                            name="lastName"
-                            value={profile.lastName}
-                            onChange={handleInputChange}
-                            className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.lastName ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                            required
-                            aria-describedby={errors.lastName ? "lastName-error" : undefined}
-                          />
-                          {errors.lastName && (
-                            <p id="lastName-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                              <FaExclamationTriangle /> {errors.lastName}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div>
-                        <label htmlFor="dateOfBirth" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaCalendar /> Date of Birth* (YYYY-MM-DD)
-                        </label>
-                        <input
-                          type="date"
-                          id="dateOfBirth"
-                          name="dateOfBirth"
-                          value={profile.dateOfBirth}
-                          onChange={handleInputChange}
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.dateOfBirth ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.dateOfBirth ? "dateOfBirth-error" : undefined}
-                        />
-                        {errors.dateOfBirth && (
-                          <p id="dateOfBirth-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.dateOfBirth}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaPhone /> Phone Number* (+971xxxxxxxxx)
-                        </label>
-                        <input
-                          type="tel"
-                          id="phoneNumber"
-                          name="phoneNumber"
-                          value={profile.phoneNumber}
-                          onChange={handleInputChange}
-                          placeholder="+971501234567"
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.phoneNumber ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.phoneNumber ? "phoneNumber-error" : undefined}
-                        />
-                        {errors.phoneNumber && (
-                          <p id="phoneNumber-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.phoneNumber}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="nationality" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaGlobe /> Nationality*
-                        </label>
-                        <select
-                          id="nationality"
-                          name="nationality"
-                          value={profile.nationality}
-                          onChange={handleInputChange}
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.nationality ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.nationality ? "nationality-error" : undefined}
-                        >
-                          <option value="">Select Nationality</option>
-                          <option value="UAE">UAE</option>
-                          <option value="India">India</option>
-                          <option value="USA">USA</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        {errors.nationality && (
-                          <p id="nationality-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.nationality}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Location & Visa Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                  >
-                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-[var(--text-accent)]">
-                      <FaMapMarkerAlt /> Location & Visa
-                    </h2>
-                    <div className="space-y-6">
-                      <div>
-                        <label htmlFor="countryOfResidence" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaGlobeAmericas /> Country of Residence*
-                        </label>
-                        <input
-                          type="text"
-                          id="countryOfResidence"
-                          name="countryOfResidence"
-                          value={profile.countryOfResidence}
-                          disabled
-                          className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 opacity-50 text-[var(--text-body)]"
-                          aria-describedby="countryOfResidence-info"
-                        />
-                        <p id="countryOfResidence-info" className="text-sm mt-1 text-[var(--text-body)]">
-                          Fixed to UAE for this platform.
-                        </p>
-                      </div>
-                      <div>
-                        <label htmlFor="city" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaMapMarkerAlt /> City*
-                        </label>
-                        <select
-                          id="city"
-                          name="city"
-                          value={profile.city}
-                          onChange={handleInputChange}
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.city ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.city ? "city-error" : undefined}
-                        >
-                          <option value="">Select City</option>
-                          {cities.map((city) => (
-                            <option key={city} value={city}>
-                              {city}
-                            </option>
-                          ))}
-                        </select>
-                        {errors.city && (
-                          <p id="city-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.city}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="visaType" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaIdCard /> Visa Type*
-                        </label>
-                        <select
-                          id="visaType"
-                          name="visaType"
-                          value={profile.visaType}
-                          onChange={handleInputChange}
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.visaType ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.visaType ? "visaType-error" : undefined}
-                        >
-                          <option value="">Select Visa Type</option>
-                          <option value="employment">Employment</option>
-                          <option value="family">Family</option>
-                          <option value="freelance">Freelance</option>
-                          <option value="golden">Golden</option>
-                          <option value="investor">Investor</option>
-                          <option value="student">Student</option>
-                        </select>
-                        {errors.visaType && (
-                          <p id="visaType-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.visaType}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Professional Details Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                  >
-                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-[var(--text-accent)]">
-                      <FaIdCard /> Professional Details
-                    </h2>
-                    <div className="space-y-6">
-                      <div>
-                        <label htmlFor="gender" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaVenusMars /> Gender*
-                        </label>
-                        <select
-                          id="gender"
-                          name="gender"
-                          value={profile.gender}
-                          onChange={handleInputChange}
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.gender ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.gender ? "gender-error" : undefined}
-                        >
-                          <option value="">Select Gender</option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
-                        </select>
-                        {errors.gender && (
-                          <p id="gender-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.gender}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="languagesSpoken" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaGlobe /> Languages Spoken*
-                        </label>
-                        <select
-                          id="languagesSpoken"
-                          multiple
-                          name="languagesSpoken"
-                          value={profile.languagesSpoken}
-                          onChange={(e) =>
-                            handleMultiSelectChange(
-                              "languagesSpoken",
-                              Array.from(e.target.selectedOptions, (option) => option.value)
-                            )
-                          }
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.languagesSpoken ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          size={3}
-                          aria-describedby={errors.languagesSpoken ? "languagesSpoken-error" : undefined}
-                        >
-                          <option value="English">English</option>
-                          <option value="Arabic">Arabic</option>
-                          <option value="Hindi">Hindi</option>
-                          <option value="French">French</option>
-                        </select>
-                        {errors.languagesSpoken && (
-                          <p id="languagesSpoken-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.languagesSpoken}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="whatsappNumber" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaPhone /> WhatsApp Number
-                        </label>
-                        <input
-                          type="tel"
-                          id="whatsappNumber"
-                          name="whatsappNumber"
-                          value={profile.whatsappNumber}
-                          onChange={handleInputChange}
-                          className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="openToWorkIn" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaMapMarkerAlt /> Open to Work In*
-                        </label>
-                        <select
-                          id="openToWorkIn"
-                          multiple
-                          name="openToWorkIn"
-                          value={profile.openToWorkIn}
-                          onChange={(e) =>
-                            handleMultiSelectChange(
-                              "openToWorkIn",
-                              Array.from(e.target.selectedOptions, (option) => option.value)
-                            )
-                          }
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.openToWorkIn ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          size={2}
-                          aria-describedby={errors.openToWorkIn ? "openToWorkIn-error" : undefined}
-                        >
-                          <option value="UAE">UAE</option>
-                        </select>
-                        {errors.openToWorkIn && (
-                          <p id="openToWorkIn-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.openToWorkIn}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="hourlyRate" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaMoneyBillWave /> Average Rate Per Hour (AED)*
-                        </label>
-                        <input
-                          type="number"
-                          id="hourlyRate"
-                          name="hourlyRate"
-                          value={profile.hourlyRate}
-                          onChange={handleInputChange}
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.hourlyRate ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.hourlyRate ? "hourlyRate-error" : undefined}
-                        />
-                        {errors.hourlyRate && (
-                          <p id="hourlyRate-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.hourlyRate}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="highestzingEducation" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaGraduationCap /> Highest Education
-                        </label>
-                        <select
-                          id="highestEducation"
-                          name="highestEducation"
-                          value={profile.highestEducation}
-                          onChange={handleInputChange}
-                          className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
-                        >
-                          <option value="">Select Education</option>
-                          <option value="High School">High School</option>
-                          <option value="Bachelor&apos;s">Bachelor&apos;s</option>
-                          <option value="Master&apos;s">Master&apos;s</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="yearsOfExperience" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaClock /> Years of Experience*
-                        </label>
-                        <input
-                          type="number"
-                          id="yearsOfExperience"
-                          name="yearsOfExperience"
-                          value={profile.yearsOfExperience}
-                          onChange={handleInputChange}
-                          className={`w-full p-3 rounded-lg bg-[var(--primary)]/50 border ${errors.yearsOfExperience ? "border-[var(--error)]" : "border-[var(--light)]/20"} focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]`}
-                          required
-                          aria-describedby={errors.yearsOfExperience ? "yearsOfExperience-error" : undefined}
-                        />
-                        {errors.yearsOfExperience && (
-                          <p id="yearsOfExperience-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.yearsOfExperience}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="previousRelatedExperience" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaGlobe /> Previous Related Experience
-                        </label>
-                        <textarea
-                          id="previousRelatedExperience"
-                          name="previousRelatedExperience"
-                          value={profile.previousRelatedExperience}
-                          onChange={handleInputChange}
-                          className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
-                          rows={4}
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="availability" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaClock /> Availability
-                        </label>
-                        <input
-                          type="text"
-                          id="availability"
-                          name="availability"
-                          value={profile.availability}
-                          onChange={handleInputChange}
-                          className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="secondNationality" className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaGlobe /> Second Nationality
-                        </label>
-                        <select
-                          id="secondNationality"
-                          name="secondNationality"
-                          value={profile.secondNationality}
-                          onChange={handleInputChange}
-                          className="w-full p-3 rounded-lg bg-[var(--primary)]/50 border border-[var(--light)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors duration-300 text-[var(--text-body)]"
-                        >
-                          <option value="">None</option>
-                          <option value="UAE">UAE</option>
-                          <option value="India">India</option>
-                          <option value="USA">USA</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="flex items-center text-sm font-medium mb-2 gap-2 text-[var(--text-body)]">
-                          <input
-                            type="checkbox"
-                            name="hasCarInUAE"
-                            checked={profile.hasCarInUAE}
-                            onChange={(e) => {
-                              console.log("hasCarInUAE changed:", e.target.checked);
-                              setProfile({ ...profile, hasCarInUAE: e.target.checked });
-                              validateField("hasCarInUAE", e.target.checked);
-                            }}
-                            className="mr-2 rounded"
-                          />
-                          <FaCar /> Car in UAE
-                        </label>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Right Column: Skills & Talents, Profile Image, Resume Upload */}
-                <div className="space-y-8">
-                  {/* Skills & Talents Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.6 }}
-                  >
-                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-[var(--text-accent)]">
-                      <FaGlobe /> Skills & Talents
-                    </h2>
-                    <div className="space-y-6">
-                      <div>
-                        <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaGlobe /> What are you good at? (Select all that apply)*
-                        </label>
-                        {Object.entries(skillCategories).map(([category, options]) => (
-                          <div key={category} className="mb-6">
-                            <div
-                              className="flex justify-between items-center p-4 rounded-xl mb-2 cursor-pointer transition-all duration-300 hover:bg-[var(--color-accent)]/30 bg-[var(--primary)]/50 text-[var(--text-accent)]"
-                              onClick={() => toggleCategory(category)}
-                              role="button"
-                              aria-expanded={openCategories.includes(category)}
-                              aria-controls={`skills-${category}`}
-                            >
-                              <span className="font-semibold">{category.charAt(0).toUpperCase() + category.slice(1)}</span>
-                              <span dangerouslySetInnerHTML={{ __html: openCategories.includes(category) ? "&minus;" : "&plus;" }} />
-                            </div>
-                            {openCategories.includes(category) && (
-                              <motion.div
-                                id={`skills-${category}`}
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-2 flex flex-wrap gap-2 p-4 bg-[var(--primary)]/50 rounded-xl border border-[var(--light)]/20"
-                              >
-                                {options.map((skill) => {
-                                  const skillId = `${category}_${skill.toLowerCase().replace(/ /g, "_")}`;
-                                  return (
-                                    <motion.div
-                                      key={skillId}
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      className={`px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
-                                        skills.includes(skillId)
-                                          ? "bg-[var(--color-accent)] text-[var(--white)] shadow-md"
-                                          : "bg-[var(--primary)]/50 text-[var(--text-body)] hover:bg-[var(--color-accent)] hover:text-[var(--white)]"
-                                      }`}
-                                      onClick={() => toggleSkill(skillId)}
-                                      role="checkbox"
-                                      aria-checked={skills.includes(skillId)}
-                                      tabIndex={0}
-                                      onKeyDown={(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                          e.preventDefault();
-                                          toggleSkill(skillId);
-                                        }
-                                      }}
-                                    >
-                                      {skill}
-                                    </motion.div>
-                                  );
-                                })}
-                              </motion.div>
-                            )}
-                          </div>
-                        ))}
-                        {errors.skills && (
-                          <p id="skills-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.skills}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-[var(--text-body)]">
-                          <FaStar /> Talents (Select at least one)*
-                        </label>
-                        <motion.div className="flex flex-wrap gap-2 p-4 bg-[var(--primary)]/50 rounded-xl border border-[var(--light)]/20">
-                          {[
-                            "Public Speaking",
-                            "Event Planning",
-                            "Photography",
-                            "Videography",
-                            "Music Production",
-                            "Graphic Design",
-                          ].map((talent) => (
-                            <motion.div
-                              key={talent}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className={`px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
-                                profile.talents.includes(talent)
-                                  ? "bg-[var(--color-accent)] text-[var(--white)] shadow-md"
-                                  : "bg-[var(--primary)]/50 text-[var(--text-body)] hover:bg-[var(--color-accent)] hover:text-[var(--white)]"
-                              }`}
-                              onClick={() =>
-                                handleMultiSelectChange(
-                                  "talents",
-                                  profile.talents.includes(talent)
-                                    ? profile.talents.filter((t) => t !== talent)
-                                    : [...profile.talents, talent]
-                                )
-                              }
-                              role="checkbox"
-                              aria-checked={profile.talents.includes(talent)}
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
-                                  handleMultiSelectChange(
-                                    "talents",
-                                    profile.talents.includes(talent)
-                                      ? profile.talents.filter((t) => t !== talent)
-                                      : [...profile.talents, talent]
-                                  );
-                                }
-                              }}
-                            >
-                              {talent}
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                        {errors.talents && (
-                          <p id="talents-error" className="text-sm mt-1 flex items-center gap-1 text-[var(--error)]">
-                            <FaExclamationTriangle /> {errors.talents}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Profile Image Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.8 }}
-                    className="p-6 rounded-xl border-2 border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md shadow-lg group"
-                    whileHover={{ scale: 1.03, y: -10, boxShadow: "0 0 15px rgba(0, 196, 180, 0.3)" }}
-                  >
-                    <label className="block text-lg font-bold mb-4 flex items-center gap-3 text-[var(--text-accent)]">
-                      <FaImage size={24} /> Profile Image
-                    </label>
-                    {profile.profileImageUrl ? (
-                      <div className="flex flex-col items-start">
-                        <Image
-                          src={profile.profileImageUrl || "/placeholder.png"}
-                          alt="Profile Preview"
-                          width={192}
-                          height={192}
-                          className="rounded-full object-cover mb-4 border-2 border-[var(--color-accent)] shadow-md aspect-[1/1]"
-                          quality={85}
-                        />
-                        <motion.button
-                          variants={buttonVariants}
-                          onClick={() => {
-                            console.log("Removing profile image, current URL:", profile.profileImageUrl);
-                            setProfile({ ...profile, profileImageUrl: "" });
-                          }}
-                          className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-                          style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-                        >
-                          Remove Image
-                          <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                        </motion.button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-start">
-                        <input
-                          type="file"
-                          id="profileImage"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            console.log("Profile image selected:", file?.name, file?.size);
-                            setProfileImage(file);
-                          }}
-                          className="mb-4 text-base text-[var(--text-body)] bg-[var(--primary)]/50 p-4 rounded-lg border border-[var(--light)]/20 focus:border-[var(--color-accent)] w-full cursor-pointer"
-                        />
-                        {profileImage && (
-                          <p className="text-base mb-4 font-medium text-[var(--text-body)]">
-                            Selected: {profileImage.name} ({(profileImage.size / 1024).toFixed(2)}KB)
-                          </p>
-                        )}
-                        <motion.button
-                          variants={buttonVariants}
-                          onClick={() => handleFileUpload(profileImage, "image")}
-                          disabled={!profileImage || uploadingImage}
-                          className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 group relative"
-                          style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-                        >
-                          {uploadingImage ? (
-                            <>
-                              <FaSpinner className="animate-spin" size={20} /> Uploading...
-                            </>
-                          ) : (
-                            "Upload Profile Image"
-                          )}
-                          <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                        </motion.button>
-                        <p className="text-sm mt-3 font-body text-[var(--text-body)]">
-                          Max size: 200KB (PNG, JPEG)
-                        </p>
-                      </div>
-                    )}
-                  </motion.div>
-
-                  {/* Resume Upload Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 1.0 }}
-                    className="p-6 rounded-xl border-2 border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md shadow-lg group"
-                    whileHover={{ scale: 1.03, y: -10, boxShadow: "0 0 15px rgba(0, 196, 180, 0.3)" }}
-                  >
-                    <label className="block text-lg font-bold mb-4 flex items-center gap-3 text-[var(--text-accent)]">
-                      <FaFileAlt size={24} /> Resume
-                    </label>
-                    {profile.resumeUrl ? (
-                      <div className="flex flex-col items-start">
-                        <p className="text-base mb-4 font-medium text-[var(--text-body)]">
-                          Resume uploaded. Click to download.
-                        </p>
-                        <motion.button
-                          variants={buttonVariants}
-                          onClick={() => {
-                            console.log("Downloading resume, URL:", profile.resumeUrl);
-                            const link = document.createElement("a");
-                            link.href = profile.resumeUrl!;
-                            link.download = "resume";
-                            link.click();
-                          }}
-                          className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-                          style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-                        >
-                          <FaDownload /> Download Resume
-                          <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                        </motion.button>
-                        <motion.button
-                          variants={buttonVariants}
-                          onClick={() => {
-                            console.log("Removing resume, current URL:", profile.resumeUrl);
-                            setProfile({ ...profile, resumeUrl: "" });
-                          }}
-                          className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 mt-4 group relative"
-                          style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-                        >
-                          Remove Resume
-                          <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                        </motion.button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-start">
-                        <input
-                          type="file"
-                          id="resume"
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            console.log("Resume selected:", file?.name, file?.size);
-                            setResume(file);
-                          }}
-                          className="mb-4 text-base text-[var(--text-body)] bg-[var(--primary)]/50 p-4 rounded-lg border border-[var(--light)]/20 focus:border-[var(--color-accent)] w-full cursor-pointer"
-                        />
-                        {resume && (
-                          <p className="text-base mb-4 font-medium text-[var(--text-body)]">
-                            Selected: {resume.name} ({(resume.size / 1024).toFixed(2)}KB)
-                          </p>
-                        )}
-                        <motion.button
-                          variants={buttonVariants}
-                          onClick={() => handleFileUpload(resume, "resume")}
-                          disabled={!resume || uploadingResume}
-                          className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 group relative"
-                          style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-                        >
-                          {uploadingResume ? (
-                            <>
-                              <FaSpinner className="animate-spin" size={20} /> Uploading...
-                            </>
-                          ) : (
-                            "Upload Resume"
-                          )}
-                          <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                        </motion.button>
-                        <p className="text-sm mt-3 font-body text-[var(--text-body)]">
-                          Max size: 200KB (PDF, DOC, DOCX)
-                        </p>
-                      </div>
-                    )}
-                  </motion.div>
-                </div>
-              </div>
-
-              <motion.div className="flex justify-end mt-8" variants={containerVariants} initial="hidden" animate="visible">
-                <motion.button
-                  variants={buttonVariants}
-                  type="submit"
-                  disabled={updating || Object.keys(errors).length > 0}
-                  className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 group relative"
-                  style={{
-                    backgroundColor: updating || Object.keys(errors).length > 0
-                      ? "var(--primary)/50"
-                      : "var(--accent)",
-                    color: updating || Object.keys(errors).length > 0 ? "var(--text-body)" : "var(--white)",
-                    border: "2px solid var(--light)",
-                  }}
-                >
-                  {updating ? "Saving..." : "Save Profile"}
-                  <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                </motion.button>
-              </motion.div>
-            </motion.form>
-          ) : (
+          <div className="container mx-auto px-4 max-w-6xl relative z-10">
+            {/* Header with Edit Button - MOBILE RESPONSIVE */}
             <motion.div
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="p-8 rounded-2xl shadow-lg border border-[var(--light)]/20 bg-[var(--primary)]/50 backdrop-blur-md"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="flex flex-col items-center">
-                  <div className="mb-8">
-                    <h2 className="text-xl font-semibold mb-4 font-heading flex items-center gap-2 text-[var(--text-accent)]">
-                      <FaImage /> Profile Image
-                    </h2>
-                    {profile.profileImageUrl ? (
-                      <div className="flex flex-col items-center">
-                        <Image
-                          src={profile.profileImageUrl || "/placeholder.png"}
-                          alt="Profile"
-                          width={256}
-                          height={256}
-                          className="rounded-full object-cover mb-4 border-2 border-[var(--color-accent)] aspect-[1/1]"
-                          quality={85}
-                        />
-                        <motion.button
-                          variants={buttonVariants}
-                          onClick={() => {
-                            console.log("Downloading profile image, URL:", profile.profileImageUrl);
-                            const link = document.createElement("a");
-                            link.href = profile.profileImageUrl!;
-                            link.download = "profile-image";
-                            link.click();
-                          }}
-                          className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-                          style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-                        >
-                          <FaDownload /> Download Profile Image
-                          <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                        </motion.button>
-                      </div>
-                    ) : (
-                      <p className="text-sm font-body text-[var(--text-body)]">
-                        No profile image uploaded.
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4 font-heading flex items-center gap-2 text-[var(--text-accent)]">
-                      <FaFileAlt /> Resume
-                    </h2>
-                    {profile.resumeUrl ? (
-                      <div className="flex flex-col items-center">
-                        <p className="text-sm mb-4 text-[var(--text-body)]">
-                          Resume uploaded. Click to download.
-                        </p>
-                        <motion.button
-                          variants={buttonVariants}
-                          onClick={() => {
-                            console.log("Downloading resume, URL:", profile.resumeUrl);
-                            const link = document.createElement("a");
-                            link.href = profile.resumeUrl!;
-                            link.download = "resume";
-                            link.click();
-                          }}
-                          className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-                          style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-                        >
-                          <FaDownload /> Download Resume
-                          <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-                        </motion.button>
-                      </div>
-                    ) : (
-                      <p className="text-sm font-body text-[var(--text-body)]">
-                        No resume uploaded.
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-semibold mb-6 font-heading flex items-center gap-2 text-[var(--text-accent)]">
-                    <FaUser /> Basic Information
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="space-y-4">
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaUser className="text-[var(--text-accent)]" /> <strong>Name:</strong>{" "}
-                        {profile.firstName} {profile.lastName}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaCalendar className="text-[var(--text-accent)]" /> <strong>Date of Birth:</strong>{" "}
-                        {profile.dateOfBirth || "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaPhone className="text-[var(--text-accent)]" /> <strong>Phone Number:</strong>{" "}
-                        {profile.phoneNumber || "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaPhone className="text-[var(--text-accent)]" /> <strong>WhatsApp Number:</strong>{" "}
-                        {profile.whatsappNumber || "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaGlobe className="text-[var(--text-accent)]" /> <strong>Nationality:</strong>{" "}
-                        {profile.nationality || "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaGlobe className="text-[var(--text-accent)]" /> <strong>Second Nationality:</strong>{" "}
-                        {profile.secondNationality || "None"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaVenusMars className="text-[var(--text-accent)]" /> <strong>Gender:</strong>{" "}
-                        {profile.gender || "Not set"}
-                      </p>
-                    </div>
-                    <div className="space-y-4">
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaMapMarkerAlt className="text-[var(--text-accent)]" /> <strong>Location:</strong>{" "}
-                        {profile.city}, {profile.countryOfResidence}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaIdCard className="text-[var(--text-accent)]" /> <strong>Visa Type:</strong>{" "}
-                        {profile.visaType || "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaGlobe className="text-[var(--text-accent)]" /> <strong>Languages:</strong>{" "}
-                        {profile.languagesSpoken.length > 0 ? profile.languagesSpoken.join(", ") : "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaMapMarkerAlt className="text-[var(--text-accent)]" /> <strong>Open to Work In:</strong>{" "}
-                        {profile.openToWorkIn.length > 0 ? profile.openToWorkIn.join(", ") : "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaMoneyBillWave className="text-[var(--text-accent)]" /> <strong>Hourly Rate (AED):</strong>{" "}
-                        {profile.hourlyRate || "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaGraduationCap className="text-[var(--text-accent)]" /> <strong>Education:</strong>{" "}
-                        {profile.highestEducation || "Not set"}
-                      </p>
-                      <p className="flex items-center gap-2 text-[var(--text-body)]">
-                        <FaCar className="text-[var(--text-accent)]" /> <strong>Car in UAE:</strong>{" "}
-                        {profile.hasCarInUAE ? "Yes" : "No"}
-                      </p>
-                    </div>
-                  </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display gradient-text">
+                Your Profile
+              </h1>
+              <motion.a
+                href="/profile?edit=true"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="btn-primary w-full sm:w-auto px-6 py-3 flex items-center justify-center gap-2"
+              >
+                <FaEdit /> Edit Profile
+              </motion.a>
+            </motion.div>
 
-                  <h2 className="text-2xl font-semibold mb-6 font-heading flex items-center gap-2 text-[var(--text-accent)]">
-                    <FaStar /> Your Skills & Experience
-                  </h2>
-                  <div className="bg-[var(--primary)]/50 p-6 rounded-xl border border-[var(--light)]/20 mb-6">
-                    <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-accent)] scrollbar-track-[var(--primary)]">
-                      {niceSkills.length > 0 ? (
-                        niceSkills.map((skill, index) => (
-                          <motion.span
-                            key={index}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3, delay: index * 0.1 }}
-                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-body font-medium bg-[var(--color-accent)] text-[var(--white)] hover:bg-[var(--teal-accent)] transition-all duration-200"
-                            aria-label={`Skill: ${skill}`}
-                          >
-                            <FaStar className="text-xs" /> {skill}
-                          </motion.span>
-                        ))
+            <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+              {/* Left Column - Profile Card - MOBILE RESPONSIVE */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="lg:col-span-1"
+              >
+                <div className="glass-card overflow-hidden lg:sticky lg:top-24">
+                  {/* Profile Image Header */}
+                  <div className="relative h-32 sm:h-48 bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)]">
+                    <div className="absolute -bottom-12 sm:-bottom-16 left-1/2 -translate-x-1/2">
+                      {profile.profileImageUrl ? (
+                        <Image
+                          src={profile.profileImageUrl}
+                          alt="Profile"
+                          width={128}
+                          height={128}
+                          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-xl aspect-square object-cover"
+                        />
                       ) : (
-                        <p className="text-sm font-body text-[var(--text-body)]">
-                          No skills added yet.
-                        </p>
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] border-4 border-white shadow-xl flex items-center justify-center text-white text-2xl sm:text-4xl font-bold">
+                          {profile.firstName[0]}{profile.lastName[0]}
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <p className="flex items-center gap-2 text-[var(--text-body)]">
-                      <FaClock className="text-[var(--text-accent)]" /> <strong>Years of Experience:</strong>{" "}
-                      {profile.yearsOfExperience || "Not set"}
-                    </p>
-                    <p className="flex items-center gap-2 text-[var(--text-body)]">
-                      <FaClock className="text-[var(--text-accent)]" /> <strong>Availability:</strong>{" "}
-                      {profile.availability || "Not set"}
-                    </p>
-                    <p className="flex items-center gap-2 text-[var(--text-body)]">
-                      <FaStar className="text-[var(--text-accent)]" /> <strong>Talents:</strong>{" "}
-                      {profile.talents.length > 0 ? profile.talents.join(", ") : "Not set"}
-                    </p>
-                    <p className="flex items-center gap-2 text-[var(--text-body)]">
-                      <FaGlobe className="text-[var(--text-accent)]" /> <strong>Previous Experience:</strong>{" "}
-                      {profile.previousRelatedExperience || "Not set"}
-                    </p>
-                    <p className="flex items-center gap-2 text-[var(--text-body)]">
-                      <FaGlobe className="text-[var(--text-accent)]" /> <strong>Experience Description:</strong>{" "}
-                      {profile.experienceDescription || "Not set"}
-                    </p>
+                  {/* Profile Info */}
+                  <div className="pt-16 sm:pt-20 pb-4 sm:pb-6 px-4 sm:px-6 text-center">
+                    <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-1">
+                      {profile.firstName} {profile.lastName}
+                    </h2>
+                    <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-4">Professional Event Staff</p>
+
+                    {/* Completion Badge */}
+                    <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-green-500/10 text-green-400 font-bold text-xs sm:text-sm mb-4 sm:mb-6">
+                      <FaCheckCircle /> Profile {profileCompletion}% Complete
+                    </div>
+
+                    {/* Quick Stats - MOBILE RESPONSIVE */}
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                      <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
+                        <div className="text-xl sm:text-2xl font-bold text-[var(--primary)]">{profile.yearsOfExperience}</div>
+                        <div className="text-xs text-[var(--text-secondary)]">Years Exp.</div>
+                      </div>
+                      <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
+                        <div className="text-xl sm:text-2xl font-bold text-[var(--primary)]">{skills.length}</div>
+                        <div className="text-xs text-[var(--text-secondary)]">Skills</div>
+                      </div>
+                    </div>
+
+                    {/* Resume Download - FIXED */}
+                    {profile.resumeUrl && (
+                      <button
+                        onClick={() => handleDownloadResume(profile.resumeUrl!)}
+                        className="btn-primary w-full py-3 flex items-center justify-center gap-2"
+                      >
+                        <FaDownload /> Download Resume
+                      </button>
+                    )}
                   </div>
                 </div>
-              </div>
-              <div className="mt-8 text-center">
+              </motion.div>
+
+              {/* Right Column - Details - MOBILE RESPONSIVE */}
+              <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                {/* Personal Information */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="group"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass-card p-4 sm:p-6"
                 >
-                  <Link
-                    href="/profile?edit=true"
-                    className="px-6 py-3 rounded-full font-semibold font-body text-lg transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-[var(--color-accent)] group-hover:to-[var(--teal-accent)]"
-                    style={{ background: "var(--accent)", color: "var(--white)", border: "1px solid var(--light)" }}
-                    aria-label="Edit Profile"
-                  >
-                    Edit Profile
-                  </Link>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 font-display gradient-text flex items-center gap-2">
+                    <FaUser /> Personal Information
+                  </h3>
+
+                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaCalendar className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Date of Birth</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">{profile.dateOfBirth || "Not set"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaVenusMars className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Gender</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] capitalize truncate">{profile.gender || "Not set"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaGlobe className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Nationality</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">{profile.nationality || "Not set"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaMapMarkerAlt className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Location</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">{profile.city || "Not set"}, UAE</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaIdCard className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Visa Type</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] capitalize truncate">{profile.visaType || "Not set"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaPhone className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Phone Number</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] break-all">{profile.phoneNumber || "Not set"}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Skills & Expertise - FIXED AND IMPROVED DESIGN */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="glass-card p-4 sm:p-6"
+                >
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h3 className="text-xl sm:text-2xl font-bold font-display gradient-text flex items-center gap-2">
+                      <FaStar /> Skills & Expertise
+                    </h3>
+                    <div className="px-3 py-1 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-bold text-xs sm:text-sm">
+                      {skills.length} Skills
+                    </div>
+                  </div>
+
+                  {/* FIXED: Proper skills display */}
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {skills.length > 0 ? skills.map((skill, idx) => (
+                      <motion.span
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 transition-transform"
+                      >
+                        {skill}
+                      </motion.span>
+                    )) : (
+                      <div className="w-full text-center py-8 border-2 border-dashed border-[var(--border)] rounded-xl">
+                        <FaStar className="text-4xl text-[var(--text-secondary)]/20 mx-auto mb-2" />
+                        <p className="text-sm sm:text-base text-[var(--text-secondary)]">No skills added yet.</p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+
+                {/* Professional Details - MOBILE RESPONSIVE */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="glass-card p-4 sm:p-6"
+                >
+                  <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 font-display gradient-text flex items-center gap-2">
+                    <FaTrophy /> Professional Details
+                  </h3>
+
+                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaMoneyBillWave className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Hourly Rate</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">AED {profile.hourlyRate || "0"}/hour</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaGraduationCap className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Education</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">{profile.highestEducation || "Not set"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaClock className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Availability</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)] break-words">{profile.availability || "Not set"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <FaCar className="text-sm sm:text-base text-[var(--primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-1">Transport</p>
+                        <p className="font-bold text-sm sm:text-base text-[var(--text-primary)]">{profile.hasCarInUAE ? "Has Car" : "No Car"}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {profile.experienceDescription && (
+                    <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
+                      <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] mb-2">Experience Summary</p>
+                      <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed break-words">{profile.experienceDescription}</p>
+                    </div>
+                  )}
                 </motion.div>
               </div>
+            </div>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  // Edit Mode - Keep remaining implementation...
+  // (The edit mode continues with the same pattern of mobile responsiveness)
+  return (
+    <>
+      <Navbar />
+      <section className="pt-20 sm:pt-24 pb-12 sm:pb-16 min-h-screen bg-[var(--background)] relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-1/4 w-64 h-64 bg-[var(--primary)]/10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        </div>
+
+        <div className="container mx-auto px-4 max-w-5xl relative z-10">
+          <AnimatePresence>
+            {alert.visible && (
+              <motion.div
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                className={`fixed top-20 sm:top-24 left-1/2 -translate-x-1/2 px-4 sm:px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 ${alert.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                  }`}
+              >
+                {alert.type === "success" ? <FaCheckCircle /> : <FaTimes />}
+                <span className="font-bold text-sm sm:text-base">{alert.message}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-6 sm:mb-8"
+          >
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display mb-3 sm:mb-4 gradient-text">
+              {profile.isProfileComplete ? "Edit Your Profile" : "Complete Your Profile"}
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-[var(--text-secondary)]">
+              Fill in your details to get discovered by top employers
+            </p>
+
+            {/* Progress Bar */}
+            <div className="mt-4 sm:mt-6 max-w-md mx-auto">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">Profile Completion</span>
+                <span className="text-xs sm:text-sm font-bold text-[var(--primary)]">{profileCompletion}%</span>
+              </div>
+              <div className="h-2 sm:h-3 bg-[var(--surface-elevated)] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${profileCompletion}%` }}
+                  className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            {/* Profile Image Upload - MOBILE RESPONSIVE */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-4 sm:p-6"
+            >
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 font-display gradient-text flex items-center gap-2">
+                <FaCamera /> Profile Photo
+              </h3>
+
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <div className="relative">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-[var(--primary)] shadow-xl">
+                    {profile.profileImageUrl ? (
+                      <Image
+                        src={profile.profileImageUrl}
+                        alt="Profile"
+                        width={160}
+                        height={160}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[var(--primary)]/20 to-[var(--secondary)]/20 flex items-center justify-center">
+                        <FaUser className="text-5xl sm:text-6xl text-[var(--text-secondary)]/30" />
+                      </div>
+                    )}
+                  </div>
+                  <label className="absolute bottom-0 right-0 p-2 sm:p-3 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white cursor-pointer hover:scale-110 transition-transform shadow-lg">
+                    <FaCamera className="text-base sm:text-xl" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setProfileImage(file);
+                          handleFileUpload(file, "image");
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex-1 text-center sm:text-left">
+                  <h4 className="text-base sm:text-lg md:text-xl font-bold text-[var(--text-primary)] mb-2">Upload Your Photo</h4>
+                  <p className="text-xs sm:text-sm md:text-base text-[var(--text-secondary)] mb-3 sm:mb-4">
+                    A professional photo helps you stand out. Max size: 5MB
+                  </p>
+                  {uploadingImage && (
+                    <div className="flex items-center justify-center sm:justify-start gap-2 text-[var(--primary)]">
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-t-2 border-b-2 border-[var(--primary)]"></div>
+                      <span className="text-xs sm:text-sm">Uploading...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </motion.div>
-          )}
+
+            {/* Resume Upload - MOBILE RESPONSIVE */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="glass-card p-4 sm:p-6"
+            >
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 font-display gradient-text flex items-center gap-2">
+                <FaFileAlt /> Resume/CV
+              </h3>
+
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-[var(--border)] rounded-xl p-6 sm:p-8 text-center hover:border-[var(--primary)] transition-colors">
+                  <FaUpload className="text-3xl sm:text-4xl md:text-5xl text-[var(--text-secondary)]/30 mx-auto mb-3 sm:mb-4" />
+                  <label className="block">
+                    <span className="btn-primary px-4 sm:px-6 py-2 sm:py-3 cursor-pointer inline-flex items-center gap-2 text-sm sm:text-base">
+                      Choose PDF File
+                    </span>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setResume(file);
+                          handleFileUpload(file, "resume");
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  <p className="text-xs sm:text-sm text-[var(--text-secondary)]/70 mt-3 sm:mt-4">Max size: 10MB</p>
+                </div>
+
+                {uploadingResume && (
+                  <div className="flex items-center justify-center gap-2 text-[var(--primary)]">
+                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-t-2 border-b-2 border-[var(--primary)]"></div>
+                    <span className="text-xs sm:text-sm">Uploading resume...</span>
+                  </div>
+                )}
+
+                {profile.resumeUrl && !uploadingResume && (
+                  <div className="flex items-center justify-between p-3 sm:p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--primary)]/30">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <FaCheckCircle className="text-green-400 text-base sm:text-xl flex-shrink-0" />
+                      <span className="text-[var(--text-primary)] font-semibold text-xs sm:text-sm truncate">Resume uploaded</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Basic Information - MOBILE RESPONSIVE */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-card p-4 sm:p-6"
+            >
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 font-display gradient-text flex items-center gap-2">
+                <FaUser /> Personal Information
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">First Name *</label>
+                  <input
+                    type="text"
+                    value={profile.firstName}
+                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Last Name *</label>
+                  <input
+                    type="text"
+                    value={profile.lastName}
+                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Date of Birth *</label>
+                  <input
+                    type="date"
+                    value={profile.dateOfBirth}
+                    onChange={(e) => setProfile({ ...profile, dateOfBirth: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Gender *</label>
+                  <select
+                    value={profile.gender}
+                    onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Phone Number *</label>
+                  <input
+                    type="tel"
+                    value={profile.phoneNumber}
+                    onChange={(e) => setProfile({ ...profile, phoneNumber: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">WhatsApp Number *</label>
+                  <input
+                    type="tel"
+                    value={profile.whatsappNumber}
+                    onChange={(e) => setProfile({ ...profile, whatsappNumber: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Nationality *</label>
+                  <input
+                    type="text"
+                    value={profile.nationality}
+                    onChange={(e) => setProfile({ ...profile, nationality: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">City *</label>
+                  <select
+                    value={profile.city}
+                    onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  >
+                    <option value="">Select City</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Visa Type *</label>
+                  <select
+                    value={profile.visaType}
+                    onChange={(e) => setProfile({ ...profile, visaType: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  >
+                    <option value="">Select Visa Type</option>
+                    <option value="Visit Visa">Visit Visa</option>
+                    <option value="Employment Visa">Employment Visa</option>
+                    <option value="Residence Visa">Residence Visa</option>
+                    <option value="Student Visa">Student Visa</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Hourly Rate (AED) *</label>
+                  <input
+                    type="number"
+                    value={profile.hourlyRate}
+                    onChange={(e) => setProfile({ ...profile, hourlyRate: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Years of Experience *</label>
+                  <input
+                    type="number"
+                    value={profile.yearsOfExperience}
+                    onChange={(e) => setProfile({ ...profile, yearsOfExperience: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Highest Education</label>
+                  <select
+                    value={profile.highestEducation}
+                    onChange={(e) => setProfile({ ...profile, highestEducation: e.target.value })}
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                  >
+                    <option value="">Select Education</option>
+                    <option value="High School">High School</option>
+                    <option value="Bachelor's">Bachelor&apos;s</option>
+                    <option value="Master's">Master&apos;s</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Availability</label>
+                  <input
+                    type="text"
+                    value={profile.availability}
+                    onChange={(e) => setProfile({ ...profile, availability: e.target.value })}
+                    placeholder="e.g., Weekends, Full-time"
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="flex items-center gap-2 text-[var(--text-primary)] font-bold text-sm sm:text-base">
+                    <input
+                      type="checkbox"
+                      checked={profile.hasCarInUAE}
+                      onChange={(e) => setProfile({ ...profile, hasCarInUAE: e.target.checked })}
+                      className="w-4 h-4 sm:w-5 sm:h-5 rounded border-[var(--border)]"
+                    />
+                    <FaCar className="text-sm sm:text-base" /> I have a car in UAE
+                  </label>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs sm:text-sm font-bold mb-2 text-[var(--text-primary)]">Experience Description</label>
+                  <textarea
+                    value={profile.experienceDescription}
+                    onChange={(e) => setProfile({ ...profile, experienceDescription: e.target.value })}
+                    rows={4}
+                    placeholder="Tell us about your experience..."
+                    className="w-full p-3 sm:p-4 rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input resize-none text-sm sm:text-base"
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Skills Selection - IMPROVED DESIGN */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="glass-card p-4 sm:p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold font-display gradient-text flex items-center gap-2">
+                  <FaStar /> Skills & Expertise
+                </h3>
+                <div className="px-3 py-1 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-bold text-xs sm:text-sm">
+                  {skills.length} Skills
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-4 sm:mb-6">
+                Add your skills to help employers find you. Start typing and select from suggestions or add custom skills.
+              </p>
+
+              {/* Skill Input */}
+              <div className="relative mb-4 sm:mb-6">
+                <input
+                  type="text"
+                  value={skillInput}
+                  onChange={(e) => handleSkillInput(e.target.value)}
+                  onKeyPress={handleSkillKeyPress}
+                  placeholder="Type a skill (e.g., Event Planning, Bartending)..."
+                  className="w-full p-3 sm:p-4 pr-16 sm:pr-24 rounded-xl border-2 border-[var(--border)] focus:border-[var(--primary)] focus:outline-none modern-input text-sm sm:text-base"
+                />
+                <button
+                  type="button"
+                  onClick={() => addSkill(skillInput)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-bold text-xs sm:text-sm hover:scale-105 transition-transform"
+                >
+                  Add
+                </button>
+
+                {/* Auto-complete Suggestions */}
+                {suggestedSkills.length > 0 && (
+                  <div className="absolute z-10 w-full mt-2 bg-[var(--secondary)] rounded-xl shadow-2xl border border-[var(--border)] overflow-hidden max-h-48 sm:max-h-64 overflow-y-auto">
+                    {suggestedSkills.map((skill, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => addSkill(skill)}
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-[var(--primary)] transition-colors text-[var(--text-secondary)] border-b border-[var(--light)]/20 last:border-b-0 text-xs sm:text-sm"
+                      >
+                        <span className="font-semibold">{skill}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Skills Display */}
+              <div className="mb-4">
+                <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] mb-3">
+                  Selected Skills ({skills.length})
+                </p>
+
+                {skills.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((skill, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="group relative px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 transition-transform"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          className="ml-1 sm:ml-2 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/20 hover:bg-white/40 inline-flex items-center justify-center transition-colors"
+                          aria-label={`Remove ${skill}`}
+                        >
+                          <FaTimes className="text-xs" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 sm:py-8 border-2 border-dashed border-[var(--border)] rounded-xl">
+                    <FaStar className="text-3xl sm:text-4xl text-[var(--text-secondary)]/20 mx-auto mb-2" />
+                    <p className="text-[var(--text-secondary)]/60 text-xs sm:text-sm">No skills added yet. Start typing!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Popular Skills Quick Add */}
+              <div>
+                <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] mb-3">Quick Add Popular Skills</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Event Planning", "Customer Service", "Bartending", "Photography", "Social Media", "Sales"].map((skill) => (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => addSkill(skill)}
+                      disabled={skills.includes(skill)}
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full modern-input text-xs sm:text-sm border border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      + {skill}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Submit Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+            >
+              <button
+                type="submit"
+                disabled={updating}
+                className="btn-primary flex-1 py-3 sm:py-4 text-base sm:text-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {updating ? "Saving..." : <><FaSave /> Save Profile</>}
+              </button>
+
+              {profile.isProfileComplete && (
+                <a
+                  href="/profile"
+                  className="btn-secondary px-6 sm:px-8 py-3 sm:py-4 flex items-center justify-center gap-2 text-base sm:text-lg"
+                >
+                  <FaTimes /> Cancel
+                </a>
+              )}
+            </motion.div>
+          </form>
         </div>
       </section>
     </>
@@ -1505,13 +1216,11 @@ function ProfileContent() {
 
 export default function Profile() {
   return (
-    <Suspense
-      fallback={
-        <div className="pt-20 text-center flex items-center justify-center min-h-screen text-[var(--text-body)]">
-          Loading...
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[var(--primary)]"></div>
+      </div>
+    }>
       <ProfileContent />
     </Suspense>
   );
