@@ -291,7 +291,7 @@ export default function Footer() {
         onClick={scrollToTop}
         whileHover={{ scale: 1.1, y: -2 }}
         whileTap={{ scale: 0.9 }}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] rounded-full flex items-center justify-center text-white shadow-2xl hover:shadow-[var(--primary)]/50 transition-all duration-300 z-50 group"
+        className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] rounded-full flex items-center justify-center text-white shadow-2xl hover:shadow-[var(--primary)]/50 transition-all duration-300 z-[90] group"
         aria-label="Scroll to top"
       >
         <FaArrowUp className="text-xl group-hover:-translate-y-1 transition-transform duration-300" />

@@ -340,7 +340,7 @@ export default function Home() {
           <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         </div>
 
-        <div className="container relative z-10 min-h-screen flex flex-col justify-center items-center text-center py-20">
+        <div className="container relative z-10 min-h-screen flex flex-col justify-center items-center text-center pt-32 pb-20 md:pt-40 md:pb-24">
           <motion.div
             variants={containerVariants}
             initial="hidden"

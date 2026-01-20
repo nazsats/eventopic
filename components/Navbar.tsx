@@ -75,9 +75,9 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, type: "spring" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-            ? 'bg-[var(--surface)]/90 backdrop-blur-xl border-b border-[var(--border)] shadow-2xl'
-            : 'bg-transparent'
+        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${scrolled
+          ? 'bg-[var(--surface)]/95 backdrop-blur-xl border-b border-[var(--border)] shadow-2xl py-2'
+          : 'bg-transparent py-4'
           }`}
       >
         <div className="container mx-auto px-4">
@@ -110,8 +110,8 @@ export default function Navbar() {
                   <Link
                     href={item.href}
                     className={`relative px-4 py-2 rounded-full font-heading font-semibold transition-all duration-300 group ${pathname === item.href
-                        ? 'text-[var(--primary)] bg-[var(--primary-muted)]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)]'
+                      ? 'text-[var(--primary)] bg-[var(--primary-muted)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)]'
                       }`}
                   >
                     {item.label}
@@ -203,8 +203,8 @@ export default function Navbar() {
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
                     className={`block px-4 py-3 rounded-full font-heading font-semibold transition-all duration-300 ${pathname === item.href
-                        ? 'text-[var(--primary)] bg-[var(--primary-muted)]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)]'
+                      ? 'text-[var(--primary)] bg-[var(--primary-muted)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)]'
                       }`}
                   >
                     {item.label}
