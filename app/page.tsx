@@ -318,296 +318,298 @@ export default function Home() {
     <>
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="section-hero relative">
-        <div className="absolute inset-0">
-          <Image
-            src="/gallery/BurjKhalifa.png"
-            alt="Dubai Skyline - Burj Khalifa"
-            fill
-            sizes="100vw"
-            style={{ objectFit: "cover" }}
-            quality={90}
-            priority
-            className="opacity-30"
-            onError={() => console.error("Failed to load hero image")}
-          />
-        </div>
-
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-64 h-64 bg-[var(--primary)]/10 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        </div>
-
-        <div className="container relative z-10 min-h-screen flex flex-col justify-center items-center text-center pt-28 pb-12">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="max-w-4xl mx-auto"
-          >
-            <motion.h1
-              variants={fadeInUp}
-              className="font-display text-6xl md:text-8xl lg:text-9xl font-bold mb-6 leading-tight"
-            >
-              <span className="gradient-text">Event</span>
-              <span className="text-white">opic</span>
-            </motion.h1>
-
-            <motion.p
-              variants={fadeInUp}
-              className="font-heading text-2xl md:text-3xl lg:text-4xl mb-8 gradient-text-accent"
-            >
-              The Future Of Showcasing
-            </motion.p>
-
-            <motion.p
-              variants={fadeInUp}
-              className="text-lg md:text-xl mb-12 max-w-3xl mx-auto leading-relaxed text-[var(--text-secondary)]"
-            >
-              Dubai&apos;s most trusted partner for luxury event management and professional staffing.
-              We transform ideas into extraordinary experiences that captivate and inspire.
-            </motion.p>
-
-            {/* Stats */}
-            <motion.div
-              variants={containerVariants}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-2xl mx-auto"
-            >
-              {stats.map((stat, index) => (
-                <StatCard key={index} stat={stat} index={index} />
-              ))}
-            </motion.div>
-
-            {/* CTA Buttons */}
-            <motion.div
-              variants={containerVariants}
-              className="flex flex-col sm:flex-row gap-6 justify-center"
-            >
-              <motion.div variants={fadeInUp}>
-                <Link href="/contact" className="btn-primary group">
-                  Get a Free Quote
-                  <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </motion.div>
-              <motion.div variants={fadeInUp}>
-                <Link href="/contact#staff-form" className="btn-secondary group">
-                  <FaUsers />
-                  Join the Team
-                </Link>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Job Opportunities Section */}
-      <section className="section-standard">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 gradient-text text-balance">
-              Premium Job Opportunities
-            </h2>
-            <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-              Join our elite team and work at Dubai&apos;s most prestigious events.
-              Build your career in the luxury event industry.
-            </p>
-          </motion.div>
-
-          {isLoadingJobs ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="glass-card p-8 skeleton h-64"></div>
-              ))}
-            </div>
-          ) : jobs.length === 0 ? (
-            <div className="text-center">
-              <div className="glass-card p-12 max-w-md mx-auto">
-                <FaBriefcase className="text-4xl text-[var(--primary)] mx-auto mb-4" />
-                <p className="text-[var(--text-secondary)]">
-                  No positions available at the moment.
-                  <br />Check back soon for new opportunities!
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {jobs.map((job, index) => (
-                <JobCard key={job.id} job={job} index={index} />
-              ))}
-            </div>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <Link href="/portal/applications" className="btn-primary group">
-              View All Opportunities
-              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Why Choose Eventopic Section */}
-      <section className="section-standard">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 text-balance">
-              Why Choose <span className="gradient-text">Eventopic?</span>
-            </h2>
-            <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
-              We don&apos;t just manage events—we craft extraordinary experiences that leave lasting impressions
-              and exceed every expectation.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} index={index} />
-            ))}
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="section-hero relative">
+          <div className="absolute inset-0">
+            <Image
+              src="/gallery/BurjKhalifa.png"
+              alt="Dubai Skyline - Burj Khalifa"
+              fill
+              sizes="100vw"
+              style={{ objectFit: "cover" }}
+              quality={90}
+              priority
+              className="opacity-30"
+              onError={() => console.error("Failed to load hero image")}
+            />
           </div>
-        </div>
-      </section>
 
-      {/* Gallery Section */}
-      <section className="section-standard">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 text-balance">
-              Our <span className="gradient-text-accent">Event Portfolio</span>
-            </h2>
-            <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
-              Discover the artistry behind our luxury events—each one a masterpiece of planning,
-              execution, and unforgettable moments.
-            </p>
-          </motion.div>
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-1/4 w-64 h-64 bg-[var(--primary)]/10 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+          </div>
 
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
-            {galleryImages.map((image, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="gallery-item"
-                style={{ height: '300px' }}
+          <div className="container relative z-10 min-h-screen flex flex-col items-center text-center pt-36 pb-20 md:pt-48 md:pb-32">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="max-w-4xl mx-auto"
+            >
+              <motion.h1
+                variants={fadeInUp}
+                className="font-display text-6xl md:text-8xl lg:text-9xl font-bold mb-6 leading-tight"
               >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover"
-                  quality={85}
-                  loading={index > 2 ? "lazy" : "eager"}
-                />
-                <div className="gallery-overlay">
-                  <div>
-                    <h3 className="font-heading text-white font-semibold text-lg mb-1">
-                      {image.desc}
-                    </h3>
-                    <p className="text-[var(--text-secondary)] text-sm">
-                      {image.category}
-                    </p>
-                  </div>
-                </div>
+                <span className="gradient-text">Event</span>
+                <span className="text-white">opic</span>
+              </motion.h1>
+
+              <motion.p
+                variants={fadeInUp}
+                className="font-heading text-2xl md:text-3xl lg:text-4xl mb-8 gradient-text-accent"
+              >
+                The Future Of Showcasing
+              </motion.p>
+
+              <motion.p
+                variants={fadeInUp}
+                className="text-lg md:text-xl mb-12 max-w-3xl mx-auto leading-relaxed text-[var(--text-secondary)]"
+              >
+                Dubai&apos;s most trusted partner for luxury event management and professional staffing.
+                We transform ideas into extraordinary experiences that captivate and inspire.
+              </motion.p>
+
+              {/* Stats */}
+              <motion.div
+                variants={containerVariants}
+                className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-2xl mx-auto"
+              >
+                {stats.map((stat, index) => (
+                  <StatCard key={index} stat={stat} index={index} />
+                ))}
               </motion.div>
-            ))}
+
+              {/* CTA Buttons */}
+              <motion.div
+                variants={containerVariants}
+                className="flex flex-col sm:flex-row gap-6 justify-center"
+              >
+                <motion.div variants={fadeInUp}>
+                  <Link href="/contact" className="btn-primary group">
+                    Get a Free Quote
+                    <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </motion.div>
+                <motion.div variants={fadeInUp}>
+                  <Link href="/contact#staff-form" className="btn-secondary group">
+                    <FaUsers />
+                    Join the Team
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           </div>
+        </section>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Link href="/gallery" className="btn-primary group">
-              Explore Full Gallery
-              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="section-standard">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 text-balance">
-              Client <span className="gradient-text">Testimonials</span>
-            </h2>
-            <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
-              Don&apos;t just take our word for it—hear from the industry leaders who trust us
-              with their most important events.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard key={index} testimonial={testimonial} index={index} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="section-standard">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <div className="glass-card p-16 max-w-4xl mx-auto">
-              <h2 className="font-display text-5xl md:text-6xl font-bold mb-8 text-balance">
-                Ready to Elevate Your <span className="gradient-text">Event?</span>
+        {/* Job Opportunities Section */}
+        <section className="section-standard">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 gradient-text text-balance">
+                Premium Job Opportunities
               </h2>
-              <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed">
-                With over 3 years in Dubai&apos;s dynamic event scene, we&apos;re your trusted partner
-                for creating memories that last a lifetime.
+              <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
+                Join our elite team and work at Dubai&apos;s most prestigious events.
+                Build your career in the luxury event industry.
               </p>
-              <Link href="/about" className="btn-primary group text-lg px-12 py-5">
-                Discover Our Story
+            </motion.div>
+
+            {isLoadingJobs ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="glass-card p-8 skeleton h-64"></div>
+                ))}
+              </div>
+            ) : jobs.length === 0 ? (
+              <div className="text-center">
+                <div className="glass-card p-12 max-w-md mx-auto">
+                  <FaBriefcase className="text-4xl text-[var(--primary)] mx-auto mb-4" />
+                  <p className="text-[var(--text-secondary)]">
+                    No positions available at the moment.
+                    <br />Check back soon for new opportunities!
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                {jobs.map((job, index) => (
+                  <JobCard key={job.id} job={job} index={index} />
+                ))}
+              </div>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <Link href="/portal/applications" className="btn-primary group">
+                View All Opportunities
                 <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
               </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Why Choose Eventopic Section */}
+        <section className="section-standard">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 text-balance">
+                Why Choose <span className="gradient-text">Eventopic?</span>
+              </h2>
+              <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
+                We don&apos;t just manage events—we craft extraordinary experiences that leave lasting impressions
+                and exceed every expectation.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {features.map((feature, index) => (
+                <FeatureCard key={index} feature={feature} index={index} />
+              ))}
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </div>
+        </section>
+
+        {/* Gallery Section */}
+        <section className="section-standard">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 text-balance">
+                Our <span className="gradient-text-accent">Event Portfolio</span>
+              </h2>
+              <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
+                Discover the artistry behind our luxury events—each one a masterpiece of planning,
+                execution, and unforgettable moments.
+              </p>
+            </motion.div>
+
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
+              {galleryImages.map((image, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="gallery-item"
+                  style={{ height: '300px' }}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
+                    quality={85}
+                    loading={index > 2 ? "lazy" : "eager"}
+                  />
+                  <div className="gallery-overlay">
+                    <div>
+                      <h3 className="font-heading text-white font-semibold text-lg mb-1">
+                        {image.desc}
+                      </h3>
+                      <p className="text-[var(--text-secondary)] text-sm">
+                        {image.category}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mt-12"
+            >
+              <Link href="/gallery" className="btn-primary group">
+                Explore Full Gallery
+                <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="section-standard">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="font-display text-5xl md:text-6xl font-bold mb-6 text-balance">
+                Client <span className="gradient-text">Testimonials</span>
+              </h2>
+              <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
+                Don&apos;t just take our word for it—hear from the industry leaders who trust us
+                with their most important events.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <TestimonialCard key={index} testimonial={testimonial} index={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="section-standard">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="glass-card p-16 max-w-4xl mx-auto">
+                <h2 className="font-display text-5xl md:text-6xl font-bold mb-8 text-balance">
+                  Ready to Elevate Your <span className="gradient-text">Event?</span>
+                </h2>
+                <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed">
+                  With over 3 years in Dubai&apos;s dynamic event scene, we&apos;re your trusted partner
+                  for creating memories that last a lifetime.
+                </p>
+                <Link href="/about" className="btn-primary group text-lg px-12 py-5">
+                  Discover Our Story
+                  <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </main>
 
       {/* Chat Bot */}
       <div className="fixed bottom-6 right-6 z-50">

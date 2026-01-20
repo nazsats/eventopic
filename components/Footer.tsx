@@ -72,7 +72,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative overflow-hidden bg-[var(--background)] border-t border-[var(--border)] mt-32">
+    <footer className="relative overflow-hidden bg-[var(--background)] border-t border-[var(--border)] mt-20">
       {/* Decorative Background */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--primary)] rounded-full blur-3xl"></div>
