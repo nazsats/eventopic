@@ -10,33 +10,48 @@
   --font-display: 'Clash Display', sans-serif;
   --font-heading: 'Satoshi', sans-serif;
   --font-body: 'General Sans', sans-serif;
-  
+
   /* Modern Dark Luxury Color Palette */
-  --background: #0A0A0F; /* Deep space black */
-  --surface: #1A1A25; /* Dark surface */
-  --surface-elevated: #252538; /* Elevated surface */
-  --surface-light: #2D2D42; /* Light surface */
-  
+  --background: #0A0A0F;
+  /* Deep space black */
+  --surface: #1A1A25;
+  /* Dark surface */
+  --surface-elevated: #252538;
+  /* Elevated surface */
+  --surface-light: #2D2D42;
+  /* Light surface */
+
   /* Primary Colors - Electric Blue */
-  --primary: #00D4FF; /* Electric cyan */
-  --primary-hover: #00B8E6; /* Darker cyan */
-  --primary-muted: rgba(0, 212, 255, 0.1); /* Muted primary */
-  
+  --primary: #00D4FF;
+  /* Electric cyan */
+  --primary-hover: #00B8E6;
+  /* Darker cyan */
+  --primary-muted: rgba(0, 212, 255, 0.1);
+  /* Muted primary */
+
   /* Accent Colors - Warm Gold */
-  --accent: #FFB800; /* Warm gold */
-  --accent-hover: #E6A500; /* Darker gold */
-  --accent-muted: rgba(255, 184, 0, 0.1); /* Muted accent */
-  
+  --accent: #FFB800;
+  /* Warm gold */
+  --accent-hover: #E6A500;
+  /* Darker gold */
+  --accent-muted: rgba(255, 184, 0, 0.1);
+  /* Muted accent */
+
   /* Secondary Colors */
-  --secondary: #8B5CF6; /* Purple accent */
+  --secondary: #8B5CF6;
+  /* Purple accent */
   --secondary-muted: rgba(139, 92, 246, 0.1);
-  
+
   /* Text Colors */
-  --text-primary: #FFFFFF; /* Pure white */
-  --text-secondary: #B8BCC8; /* Muted white */
-  --text-muted: #6B7280; /* Gray text */
-  --text-accent: var(--primary); /* Electric blue text */
-  
+  --text-primary: #FFFFFF;
+  /* Pure white */
+  --text-secondary: #B8BCC8;
+  /* Muted white */
+  --text-muted: #6B7280;
+  /* Gray text */
+  --text-accent: var(--primary);
+  /* Electric blue text */
+
   /* Border & Effects */
   --border: rgba(255, 255, 255, 0.1);
   --border-hover: rgba(0, 212, 255, 0.3);
@@ -44,14 +59,14 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.8);
   --shadow-glow: 0 0 32px rgba(0, 212, 255, 0.3);
-  
+
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   --gradient-accent: linear-gradient(135deg, var(--accent) 0%, #FF6B6B 100%);
   --gradient-surface: linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 100%);
   --gradient-mesh: radial-gradient(circle at 20% 80%, var(--primary) 0%, transparent 50%),
-                   radial-gradient(circle at 80% 20%, var(--accent) 0%, transparent 50%),
-                   radial-gradient(circle at 40% 40%, var(--secondary) 0%, transparent 50%);
+    radial-gradient(circle at 80% 20%, var(--accent) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, var(--secondary) 0%, transparent 50%);
 }
 
 /* Base Styles */
@@ -72,13 +87,8 @@ body {
   font-weight: 400;
   overflow-x: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding-bottom: 0; /* Ensure no default padding conflict */
-}
-
-/* Ensure footer pushes content up or sits correctly */
-footer {
-  position: relative;
-  z-index: 10;
+  padding-bottom: 0;
+  /* Ensure no default padding conflict */
 }
 
 /* Enhanced Typography */
@@ -355,18 +365,24 @@ footer {
 
 /* Enhanced Animations */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-20px);
   }
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
   }
+
   50% {
     box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
   }
@@ -495,20 +511,21 @@ footer {
   .job-card {
     padding: 1.5rem;
   }
-  
+
   .job-card-title {
     font-size: 1.25rem;
   }
-  
-  .btn-primary, .btn-secondary {
+
+  .btn-primary,
+  .btn-secondary {
     padding: 12px 24px;
     font-size: 0.9rem;
   }
-  
+
   .stat-number {
     font-size: 2.5rem;
   }
-  
+
   .section-standard {
     padding: 80px 0;
   }
@@ -536,6 +553,7 @@ footer {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
