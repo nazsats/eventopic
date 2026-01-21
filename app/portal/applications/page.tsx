@@ -10,6 +10,7 @@ import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import AuthModal from "../../../components/AuthModal";
 import {
   FaBriefcase,
   FaClock,
@@ -32,6 +33,7 @@ interface Job {
   type: string;
   duration: string;
   rate: number;
+  paymentFrequency?: string;
   description: string;
   category: string;
 }
@@ -44,6 +46,7 @@ export default function Applications() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const categories = [
     { value: "all", label: "All Jobs", icon: "🎯", count: 0 },
@@ -54,10 +57,6 @@ export default function Applications() {
   ];
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/");
-      return;
-    }
     const fetchJobs = async () => {
       try {
         const jobsCollection = collection(db, "jobs");
@@ -65,7 +64,7 @@ export default function Applications() {
         const jobsList = jobsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
-          description: doc.data().description || "Join our professional team for exciting event opportunities in Dubai&apos;s vibrant scene."
+          description: doc.data().description || "Join our professional team for exciting event opportunities in Dubai's vibrant scene."
         } as Job));
         setJobs(jobsList);
         setFilteredJobs(jobsList);
@@ -85,7 +84,7 @@ export default function Applications() {
       }
     };
     fetchJobs();
-  }, [user, loading, router]);
+  }, []);
 
   useEffect(() => {
     let filtered = jobs;
@@ -105,7 +104,15 @@ export default function Applications() {
     setFilteredJobs(filtered);
   }, [selectedCategory, searchQuery, jobs]);
 
-  if (loading || isLoading) {
+  const handleJobClick = (jobId: string) => {
+    if (user) {
+      router.push(`/portal/applications/${jobId}`);
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  if (loading && isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="text-center">
@@ -116,39 +123,30 @@ export default function Applications() {
     );
   }
 
-  if (!user) return null;
-
   return (
     <>
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="section-hero relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[var(--primary)] rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[var(--secondary)] rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      {/* Hero Section (Services Style) */}
+      <section className="pt-32 pb-16 flex items-center justify-center bg-[var(--background)] relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-[var(--primary)]/10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-1/4 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         </div>
 
-        <div className="container relative z-10 min-h-[70vh] flex flex-col justify-center items-center text-center py-20">
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-4xl mx-auto"
+            className="text-center max-w-4xl mx-auto"
           >
-            <div className="inline-block mb-4">
-              <div className="px-4 py-2 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-bold text-sm shadow-lg flex items-center gap-2">
-                <FaFire />
-                {filteredJobs.length} Hot Opportunities Available
-              </div>
-            </div>
-
-            <h1 className="font-display text-6xl md:text-8xl font-bold mb-6 leading-tight">
-              Find Your Perfect <span className="gradient-text">Role</span>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 font-display gradient-text">
+              Explore Opportunities
             </h1>
-
-            <p className="text-xl md:text-2xl mb-8 text-[var(--text-secondary)] leading-relaxed">
-              Discover exciting positions at Dubai&apos;s most prestigious events and luxury venues
+            <p className="text-xl md:text-2xl leading-relaxed text-[var(--text-secondary)] font-light mb-12">
+              Discover exciting positions at Dubai's most prestigious events and luxury venues.
             </p>
 
             {/* Search Bar */}
@@ -158,8 +156,8 @@ export default function Applications() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="max-w-2xl mx-auto"
             >
-              <div className="relative">
-                <FaSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-xl" />
+              <div className="relative group">
+                <FaSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--primary)] transition-colors text-xl" />
                 <input
                   type="text"
                   placeholder="Search by job title, location, or keywords..."
@@ -191,15 +189,15 @@ export default function Applications() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 ${selectedCategory === cat.value
-                    ? "bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-lg"
-                    : "glass-card text-[var(--text-primary)] hover:border-[var(--border-hover)]"
+                  ? "bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-lg"
+                  : "glass-card text-[var(--text-primary)] hover:border-[var(--border-hover)]"
                   }`}
               >
                 <span className="text-lg">{cat.icon}</span>
                 <span>{cat.label}</span>
                 <span className={`text-xs px-2 py-1 rounded-full ${selectedCategory === cat.value
-                    ? "bg-white/20 text-white"
-                    : "bg-[var(--surface)] text-[var(--text-muted)]"
+                  ? "bg-white/20 text-white"
+                  : "bg-[var(--surface)] text-[var(--text-muted)]"
                   }`}>
                   {cat.count}
                 </span>
@@ -233,103 +231,104 @@ export default function Applications() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
                   whileHover={{ y: -8, scale: 1.02 }}
-                  className="group"
+                  className="group cursor-pointer"
+                  onClick={() => handleJobClick(job.id)}
                 >
-                  <Link href={`/portal/applications/${job.id}`}>
-                    <div className="glass-card p-6 relative overflow-hidden h-full">
-                      {/* Background gradient - positioned behind content */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--secondary)]/5 opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10" />
+                  <div className="glass-card p-6 relative overflow-hidden h-full">
+                    {/* Background gradient - positioned behind content */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--secondary)]/5 opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10" />
 
-                      {/* Content Container - Always on top */}
-                      <div className="relative z-20">
-                        {/* Header */}
-                        <div className="flex items-start justify-between mb-4">
-                          {/* Job Icon */}
-                          <div className="job-card-icon group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                            <FaBriefcase />
+                    {/* Content Container - Always on top */}
+                    <div className="relative z-20">
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        {/* Job Icon */}
+                        <div className="job-card-icon group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                          <FaBriefcase />
+                        </div>
+
+                        {/* Category Badge */}
+                        <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[var(--primary)]/20 to-[var(--secondary)]/20 border border-[var(--border)]">
+                          <span className="text-xs font-bold text-[var(--primary)]">
+                            {job.category === "staffing" ? "👥 Staffing" :
+                              job.category === "models_entertainment" ? "🎭 Entertainment" :
+                                job.category === "promotions" ? "📢 Promotions" : "✨ Other"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="job-card-title group-hover:gradient-text transition-all duration-300 mb-4">
+                        {job.title}
+                      </h3>
+
+                      {/* Details */}
+                      <div className="space-y-3 mb-4">
+                        <div className="job-card-meta">
+                          <div className="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center group-hover:border-[var(--border-hover)] transition-colors">
+                            <FaMapMarkerAlt className="text-[var(--primary)] text-sm" />
                           </div>
-
-                          {/* Category Badge */}
-                          <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[var(--primary)]/20 to-[var(--secondary)]/20 border border-[var(--border)]">
-                            <span className="text-xs font-bold text-[var(--primary)]">
-                              {job.category === "staffing" ? "👥 Staffing" :
-                                job.category === "models_entertainment" ? "🎭 Entertainment" :
-                                  job.category === "promotions" ? "📢 Promotions" : "✨ Other"}
-                            </span>
+                          <div>
+                            <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wide">Location</div>
+                            <div className="text-sm font-bold text-[var(--text-primary)]">{job.location}</div>
                           </div>
                         </div>
 
-                        {/* Title */}
-                        <h3 className="job-card-title group-hover:gradient-text transition-all duration-300 mb-4">
-                          {job.title}
-                        </h3>
-
-                        {/* Details */}
-                        <div className="space-y-3 mb-4">
-                          <div className="job-card-meta">
-                            <div className="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center group-hover:border-[var(--border-hover)] transition-colors">
-                              <FaMapMarkerAlt className="text-[var(--primary)] text-sm" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wide">Location</div>
-                              <div className="text-sm font-bold text-[var(--text-primary)]">{job.location}</div>
-                            </div>
+                        <div className="job-card-meta">
+                          <div className="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center group-hover:border-[var(--border-hover)] transition-colors">
+                            <FaClock className="text-[var(--secondary)] text-sm" />
                           </div>
-
-                          <div className="job-card-meta">
-                            <div className="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center group-hover:border-[var(--border-hover)] transition-colors">
-                              <FaClock className="text-[var(--secondary)] text-sm" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wide">Type</div>
-                              <div className="text-sm font-bold text-[var(--text-primary)]">{job.type} • {job.duration}</div>
-                            </div>
-                          </div>
-
-                          <div className="job-card-meta">
-                            <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center">
-                              <FaMoneyBillWave className="text-[var(--accent)] text-sm" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wide">Rate</div>
-                              <div className="text-lg font-black gradient-text-accent">AED {job.rate}/hour</div>
-                            </div>
+                          <div>
+                            <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wide">Type</div>
+                            <div className="text-sm font-bold text-[var(--text-primary)]">{job.type} • {job.duration}</div>
                           </div>
                         </div>
 
-                        {/* Description Preview */}
-                        {job.description && (
-                          <p className="text-sm text-[var(--text-secondary)] mb-4 line-clamp-2 leading-relaxed">
-                            {job.description}
-                          </p>
-                        )}
-
-                        {/* CTA */}
-                        <div className="flex items-center justify-between pt-4 border-t border-[var(--border)] group-hover:border-[var(--border-hover)] transition-colors">
-                          <span className="text-sm font-bold text-[var(--primary)]">Apply Now</span>
-                          <FaArrowRight className="text-[var(--secondary)] group-hover:translate-x-2 transition-transform" />
-                        </div>
-
-                        {/* Matching Score */}
-                        <div className="mt-3 flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-[var(--surface)] rounded-full overflow-hidden border border-[var(--border)]">
-                            <motion.div
-                              className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] rounded-full"
-                              initial={{ width: "0%" }}
-                              animate={{ width: `${Math.floor(Math.random() * 40 + 60)}%` }}
-                              transition={{ duration: 1, delay: index * 0.1 }}
-                            />
+                        <div className="job-card-meta">
+                          <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center">
+                            <FaMoneyBillWave className="text-[var(--accent)] text-sm" />
                           </div>
-                          <div className="flex items-center gap-1">
-                            <FaStar className="text-[var(--accent)] text-xs" />
-                            <span className="text-xs font-bold text-[var(--text-primary)]">
-                              {Math.floor(Math.random() * 40 + 60)}% Match
-                            </span>
+                          <div>
+                            <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wide">Payment</div>
+                            <div className="text-lg font-black gradient-text-accent">
+                              AED {job.rate} <span className="text-sm text-[var(--text-secondary)] font-normal">/ {job.paymentFrequency ? job.paymentFrequency.charAt(0).toUpperCase() + job.paymentFrequency.slice(1) : 'Day'}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
+
+                      {/* Description Preview */}
+                      {job.description && (
+                        <p className="text-sm text-[var(--text-secondary)] mb-4 line-clamp-2 leading-relaxed">
+                          {job.description}
+                        </p>
+                      )}
+
+                      {/* CTA */}
+                      <div className="flex items-center justify-between pt-4 border-t border-[var(--border)] group-hover:border-[var(--border-hover)] transition-colors">
+                        <span className="text-sm font-bold text-[var(--primary)]">Apply Now</span>
+                        <FaArrowRight className="text-[var(--secondary)] group-hover:translate-x-2 transition-transform" />
+                      </div>
+
+                      {/* Matching Score */}
+                      <div className="mt-3 flex items-center gap-2">
+                        <div className="flex-1 h-2 bg-[var(--surface)] rounded-full overflow-hidden border border-[var(--border)]">
+                          <motion.div
+                            className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] rounded-full"
+                            initial={{ width: "0%" }}
+                            animate={{ width: `${Math.floor(Math.random() * 40 + 60)}%` }}
+                            transition={{ duration: 1, delay: index * 0.1 }}
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <FaStar className="text-[var(--accent)] text-xs" />
+                          <span className="text-xs font-bold text-[var(--text-primary)]">
+                            {Math.floor(Math.random() * 40 + 60)}% Match
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </Link>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -352,20 +351,30 @@ export default function Applications() {
               <div className="relative z-10">
                 <FaGem className="text-5xl gradient-text mx-auto mb-6" />
                 <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 text-[var(--text-primary)]">
-                  Can&apos;t Find What You&apos;re Looking For?
+                  Can't Find What You're Looking For?
                 </h2>
                 <p className="text-xl mb-8 text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-                  Submit your profile and we&apos;ll notify you when new positions match your skills and preferences.
+                  Submit your profile and we'll notify you when new positions match your skills and preferences.
                 </p>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link
-                    href="/profile"
-                    className="btn-primary text-lg px-12 py-4 inline-flex items-center gap-3"
-                  >
-                    <FaUsers />
-                    Complete Your Profile
-                  </Link>
-                </motion.div>
+                <div className="flex justify-center gap-4">
+                  {!user ? (
+                    <button
+                      onClick={() => setIsAuthModalOpen(true)}
+                      className="btn-primary text-lg px-12 py-4 inline-flex items-center gap-3"
+                    >
+                      <FaUsers />
+                      Join Talent Pool
+                    </button>
+                  ) : (
+                    <Link
+                      href="/profile"
+                      className="btn-primary text-lg px-12 py-4 inline-flex items-center gap-3"
+                    >
+                      <FaUsers />
+                      Complete Profile
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -373,6 +382,7 @@ export default function Applications() {
       </section>
 
       <Footer />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode="signin" />
     </>
   );
 }

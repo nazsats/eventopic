@@ -42,7 +42,9 @@ import {
   FaCertificate,
   FaGraduationCap,
   FaLanguage,
-  FaHandshake
+  FaHandshake,
+  FaLock,
+  FaLink
 } from "react-icons/fa";
 
 interface Job {
@@ -52,11 +54,23 @@ interface Job {
   type: string;
   duration: string;
   rate: number;
-  description: string;
+  paymentFrequency?: string;
+  description?: string;
+  summary?: string;
   category: string;
   requirements?: string[];
   benefits?: string[];
-  companyInfo?: string;
+  postedBy?: string;
+}
+
+interface CompanyProfile {
+  name: string;
+  employees: number;
+  founded: number;
+  rating: number;
+  industry: string;
+  culture: string;
+  benefits: string[];
 }
 
 interface Profile {
@@ -82,6 +96,7 @@ export default function JobDetails() {
   const [job, setJob] = useState<Job | null>(null);
   const [relatedJobs, setRelatedJobs] = useState<RelatedJob[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [application, setApplication] = useState<{ id: string; status: string } | null>(null);
   const [applicationData, setApplicationData] = useState({
     name: "",
@@ -102,12 +117,12 @@ export default function JobDetails() {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'apply' | 'company'>('overview');
 
-  // Mock company data - in real app this would come from job data
-  const companyData = {
+  // Default company data fallback
+  const defaultCompanyData = {
     name: "Eventopic",
     rating: 4.8,
-    employees: "500+",
-    founded: "2021",
+    employees: 500,
+    founded: 2021,
     industry: "Event Management",
     benefits: ["Health Insurance", "Flexible Hours", "Career Growth", "Team Events"],
     culture: "We foster creativity, innovation, and excellence in everything we do."
@@ -133,12 +148,20 @@ export default function JobDetails() {
           return;
         }
 
-        // Fetch job
-        const jobDoc = await getDoc(doc(db, "jobs", jobId));
+        // Fetch job and company settings in parallel
+        const [jobDoc, settingsSnapshot] = await Promise.all([
+          getDoc(doc(db, "jobs", jobId)),
+          getDocs(collection(db, "settings"))
+        ]);
+
         if (!jobDoc.exists()) {
           toast.error("Job not found.");
           router.push("/portal/applications");
           return;
+        }
+
+        if (!settingsSnapshot.empty) {
+          setCompanyProfile(settingsSnapshot.docs[0].data() as CompanyProfile);
         }
 
         const jobData = { id: jobDoc.id, ...jobDoc.data() } as Job;
@@ -148,7 +171,7 @@ export default function JobDetails() {
         const relatedQuery = query(
           collection(db, "jobs"),
           where("category", "==", jobData.category),
-          orderBy("rate", "desc"),
+          // orderBy("rate", "desc"), // Removed to avoid composite index requirement
           limit(3)
         );
         const relatedSnapshot = await getDocs(relatedQuery);
@@ -297,6 +320,59 @@ export default function JobDetails() {
     "Team player with positive energy"
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[var(--primary)] mx-auto mb-4"></div>
+          <p className="text-[var(--text-secondary)] font-semibold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen flex items-center justify-center bg-[var(--background)] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--secondary)]/5 opacity-50" />
+
+          <div className="relative z-10 p-8 max-w-md w-full mx-4">
+            <div className="glass-card p-8 text-center border border-[var(--primary)]/20 shadow-[0_0_50px_rgba(0,212,255,0.1)]">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--surface-elevated)] flex items-center justify-center border border-[var(--border)]">
+                <FaLock className="text-3xl text-[var(--primary)]" />
+              </div>
+
+              <h2 className="font-display text-3xl font-bold text-white mb-3">
+                Member Access Only
+              </h2>
+
+              <p className="text-[var(--text-secondary)] mb-8 leading-relaxed">
+                Please sign in to view full job details, salary information, and apply for this position.
+              </p>
+
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="btn-primary w-full py-4 text-lg shadow-lg hover:shadow-[var(--primary)]/25"
+              >
+                Sign In / Register
+              </button>
+
+              <div className="mt-6 pt-6 border-t border-[var(--border)]">
+                <p className="text-sm text-[var(--text-muted)]">
+                  Not a member yet? <button onClick={() => setIsModalOpen(true)} className="text-[var(--accent)] hover:underline font-bold">Join Now</button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} mode="signin" />
+      </>
+    );
+  }
+
   if (!job) {
     return (
       <>
@@ -317,105 +393,82 @@ export default function JobDetails() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="section-hero relative overflow-hidden pt-24">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[var(--primary)] rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[var(--secondary)] rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      <section className="pt-32 pb-20 min-h-[60vh] flex items-center justify-center bg-[var(--background)] relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-[var(--primary)]/10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-1/4 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         </div>
 
-        <div className="container relative z-10 py-16">
+        <div className="container mx-auto px-4 relative z-10 text-center max-w-5xl">
           {/* Breadcrumb */}
           <motion.nav
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="flex justify-center items-center gap-2 text-sm text-[var(--text-secondary)] mb-8"
           >
-            <ol className="flex items-center space-x-2 text-sm text-[var(--text-secondary)]">
-              <li><Link href="/portal" className="hover:text-[var(--primary)] transition-colors">Portal</Link></li>
-              <li>/</li>
-              <li><Link href="/portal/applications" className="hover:text-[var(--primary)] transition-colors">Jobs</Link></li>
-              <li>/</li>
-              <li className="text-[var(--text-primary)] font-semibold">{job.title}</li>
-            </ol>
+            <Link href="/portal/applications" className="hover:text-[var(--primary)] transition-colors">Jobs</Link>
+            <span>/</span>
+            <span className="text-[var(--text-primary)] font-medium">{job.category}</span>
           </motion.nav>
 
-          {/* Job Header */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="glass-card p-8 mb-8 relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/10 to-[var(--accent)]/10 -z-10"></div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-[var(--primary)]/30 mb-6 mx-auto">
+              <span className="w-2 h-2 rounded-full bg-[var(--primary)] animate-pulse"></span>
+              <span className="text-sm font-bold text-[var(--primary)] tracking-wide uppercase">
+                {job.category === "staffing" ? "Staffing" :
+                  job.category === "models_entertainment" ? "Entertainment" :
+                    job.category === "promotions" ? "Promotions" : "Event Hand"}
+              </span>
+            </div>
 
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="job-card-icon">
-                    <FaBriefcase />
-                  </div>
-                  <div>
-                    <span className="px-3 py-1 rounded-full bg-gradient-to-r from-[var(--primary)]/20 to-[var(--secondary)]/20 border border-[var(--border)] text-[var(--primary)] text-sm font-bold">
-                      {job.category === "staffing" ? "👥 Staffing" :
-                        job.category === "models_entertainment" ? "🎭 Entertainment" :
-                          job.category === "promotions" ? "📢 Promotions" : "✨ Other"}
-                    </span>
-                    {user && (
-                      <div className="inline-flex items-center gap-2 ml-3">
-                        <FaStar className="text-[var(--accent)] text-sm" />
-                        <span className="text-sm font-bold text-[var(--text-primary)]">{getMatchScore()}% Match</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 font-display gradient-text leading-tight">
+              {job.title}
+            </h1>
 
-                <h1 className="font-display text-4xl md:text-5xl font-bold mb-4 text-[var(--text-primary)]">
-                  {job.title}
-                </h1>
-
-                <div className="grid md:grid-cols-3 gap-4 text-[var(--text-secondary)]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center">
-                      <FaMapMarkerAlt className="text-[var(--primary)]" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Location</div>
-                      <div className="font-bold text-[var(--text-primary)]">{job.location}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center">
-                      <FaClock className="text-[var(--secondary)]" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Type</div>
-                      <div className="font-bold text-[var(--text-primary)]">{job.type} • {job.duration}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center">
-                      <FaMoneyBillWave className="text-[var(--accent)]" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Hourly Rate</div>
-                      <div className="text-2xl font-black gradient-text-accent">AED {job.rate}</div>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-10 text-[var(--text-secondary)]">
+              <div className="flex items-center gap-2">
+                <FaMapMarkerAlt className="text-[var(--primary)]" />
+                <span className="text-lg">{job.location}</span>
               </div>
+              <div className="flex items-center gap-2">
+                <FaClock className="text-[var(--secondary)]" />
+                <span className="text-lg">{job.type} • {job.duration}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FaMoneyBillWave className="text-[var(--accent)]" />
+                <span className="text-xl font-bold text-[var(--text-primary)]">
+                  AED {job.rate} <span className="text-base text-[var(--text-secondary)] font-medium">/ {job.paymentFrequency ? job.paymentFrequency.charAt(0).toUpperCase() + job.paymentFrequency.slice(1) : 'Day'}</span>
+                </span>
+              </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              {!application && (
+                <motion.button
+                  onClick={() => setActiveTab('apply')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn-primary px-10 py-4 text-lg shadow-[0_0_30px_rgba(0,212,255,0.3)]"
+                >
+                  <FaRocket />
+                  Apply Now
+                </motion.button>
+              )}
+
+              <div className="flex gap-3">
                 <motion.button
                   onClick={handleSaveJob}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`btn-secondary flex items-center gap-2 ${isSaved ? 'text-red-400 border-red-400' : ''}`}
+                  className={`btn-secondary backdrop-blur-md ${isSaved ? 'text-red-400 border-red-400' : ''}`}
                 >
                   <FaHeart className={isSaved ? 'text-red-400' : ''} />
-                  {isSaved ? 'Saved' : 'Save Job'}
+                  {isSaved ? 'Saved' : 'Save'}
                 </motion.button>
 
                 <div className="relative">
@@ -423,67 +476,58 @@ export default function JobDetails() {
                     onClick={() => setShowShareMenu(!showShareMenu)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="btn-secondary flex items-center gap-2"
+                    className="btn-secondary backdrop-blur-md px-4"
                   >
                     <FaShare />
-                    Share
                   </motion.button>
-
                   <AnimatePresence>
                     {showShareMenu && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                        className="absolute top-full mt-2 right-0 glass-card p-4 min-w-48 z-20"
+                        className="absolute bottom-full mb-2 right-0 glass-card p-2 min-w-[200px] z-50 shadow-2xl border border-[var(--border)]"
                       >
+                        <div className="text-xs font-bold text-[var(--text-muted)] px-3 py-2 uppercase tracking-wider">Share this Job</div>
                         <button
                           onClick={() => handleShare('copy')}
-                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                          className="w-full text-left px-4 py-3 rounded-lg hover:bg-[var(--primary)]/10 hover:text-[var(--primary)] transition-colors text-sm flex items-center gap-3 font-medium"
                         >
-                          📋 Copy Link
+                          <FaLink /> Copy Link
                         </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-
-                {!application && (
-                  <motion.button
-                    onClick={() => setActiveTab('apply')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center gap-2"
-                  >
-                    <FaRocket />
-                    Apply Now
-                  </motion.button>
-                )}
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
 
+      <section className="pb-24 px-4 bg-[var(--background)]">
+        <div className="container mx-auto max-w-6xl">
           {/* Tab Navigation */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex justify-center mb-8"
+            className="flex justify-center mb-12"
           >
-            <div className="glass-card p-2 inline-flex rounded-full">
+            <div className="glass-card p-1.5 inline-flex rounded-full bg-[var(--surface)]/50 backdrop-blur-xl">
               {[
-                { id: 'overview', label: 'Job Overview', icon: <FaInfoCircle /> },
+                { id: 'overview', label: 'Overview', icon: <FaInfoCircle /> },
                 { id: 'apply', label: 'Apply', icon: <FaPaperPlane /> },
-                { id: 'company', label: 'Company Info', icon: <FaUsers /> }
+                { id: 'company', label: 'Company', icon: <FaUsers /> }
               ].map((tab) => (
                 <motion.button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)} // eslint-disable-line @typescript-eslint/no-explicit-any
+                  onClick={() => setActiveTab(tab.id as any)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${activeTab === tab.id
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all duration-300 ${activeTab === tab.id
                     ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-lg'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:text-white'
                     }`}
                 >
                   {tab.icon}
@@ -509,10 +553,10 @@ export default function JobDetails() {
                   <div className="glass-card p-8">
                     <h3 className="font-heading text-2xl font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
                       <FaGem className="text-[var(--primary)]" />
-                      Job Description
+                      Job Summary
                     </h3>
                     <p className="text-[var(--text-secondary)] leading-relaxed text-lg mb-6">
-                      {job.description}
+                      {job.summary || job.description}
                     </p>
 
                     {/* Quick Stats */}
@@ -523,7 +567,7 @@ export default function JobDetails() {
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-[var(--secondary)] mb-1">🤝</div>
-                        <div className="text-sm text-[var(--text-muted)]">Team-oriented</div>
+                        <div className="text-sm text-[var(--text-muted)]">{companyProfile?.industry || defaultCompanyData.industry}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-[var(--accent)] mb-1">🎯</div>
@@ -539,7 +583,7 @@ export default function JobDetails() {
                       Requirements
                     </h3>
                     <div className="space-y-3">
-                      {(job.requirements || defaultRequirements).map((req, index) => (
+                      {(job.requirements && job.requirements.length > 0 ? job.requirements : defaultRequirements).map((req, index) => (
                         <motion.div
                           key={index}
                           initial={{ opacity: 0, x: -20 }}
@@ -561,14 +605,7 @@ export default function JobDetails() {
                       What We Offer
                     </h3>
                     <div className="grid md:grid-cols-2 gap-4">
-                      {(job.benefits || [
-                        "Competitive hourly rates",
-                        "Flexible scheduling",
-                        "Professional development",
-                        "Networking opportunities",
-                        "Career growth potential",
-                        "Team events and recognition"
-                      ]).map((benefit, index) => (
+                      {(job.benefits && job.benefits.length > 0 ? job.benefits : (companyProfile?.benefits || defaultCompanyData.benefits)).map((benefit, index) => (
                         <motion.div
                           key={index}
                           initial={{ opacity: 0, y: 20 }}
@@ -621,15 +658,15 @@ export default function JobDetails() {
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-[var(--text-secondary)]">Application Review:</span>
-                        <span className="font-bold text-[var(--text-primary)]">1-2 days</span>
+                        <span className="font-bold text-[var(--text-primary)]">1 Week</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[var(--text-secondary)]">Interview Process:</span>
-                        <span className="font-bold text-[var(--text-primary)]">2-3 days</span>
+                        <span className="font-bold text-[var(--text-primary)]">1-2 Weeks</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[var(--text-secondary)]">Final Decision:</span>
-                        <span className="font-bold text-[var(--text-primary)]">1-2 days</span>
+                        <span className="font-bold text-[var(--text-primary)]">3-5 days</span>
                       </div>
                     </div>
                   </div>
@@ -949,85 +986,72 @@ export default function JobDetails() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="max-w-4xl mx-auto"
+                className="glass-card p-8"
               >
-                <div className="glass-card p-8 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--accent)]/5 -z-10"></div>
-
-                  {/* Company Header */}
-                  <div className="text-center mb-8">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center mx-auto mb-4">
-                      <FaRocket className="text-3xl text-white" />
-                    </div>
-                    <h2 className="font-display text-4xl font-bold mb-2 text-[var(--text-primary)]">{companyData.name}</h2>
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <FaStar key={i} className={`text-sm ${i < Math.floor(companyData.rating) ? 'text-[var(--accent)]' : 'text-[var(--surface-light)]'}`} />
-                        ))}
-                      </div>
-                      <span className="font-bold text-[var(--text-primary)]">{companyData.rating}</span>
-                      <span className="text-[var(--text-secondary)]">• {companyData.employees} employees</span>
+                <div className="flex items-center gap-6 mb-8">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+                    {companyProfile?.name?.charAt(0) || defaultCompanyData.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h2 className="font-display text-3xl font-bold text-[var(--text-primary)] mb-2">
+                      {companyProfile?.name || defaultCompanyData.name}
+                    </h2>
+                    <div className="flex items-center gap-2 text-[var(--accent)]">
+                      <FaStar />
+                      <span className="font-bold text-lg">{companyProfile?.rating || defaultCompanyData.rating}</span>
+                      <span className="text-[var(--text-secondary)] text-sm">(Company Rating)</span>
                     </div>
                   </div>
+                </div>
 
-                  {/* Company Stats */}
-                  <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="text-center p-4 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                      <FaCalendar className="text-2xl text-[var(--primary)] mx-auto mb-2" />
-                      <div className="font-bold text-[var(--text-primary)]">Founded {companyData.founded}</div>
-                      <div className="text-sm text-[var(--text-secondary)]">Years of Experience</div>
-                    </div>
-                    <div className="text-center p-4 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                      <FaUsers className="text-2xl text-[var(--secondary)] mx-auto mb-2" />
-                      <div className="font-bold text-[var(--text-primary)]">{companyData.employees}</div>
-                      <div className="text-sm text-[var(--text-secondary)]">Professional Team</div>
-                    </div>
-                    <div className="text-center p-4 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                      <FaCertificate className="text-2xl text-[var(--accent)] mx-auto mb-2" />
-                      <div className="font-bold text-[var(--text-primary)]">{companyData.industry}</div>
-                      <div className="text-sm text-[var(--text-secondary)]">Industry Leader</div>
-                    </div>
-                  </div>
-
-                  {/* Company Culture */}
-                  <div className="mb-8">
-                    <h3 className="font-heading text-2xl font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-                      <FaHeart className="text-[var(--accent)]" />
-                      Our Culture
+                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                  <div className="p-6 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+                    <h3 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                      <FaBriefcase className="text-[var(--primary)]" /> Company Overview
                     </h3>
-                    <p className="text-[var(--text-secondary)] leading-relaxed text-lg">
-                      {companyData.culture}
+                    <div className="space-y-4 text-sm text-[var(--text-secondary)]">
+                      <div className="flex justify-between border-b border-[var(--border)] pb-2">
+                        <span>Industry</span>
+                        <span className="font-bold text-[var(--text-primary)]">{companyProfile?.industry || defaultCompanyData.industry}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-[var(--border)] pb-2">
+                        <span>Employees</span>
+                        <span className="font-bold text-[var(--text-primary)]">{companyProfile?.employees || defaultCompanyData.employees}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-[var(--border)] pb-2">
+                        <span>Founded</span>
+                        <span className="font-bold text-[var(--text-primary)]">{companyProfile?.founded || defaultCompanyData.founded}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+                    <h3 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                      <FaHeart className="text-[var(--accent)]" /> Culture & Values
+                    </h3>
+                    <p className="text-[var(--text-secondary)] leading-relaxed">
+                      {companyProfile?.culture || defaultCompanyData.culture}
                     </p>
                   </div>
+                </div>
 
-                  {/* Benefits */}
-                  <div>
-                    <h3 className="font-heading text-2xl font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-                      <FaGem className="text-[var(--primary)]" />
-                      Employee Benefits
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {companyData.benefits.map((benefit, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)]"
-                        >
-                          <FaCheckCircle className="text-[var(--primary)] flex-shrink-0" />
-                          <span className="text-[var(--text-secondary)]">{benefit}</span>
-                        </motion.div>
-                      ))}
-                    </div>
+                <div>
+                  <h3 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                    <FaTrophy className="text-[var(--secondary)]" /> Why Join Us?
+                  </h3>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {(companyProfile?.benefits || defaultCompanyData.benefits).map((benefit, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)]">
+                        <FaCheckCircle className="text-[var(--primary)] flex-shrink-0" />
+                        <span className="text-[var(--text-secondary)]">{benefit}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-
         <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} mode="signin" />
       </section>
 

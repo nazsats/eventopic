@@ -48,40 +48,25 @@ export default function Gallery() {
   return (
     <>
       <Navbar />
-      
-      {/* Hero Section */}
-      <section className="section-hero relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--primary)] rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[var(--accent)] rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+
+      {/* Simplified Hero Section */}
+      <section className="pt-32 pb-12 relative overflow-hidden bg-[var(--background)]">
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[var(--primary)]/20 blur-[100px]" />
         </div>
 
-        <div className="container relative z-10 min-h-[60vh] flex flex-col justify-center items-center text-center py-20">
+        <div className="container relative z-10 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-4xl mx-auto"
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, type: "spring" }}
-              className="inline-block mb-6"
-            >
-              <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center mx-auto shadow-2xl">
-                <FaImages className="text-3xl text-white" />
-              </div>
-            </motion.div>
-
-            <h1 className="font-display text-6xl md:text-8xl font-bold mb-6 leading-tight">
+            <h1 className="font-display text-5xl md:text-6xl font-bold mb-4">
               Our <span className="gradient-text">Portfolio</span>
             </h1>
-            
-            <p className="text-xl md:text-2xl max-w-3xl mx-auto text-[var(--text-secondary)] leading-relaxed">
-              Explore our collection of unforgettable events across Dubai — from elegant weddings 
-              to high-energy corporate activations.
+
+            <p className="text-xl max-w-2xl mx-auto text-[var(--text-secondary)]">
+              Explore our collection of unforgettable events across Dubai.
             </p>
           </motion.div>
         </div>
@@ -100,7 +85,7 @@ export default function Gallery() {
               <FaFilter className="text-[var(--primary)]" />
               <span className="font-heading font-semibold">Filter by:</span>
             </div>
-            
+
             <div className="flex flex-wrap justify-center gap-3">
               {categories.map((category, index) => (
                 <motion.button
@@ -114,21 +99,19 @@ export default function Gallery() {
                   }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 ${
-                    filter === category.name
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 ${filter === category.name
                       ? "bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-lg"
                       : "glass-card text-[var(--text-primary)] hover:border-[var(--border-hover)]"
-                  }`}
+                    }`}
                   aria-label={`Filter by ${category.name}`}
                   aria-pressed={filter === category.name}
                 >
                   <span className="text-lg">{category.icon}</span>
                   <span>{category.name}</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    filter === category.name 
-                      ? "bg-white/20 text-white" 
+                  <span className={`text-xs px-2 py-1 rounded-full ${filter === category.name
+                      ? "bg-white/20 text-white"
                       : "bg-[var(--surface)] text-[var(--text-muted)]"
-                  }`}>
+                    }`}>
                     {category.count}
                   </span>
                 </motion.button>
@@ -180,7 +163,7 @@ export default function Gallery() {
                           quality={85}
                           loading={index < 6 ? "eager" : "lazy"}
                         />
-                        
+
                         {/* Category Badge */}
                         <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[var(--primary)]/90 backdrop-blur-sm border border-[var(--border)]">
                           <span className="text-white text-xs font-bold">{image.category}</span>
@@ -252,7 +235,7 @@ export default function Gallery() {
           >
             <FaTimes className="text-white text-xl" />
           </motion.button>
-          
+
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -309,7 +292,7 @@ export default function Gallery() {
                   Ready to Create Your Own <span className="gradient-text">Masterpiece?</span>
                 </h2>
                 <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed">
-                  From intimate celebrations to grand corporate events, we bring your vision to life 
+                  From intimate celebrations to grand corporate events, we bring your vision to life
                   with creativity, precision, and unmatched attention to detail.
                 </p>
                 <motion.div

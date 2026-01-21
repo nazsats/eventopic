@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { FaInstagram, FaFacebookF, FaLinkedin, FaArrowRight } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaLinkedin, FaArrowRight, FaWhatsapp } from "react-icons/fa";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -39,18 +39,18 @@ export default function Footer() {
               <h3 className="text-sm font-bold text-[var(--primary)] uppercase tracking-wider mb-8">Socials</h3>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors text-lg group">
-                    LinkedIn <FaArrowRight className="text-xs -rotate-45 opacity-0 group-hover:opacity-100 transition-all" />
+                  <a href="https://instagram.com/eventopic_official" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors text-lg group">
+                    <FaInstagram /> @eventopic_official
+                  </a>
+                </li>
+                <li>
+                  <a href="https://chat.whatsapp.com/CvC6QGyQlKFEz5s9vhJRXC" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors text-lg group">
+                    <FaWhatsapp /> Join Community
                   </a>
                 </li>
                 <li>
                   <a href="#" className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors text-lg group">
-                    Instagram <FaArrowRight className="text-xs -rotate-45 opacity-0 group-hover:opacity-100 transition-all" />
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors text-lg group">
-                    Facebook <FaArrowRight className="text-xs -rotate-45 opacity-0 group-hover:opacity-100 transition-all" />
+                    <FaLinkedin /> LinkedIn
                   </a>
                 </li>
               </ul>
