@@ -15,7 +15,7 @@ import {
   sendPasswordResetEmail,
   sendEmailVerification,
 } from "firebase/auth";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { auth, db } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import { collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";

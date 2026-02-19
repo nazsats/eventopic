@@ -9,7 +9,7 @@ import { db } from "../../../lib/firebase";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import AuthModal from "../../../components/AuthModal";
 import {
   FaBriefcase,

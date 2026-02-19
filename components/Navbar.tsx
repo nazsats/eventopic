@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import AuthModal from "./AuthModal";
-import { toast } from "react-toastify";
+import ThemeSwitcher from "./ThemeSwitcher";
+import { toast } from "sonner";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import {
@@ -184,6 +185,9 @@ export default function Navbar() {
                   Sign In
                 </motion.button>
               )}
+
+              {/* Theme Switcher */}
+              <ThemeSwitcher />
 
               {/* Mobile Menu Toggle */}
               <motion.button

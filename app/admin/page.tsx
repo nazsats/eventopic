@@ -2,12 +2,13 @@
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import {
   FaEdit,
   FaTrash,
@@ -29,7 +30,8 @@ import {
   FaArrowRight,
   FaEnvelope,
   FaPhone,
-  FaUsers
+  FaUsers,
+  FaDownload
 } from "react-icons/fa";
 import { useForm, SubmitHandler } from "react-hook-form";
 
@@ -101,6 +103,7 @@ export default function Admin() {
 
   const [selectedTab, setSelectedTab] = useState<"jobs" | "applications" | "admins" | "profile">("jobs");
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [jobCategoryFilter, setJobCategoryFilter] = useState("all");
   const [jobSearch, setJobSearch] = useState("");
@@ -121,6 +124,37 @@ export default function Admin() {
   const [newBenefit, setNewBenefit] = useState("");
 
   const [newAdminEmail, setNewAdminEmail] = useState("");
+
+  const handleExportDatabase = async () => {
+    if (!confirm("Download complete database backup? This may take a moment.")) return;
+    setIsExporting(true);
+    try {
+      const collectionsToExport = ["users", "jobs", "applications", "admins", "settings", "staff_inquiries", "leads"];
+      const exportData: Record<string, any[]> = {};
+
+      for (const colName of collectionsToExport) {
+        const querySnapshot = await getDocs(collection(db, colName));
+        exportData[colName] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `eventopic_db_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Database export successful!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export database.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -166,6 +200,7 @@ export default function Admin() {
 
           setJobs(jobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Job)));
           setApplications(appsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Application)));
+
 
           if (!settingsSnapshot.empty) {
             const profileData = settingsSnapshot.docs[0].data() as CompanyProfile;
@@ -299,7 +334,22 @@ export default function Admin() {
   };
 
   // Pagination & Filtering
+  const SUPER_ADMIN_EMAIL = "test1@gmail.com";
+
+  const normalize = (str?: string) => str?.toLowerCase().trim() || "";
+
   const filteredJobs = jobs.filter(j => {
+    const userEmail = normalize(user?.email || "");
+    const jobOwnerEmail = normalize(j.postedBy);
+    const superAdminEmail = normalize(SUPER_ADMIN_EMAIL);
+
+    const isOwner = jobOwnerEmail === userEmail;
+    const isSuperAdmin = userEmail === superAdminEmail;
+    const isLegacyJob = !jobOwnerEmail;
+
+    // Filter by ownership (unless super admin or legacy job)
+    if (!isSuperAdmin && !isOwner && !isLegacyJob) return false;
+
     const matchesSearch = j.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
       j.location.toLowerCase().includes(jobSearch.toLowerCase());
     const matchesCategory = jobCategoryFilter === "all" || j.category === jobCategoryFilter;
@@ -307,6 +357,24 @@ export default function Admin() {
   });
 
   const filteredApplications = applications.filter(a => {
+    // Find the job this application is for
+    const job = jobs.find(j => j.id === a.jobId);
+
+    // If we can't find the job, maybe don't show the application? 
+    // Or if we can't verify ownership, hide it to be safe.
+    if (!job) return false;
+
+    const userEmail = normalize(user?.email || "");
+    const jobOwnerEmail = normalize(job.postedBy);
+    const superAdminEmail = normalize(SUPER_ADMIN_EMAIL);
+
+    const isJobOwner = jobOwnerEmail === userEmail;
+    const isSuperAdmin = userEmail === superAdminEmail;
+    const isLegacyJob = !jobOwnerEmail;
+
+    // Filter by job ownership (unless super admin or legacy job)
+    if (!isSuperAdmin && !isJobOwner && !isLegacyJob) return false;
+
     const matchesSearch = a.name.toLowerCase().includes(appSearch.toLowerCase()) ||
       a.email.toLowerCase().includes(appSearch.toLowerCase()) ||
       a.jobId.includes(appSearch);
@@ -347,19 +415,37 @@ export default function Admin() {
               <p className="text-[var(--text-secondary)]">Manage jobs, applications, and system access.</p>
             </div>
 
-            <div className="flex bg-[var(--surface-elevated)] p-1 rounded-xl border border-[var(--border)] overflow-x-auto max-w-full">
-              {(["jobs", "applications", "admins", "profile"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setSelectedTab(tab)}
-                  className={`px-6 py-3 rounded-lg font-bold transition-all whitespace-nowrap ${selectedTab === tab
-                    ? "bg-[var(--primary)] text-white shadow-lg"
-                    : "text-[var(--text-secondary)] hover:text-white"
-                    }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <Link
+                href="/admin/leads"
+                className="btn-primary px-4 py-3 rounded-xl flex items-center gap-2 font-bold whitespace-nowrap"
+              >
+                <FaUsers /> Leads
+              </Link>
+
+              <button
+                onClick={handleExportDatabase}
+                disabled={isExporting}
+                className="btn-secondary px-4 py-3 rounded-xl flex items-center gap-2 font-bold whitespace-nowrap border border-[var(--border)] hover:border-[var(--primary)] transition-all"
+              >
+                {isExporting ? <FaHourglassHalf className="animate-spin" /> : <FaDownload />}
+                {isExporting ? "Exporting..." : "Export DB"}
+              </button>
+
+              <div className="flex bg-[var(--surface-elevated)] p-1 rounded-xl border border-[var(--border)] overflow-x-auto max-w-full">
+                {(["jobs", "applications", "admins", "profile"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setSelectedTab(tab)}
+                    className={`px-6 py-3 rounded-lg font-bold transition-all whitespace-nowrap ${selectedTab === tab
+                      ? "bg-[var(--primary)] text-white shadow-lg"
+                      : "text-[var(--text-secondary)] hover:text-white"
+                      }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
 
@@ -817,10 +903,19 @@ export default function Admin() {
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {jobs
-                        .filter(job =>
-                          (job.postedBy === user?.email) && // Filter by ownership
-                          (job.title.toLowerCase().includes(jobSearch.toLowerCase()))
-                        )
+                        .filter(job => {
+                          const userEmail = normalize(user?.email || "");
+                          const jobOwnerEmail = normalize(job.postedBy);
+                          const superAdminEmail = normalize(SUPER_ADMIN_EMAIL);
+
+                          const isOwner = jobOwnerEmail === userEmail;
+                          const isSuperAdmin = userEmail === superAdminEmail;
+                          const isLegacyJob = !jobOwnerEmail;
+
+                          if (!isSuperAdmin && !isOwner && !isLegacyJob) return false;
+
+                          return job.title.toLowerCase().includes(jobSearch.toLowerCase());
+                        })
                         .map(job => {
                           const jobApps = applications.filter(app => app.jobId === job.id);
                           const pendingCount = jobApps.filter(a => a.status === 'pending').length;
@@ -860,13 +955,23 @@ export default function Admin() {
                           );
                         })}
 
-                      {jobs.filter(job => job.postedBy === user?.email).length === 0 && (
-                        <div className="col-span-full text-center py-12 text-[var(--text-muted)]">
-                          <div className="text-4xl mb-4">📂</div>
-                          <p>You haven't posted any jobs yet.</p>
-                          <button onClick={() => setSelectedTab('jobs')} className="text-[var(--primary)] hover:underline mt-2">Post a job now</button>
-                        </div>
-                      )}
+                      {jobs.filter(job => {
+                        const userEmail = normalize(user?.email || "");
+                        const jobOwnerEmail = normalize(job.postedBy);
+                        const superAdminEmail = normalize(SUPER_ADMIN_EMAIL);
+
+                        const isOwner = jobOwnerEmail === userEmail;
+                        const isSuperAdmin = userEmail === superAdminEmail;
+                        const isLegacyJob = !jobOwnerEmail;
+
+                        return isSuperAdmin || isOwner || isLegacyJob;
+                      }).length === 0 && (
+                          <div className="col-span-full text-center py-12 text-[var(--text-muted)]">
+                            <div className="text-4xl mb-4">📂</div>
+                            <p>You haven't posted any jobs yet.</p>
+                            <button onClick={() => setSelectedTab('jobs')} className="text-[var(--primary)] hover:underline mt-2">Post a job now</button>
+                          </div>
+                        )}
                     </div>
                   </div>
                 ) : (
@@ -1005,7 +1110,7 @@ export default function Admin() {
                     <input
                       value={newAdminEmail}
                       onChange={(e) => setNewAdminEmail(e.target.value)}
-                      placeholder="admin@eventopic.ae"
+                      placeholder="admin@eventopic.com"
                       className="modern-input"
                     />
                     <button onClick={handleAddAdmin} className="btn-primary">

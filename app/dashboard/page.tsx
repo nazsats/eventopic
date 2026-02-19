@@ -9,7 +9,7 @@ import Navbar from "../../components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import {
   FaUser,
   FaMapMarkerAlt,

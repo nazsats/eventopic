@@ -6,7 +6,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "fire
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import Link from "next/link";
 import { FaGoogle, FaFacebookF, FaApple, FaEnvelope, FaLock, FaSpinner, FaTimes, FaRocket } from "react-icons/fa";
 

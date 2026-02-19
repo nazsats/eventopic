@@ -449,9 +449,7 @@ export default function Home() {
         </section>
       </main>
 
-      <div className="fixed bottom-6 right-6 z-50">
-        <ChatBot />
-      </div>
+      <ChatBot />
 
       <Footer />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode="signin" />
