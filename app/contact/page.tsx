@@ -6,7 +6,7 @@ import ChatBot from "../../components/ChatBot";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
 import {
   FaUser,
   FaPhone,
@@ -151,7 +151,7 @@ export default function Contact() {
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-16 mb-20">
             {[
               { icon: <FaPhone />, title: "Call Us", details: "+971 50 123 4567", sub: "Mon-Fri, 9am-6pm" },
-              { icon: <FaEnvelope />, title: "Email Us", details: "info@eventopic.ae", sub: "We reply within 24hrs" },
+              { icon: <FaEnvelope />, title: "Email Us", details: "info@eventopic.com", sub: "We reply within 24hrs" },
               { icon: <FaMapMarkerAlt />, title: "Visit Us", details: "Business Bay, Dubai", sub: "UAE" }
             ].map((item, idx) => (
               <motion.div

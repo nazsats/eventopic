@@ -1,415 +1,450 @@
-//components/ChatBot.tsx
+// components/ChatBot.tsx
 "use client";
 
-import React, { useState, ReactNode } from "react";
-import { createChatBotMessage } from "react-chatbot-kit";
-import Chatbot from "react-chatbot-kit";
-import "react-chatbot-kit/build/main.css";
-import { toast } from "react-toastify";
-import { FaComment } from "react-icons/fa";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaComment,
+  FaTimes,
+  FaPaperPlane,
+  FaRobot,
+  FaUser,
+  FaTrash,
+  FaSpinner,
+} from "react-icons/fa";
 
-interface ChatBotMessage {
-  message: string;
-  type: string;
-  widget?: string;
-  loading?: boolean;
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
 }
 
-interface FormData {
-  name: string;
-  email: string;
-  mobile: string;
-  message: string;
-  eventType: string;
-  role: string;
-  experience: string;
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function generateId(): string {
+  return Math.random().toString(36).slice(2, 9);
 }
 
-interface Actions {
-  handleEnquiryStart: () => void;
-  handleStaffApplication: () => void;
-  handleEventTypeSelected: (eventType: string) => void;
-  handleRoleSelected: (role: string) => void;
-  handleBack: () => void;
-  handleUserInput: (userInput: string) => void;
-  handleDefault: (message: string) => void;
-  handleSubmit: () => void;
-}
+/** Renders a minimal subset of markdown — bold, italic, links, bullet lists */
+function renderMarkdown(text: string): React.ReactNode[] {
+  const lines = text.split("\n");
+  const result: React.ReactNode[] = [];
 
-interface ActionProviderProps {
-  createChatBotMessage: (text: string, options?: { widget?: string }) => ChatBotMessage;
-  setState: (updater: (prevState: { messages: ChatBotMessage[] }) => { messages: ChatBotMessage[] }) => void;
-  children: ReactNode;
-}
-
-interface MessageParserProps {
-  children: ReactNode;
-  actions: Actions;
-}
-
-const buttonVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, type: "spring" as const, stiffness: 80 } },
-  hover: {
-    scale: 1.1,
-    y: -5,
-    boxShadow: "0 8px 24px rgba(0, 196, 180, 0.4)",
-    backgroundColor: "var(--teal-accent)",
-    borderColor: "var(--teal-accent)",
-    transition: { duration: 0.3 },
-  },
-};
-
-const containerVariants: Variants = {
-  visible: { transition: { staggerChildren: 0.2 } },
-};
-
-const ActionProvider: React.FC<ActionProviderProps> = ({ createChatBotMessage, setState, children }) => {
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    mobile: "",
-    message: "",
-    eventType: "",
-    role: "",
-    experience: "",
+  lines.forEach((line, lineIdx) => {
+    // Bullet list
+    if (line.startsWith("- ") || line.startsWith("• ")) {
+      result.push(
+        <li key={lineIdx} className="ml-4 list-disc">
+          {inlineMarkdown(line.slice(2))}
+        </li>
+      );
+      return;
+    }
+    // Bold heading lines (e.g. **Title**)
+    if (line.startsWith("## ") || line.startsWith("### ")) {
+      result.push(
+        <p key={lineIdx} className="font-bold text-white mt-2">
+          {inlineMarkdown(line.replace(/^#{2,3} /, ""))}
+        </p>
+      );
+      return;
+    }
+    // Empty line = paragraph break
+    if (line.trim() === "") {
+      result.push(<br key={lineIdx} />);
+      return;
+    }
+    // Normal line
+    result.push(<p key={lineIdx}>{inlineMarkdown(line)}</p>);
   });
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isClientEnquiry, setIsClientEnquiry] = useState(true);
 
-  const updateChatbotState = (message: ChatBotMessage) => {
-    setState((prev) => ({
-      ...prev,
-      messages: [...prev.messages, message],
+  return result;
+}
+
+function inlineMarkdown(text: string): React.ReactNode {
+  // bold
+  const boldRegex = /\*\*(.*?)\*\*/g;
+  // links [label](url)
+  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+
+  // split by bold or link patterns
+  const combined = /\*\*(.*?)\*\*|\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = combined.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    if (match[1] !== undefined) {
+      // bold
+      parts.push(<strong key={match.index} className="text-white font-semibold">{match[1]}</strong>);
+    } else if (match[2] !== undefined) {
+      // link
+      parts.push(
+        <a
+          key={match.index}
+          href={match[3]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-[var(--primary)] hover:text-white transition-colors"
+        >
+          {match[2]}
+        </a>
+      );
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return <>{parts}</>;
+}
+
+// ─── Quick Reply Chips ────────────────────────────────────────────────────────
+
+const QUICK_REPLIES = [
+  "How many model jobs are available?",
+  "Show me promoter jobs",
+  "What jobs are in Dubai?",
+  "I need staff for my event",
+  "How do I apply for a job?",
+];
+
+// ─── Message Bubble ───────────────────────────────────────────────────────────
+
+const MessageBubble = React.memo(function MessageBubble({ msg }: { msg: Message }) {
+  const isBot = msg.role === "assistant";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className={`flex gap-3 ${isBot ? "justify-start" : "justify-end"}`}
+    >
+      {isBot && (
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-xs shadow-md">
+          <FaRobot />
+        </div>
+      )}
+
+      <div
+        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-md ${isBot
+          ? "bg-[var(--surface-elevated)] text-[var(--text-secondary)] rounded-tl-sm"
+          : "bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white rounded-tr-sm"
+          }`}
+      >
+        {isBot ? (
+          <div className="space-y-0.5">{renderMarkdown(msg.content)}</div>
+        ) : (
+          <p>{msg.content}</p>
+        )}
+        <p className={`text-[10px] mt-1.5 ${isBot ? "text-[var(--text-muted)]" : "text-white/60"}`}>
+          {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </p>
+      </div>
+
+      {!isBot && (
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] text-xs">
+          <FaUser />
+        </div>
+      )}
+    </motion.div>
+  );
+});
+
+// ─── Typing Indicator ─────────────────────────────────────────────────────────
+
+function TypingIndicator() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      className="flex gap-3 justify-start"
+    >
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-xs shadow-md">
+        <FaRobot />
+      </div>
+      <div className="bg-[var(--surface-elevated)] rounded-2xl rounded-tl-sm px-4 py-3 shadow-md flex items-center gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-2 h-2 rounded-full bg-[var(--primary)]"
+            animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main ChatBot Component ───────────────────────────────────────────────────
+
+export default function ChatBot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content:
+        "👋 Hi! I'm **Eventopic AI Assistant**.\n\nI can help you with:\n- Finding & applying for jobs\n- Event staffing solutions\n- Payment & experience questions\n- Contacting our team\n\nWhat can I help you with today?",
+      timestamp: new Date(),
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
+  // Focus input on open
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 300);
+    }
+  }, [isOpen]);
+
+  const sendMessage = useCallback(async (text: string) => {
+    if (!text.trim() || isLoading) return;
+
+    const userMsg: Message = {
+      id: generateId(),
+      role: "user",
+      content: text.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+    setError(null);
+    setShowQuickReplies(false);
+
+    // Build conversation history for API (exclude welcome system-message-like content)
+    const history = [...messages, userMsg].map((m) => ({
+      role: m.role,
+      content: m.content,
     }));
-  };
 
-  const handleEnquiryStart = () => {
-    setIsClientEnquiry(true);
-    setCurrentStep(0);
-    updateChatbotState(createChatBotMessage("Great! Let's start your enquiry. What's your full name?", { widget: "formStep" }));
-  };
-
-  const handleStaffApplication = () => {
-    setIsClientEnquiry(false);
-    setCurrentStep(0);
-    updateChatbotState(createChatBotMessage("Awesome! Let's start your staff application. What's your full name?", { widget: "formStep" }));
-  };
-
-  const handleEventTypeSelected = (eventType: string) => {
-    setFormData((prev) => ({ ...prev, eventType }));
-    setCurrentStep((prev) => prev + 1);
-    updateChatbotState(createChatBotMessage("Tell us about your event or any specific requirements.", { widget: "formStep" }));
-  };
-
-  const handleRoleSelected = (role: string) => {
-    setFormData((prev) => ({ ...prev, role }));
-    setCurrentStep((prev) => prev + 1);
-    updateChatbotState(createChatBotMessage("Describe your relevant experience (optional).", { widget: "formStep" }));
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-      const step = isClientEnquiry ? ["name", "email", "mobile", "eventType", "message"][currentStep - 1] : ["name", "email", "mobile", "role", "experience"][currentStep - 1];
-      const prompts: { [key: string]: string } = {
-        name: "What's your full name?",
-        email: "What's your email address?",
-        mobile: "Please provide your Dubai mobile number (05xxxxxxxx).",
-        eventType: "Please select an event type:",
-        role: "Please select a role:",
-      };
-      updateChatbotState(createChatBotMessage(prompts[step], { widget: step === "eventType" ? "eventTypeSelector" : step === "role" ? "roleSelector" : "formStep" }));
-    }
-  };
-
-  const handleUserInput = (userInput: string) => {
-    const step = isClientEnquiry ? ["name", "email", "mobile", "eventType", "message"][currentStep] : ["name", "email", "mobile", "role", "experience"][currentStep];
-    setFormData((prev) => ({ ...prev, [step]: userInput }));
-
-    if (step === "mobile" && !/^05\d{8}$/.test(userInput)) {
-      updateChatbotState(createChatBotMessage("Please enter a valid Dubai mobile number (05xxxxxxxx). Try again.", { widget: "formStep" }));
-      return;
-    }
-
-    if (currentStep < (isClientEnquiry ? 4 : 4)) {
-      setCurrentStep((prev) => prev + 1);
-      const nextStep = isClientEnquiry ? ["name", "email", "mobile", "eventType", "message"][currentStep + 1] : ["name", "email", "mobile", "role", "experience"][currentStep + 1];
-      const prompts: { [key: string]: string } = {
-        email: "What's your email address?",
-        mobile: "Please provide your Dubai mobile number (05xxxxxxxx).",
-        message: "Tell us about your event or any specific requirements.",
-        experience: "Describe your relevant experience (optional).",
-      };
-      updateChatbotState(createChatBotMessage(prompts[nextStep] || "Next field?", { widget: nextStep === "eventType" ? "eventTypeSelector" : nextStep === "role" ? "roleSelector" : "formStep" }));
-    } else {
-      handleSubmit();
-    }
-  };
-
-  const handleDefault = (message: string) => {
-    const lowerMessage = message.toLowerCase();
-    let botMessage: ChatBotMessage;
-    if (lowerMessage.includes("budget")) {
-      botMessage = createChatBotMessage("Could you share your approximate budget? This helps us tailor our recommendations!", {});
-    } else if (lowerMessage.includes("date") || lowerMessage.includes("when")) {
-      botMessage = createChatBotMessage("When are you planning your event? Share a date or timeframe, and I'll note it.", {});
-    } else {
-      botMessage = createChatBotMessage("I didn't quite catch that. Type 'enquiry' for event planning, 'job' for staff opportunities, or ask about 'budget' or 'date'.", {});
-    }
-    updateChatbotState(botMessage);
-  };
-
-  const handleSubmit = async () => {
-    const requiredFields = isClientEnquiry ? ["name", "email", "mobile", "eventType", "message"] : ["name", "email", "mobile", "role"];
-    const missingFields = requiredFields.filter((field) => !formData[field as keyof FormData]);
-    if (missingFields.length > 0) {
-      updateChatbotState(createChatBotMessage(`Please provide: ${missingFields.join(", ")}. Type 'back' to revise or continue.`, { widget: "formStep" }));
-      return;
-    }
-
-    const endpoint = isClientEnquiry ? "/api/submit-client" : "/api/submit-staff";
     try {
-      const response = await fetch(endpoint, {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, source: "chatbot" }),
+        body: JSON.stringify({ messages: history }),
       });
-      if (response.ok) {
-        toast.success(`${isClientEnquiry ? "Enquiry" : "Application"} submitted! We'll contact you soon.`);
-        updateChatbotState(createChatBotMessage(`Thank you! Your ${isClientEnquiry ? "enquiry" : "application"} has been submitted. We'll reach out soon.`, {}));
-        setFormData({ name: "", email: "", mobile: "", message: "", eventType: "", role: "", experience: "" });
-        setCurrentStep(0);
-      } else {
-        updateChatbotState(createChatBotMessage(`Sorry, submission failed. Please try the ${isClientEnquiry ? "contact" : "staff"} form on our website.`, {}));
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to get response");
       }
-    } catch (error) {
-      console.error("Submission error:", error);
-      updateChatbotState(createChatBotMessage("Error submitting. Please check your connection and try again.", {}));
+
+      const botMsg: Message = {
+        id: generateId(),
+        role: "assistant",
+        content: data.reply,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(message);
+      // Add error message to chat
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: generateId(),
+          role: "assistant",
+          content: "Sorry, I ran into an issue. Please try again or contact us at **info@eventopic.com**.",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(input);
+  };
+
+  const handleClear = () => {
+    setMessages([
+      {
+        id: "welcome",
+        role: "assistant",
+        content:
+          "👋 Hi! I'm **Eventopic AI Assistant**.\n\nI can help you with:\n- Finding & applying for jobs\n- Event staffing solutions\n- Payment & experience questions\n- Contacting our team\n\nWhat can I help you with today?",
+        timestamp: new Date(),
+      },
+    ]);
+    setShowQuickReplies(true);
+    setError(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input);
     }
   };
 
   return (
-    <div>
-      {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<{ actions: Actions }>, {
-            actions: {
-              handleEnquiryStart,
-              handleStaffApplication,
-              handleEventTypeSelected,
-              handleRoleSelected,
-              handleBack,
-              handleUserInput,
-              handleDefault,
-              handleSubmit,
-            },
-          });
-        }
-        return child;
-      })}
-    </div>
-  );
-};
-
-const MessageParser: React.FC<MessageParserProps> = ({ children, actions }) => {
-  const parse = (message: string) => {
-    const lowerMessage = message.toLowerCase();
-    if (lowerMessage.includes("back")) {
-      actions.handleBack();
-    } else if (lowerMessage.includes("enquiry") || lowerMessage.includes("client")) {
-      actions.handleEnquiryStart();
-    } else if (lowerMessage.includes("job") || lowerMessage.includes("staff")) {
-      actions.handleStaffApplication();
-    } else {
-      actions.handleUserInput(message);
-    }
-  };
-
-  return (
-    <div>
-      {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<{ parse: (message: string) => void; actions: Actions }>, { parse, actions });
-        }
-        return child;
-      })}
-    </div>
-  );
-};
-
-const EventTypeSelector = ({ actions }: { actions: { handleEventTypeSelected: (eventType: string) => void } }) => (
-  <motion.div className="flex flex-wrap gap-3 p-4 bg-[var(--primary)]/50 rounded-xl border border-[var(--light)]/30" variants={containerVariants} initial="hidden" animate="visible">
-    {["Wedding", "Corporate", "Promotion", "Party", "Cultural"].map((type) => (
-      <motion.button
-        key={type}
-        variants={buttonVariants}
-        onClick={() => actions.handleEventTypeSelected(type)}
-        className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-        style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-        aria-label={`Select event type: ${type}`}
-      >
-        {type}
-        <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-      </motion.button>
-    ))}
-  </motion.div>
-);
-
-const RoleSelector = ({ actions }: { actions: { handleRoleSelected: (role: string) => void } }) => (
-  <motion.div className="flex flex-wrap gap-3 p-4 bg-[var(--primary)]/50 rounded-xl border border-[var(--light)]/30" variants={containerVariants} initial="hidden" animate="visible">
-    {["Promoter", "Waitress", "Usher", "Volunteer", "Model"].map((role) => (
-      <motion.button
-        key={role}
-        variants={buttonVariants}
-        onClick={() => actions.handleRoleSelected(role.toLowerCase())}
-        className="px-8 py-3 rounded-full text-lg font-bold font-body shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-        style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-        aria-label={`Select role: ${role}`}
-      >
-        {role}
-        <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-      </motion.button>
-    ))}
-  </motion.div>
-);
-
-const ChatBotComponent = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50" aria-live="polite">
-      <style jsx>{`
-        .react-chatbot-kit-chat-bot-message {
-          color: var(--white) !important;
-        }
-        .react-chatbot-kit-chat-btn {
-          color: var(--white) !important;
-        }
-      `}</style>
+    <>
+      {/* Floating Button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            key="chat-icon"
-            variants={buttonVariants}
-            initial="hidden"
-            animate="visible"
+            key="chat-btn"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            className="p-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-            style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-            aria-label="Open chatbot"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(0,212,255,0.4)] hover:shadow-[0_0_40px_rgba(0,212,255,0.6)] transition-shadow"
+            aria-label="Open AI Chat"
           >
-            <FaComment size={24} />
-            <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
+            {/* Pulse ring */}
+            <span className="absolute w-full h-full rounded-full bg-[var(--primary)]/30 animate-ping" />
+            <FaComment size={22} />
           </motion.button>
         )}
+      </AnimatePresence>
+
+      {/* Chat Window */}
+      <AnimatePresence>
         {isOpen && (
           <motion.div
-            key="chatbot"
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.8, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, type: "spring" as const, stiffness: 100 }}
-            className="w-full max-w-[90vw] sm:max-w-xs md:max-w-sm lg:max-w-md h-[70vh] sm:h-[80vh] bg-[var(--primary)]/80 rounded-2xl shadow-2xl overflow-hidden border border-[var(--light)]/30 backdrop-blur-sm"
+            key="chat-window"
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 20 }}
+            transition={{ type: "spring", stiffness: 260, damping: 24 }}
+            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] h-[560px] max-h-[calc(100vh-100px)] flex flex-col rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-[var(--border)]"
+            style={{ background: "var(--background)" }}
+            ref={chatWindowRef}
           >
-            <Chatbot
-              config={{
-                initialMessages: [
-                  createChatBotMessage(
-                    "Hello! I'm Eventopic's Assistant. Type 'enquiry' for event planning, 'job' for staff opportunities, or ask about 'budget' or 'date'.",
-                    {}
-                  ),
-                ],
-                botName: "Eventopic Bot",
-                customStyles: {
-                  botMessageBox: {
-                    backgroundColor: "var(--accent)",
-                  },
-                  chatButton: {
-                    backgroundColor: "var(--teal-accent)",
-                  },
-                },
-                state: {
-                  formData: {
-                    name: "",
-                    email: "",
-                    mobile: "",
-                    message: "",
-                    eventType: "",
-                    role: "",
-                    experience: "",
-                  },
-                  currentStep: 0,
-                  isClientEnquiry: true,
-                },
-                widgets: [
-                  {
-                    widgetName: "eventTypeSelector",
-                    widgetFunc: (props: { actions: { handleEventTypeSelected: (eventType: string) => void } }) => <EventTypeSelector actions={props.actions} />,
-                    props: {},
-                    mapStateToProps: [],
-                  },
-                  {
-                    widgetName: "roleSelector",
-                    widgetFunc: (props: { actions: { handleRoleSelected: (role: string) => void } }) => <RoleSelector actions={props.actions} />,
-                    props: {},
-                    mapStateToProps: [],
-                  },
-                  {
-                    widgetName: "formStep",
-                    widgetFunc: (props: { state: { formData: FormData; currentStep: number; isClientEnquiry: boolean } }) => {
-                      const steps = props.state.isClientEnquiry ? ["name", "email", "mobile", "eventType", "message"] : ["name", "email", "mobile", "role", "experience"];
-                      const step = steps[props.state.currentStep];
-                      const prompts: { [key: string]: string } = {
-                        name: "What's your full name?",
-                        email: "What's your email address?",
-                        mobile: "Please provide your Dubai mobile number (05xxxxxxxx).",
-                        message: "Tell us about your event or any specific requirements.",
-                        experience: "Describe your relevant experience (optional).",
-                      };
-                      if (step === "eventType") return <EventTypeSelector actions={{ handleEventTypeSelected: (eventType: string) => (props.state.formData.eventType = eventType) }} />;
-                      if (step === "role") return <RoleSelector actions={{ handleRoleSelected: (role: string) => (props.state.formData.role = role) }} />;
-                      return (
-                        <div className="p-4 bg-[var(--primary)]/50 rounded-xl border border-[var(--light)]/30">
-                          <p className="text-lg font-body text-[var(--text-body)]">{prompts[step]}</p>
-                          <input
-                            type={step === "email" ? "email" : step === "mobile" ? "tel" : "text"}
-                            value={props.state.formData[step as keyof FormData]}
-                            onChange={(e) => (props.state.formData[step as keyof FormData] = e.target.value)}
-                            className="w-full p-4 mt-2 rounded-lg text-lg font-body bg-[var(--primary)]/50 border border-[var(--light)]/30 text-[var(--text-body)] focus:ring-2 focus:ring-[var(--teal-accent)]/50 focus:outline-none transition-all duration-300"
-                            placeholder={prompts[step]}
-                            aria-label={prompts[step]}
-                          />
-                        </div>
-                      );
-                    },
-                    props: {},
-                    mapStateToProps: ["formData", "currentStep", "isClientEnquiry"],
-                  },
-                ],
-              }}
-              messageParser={MessageParser}
-              actionProvider={ActionProvider}
-              headerText="Eventopic Assistant"
-              placeholderText="Type your message..."
-            />
-            <motion.button
-              variants={buttonVariants}
-              onClick={() => setIsOpen(false)}
-              className="absolute top-2 right-2 p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 group relative"
-              style={{ backgroundColor: "var(--accent)", color: "var(--white)", border: "2px solid var(--light)" }}
-              aria-label="Close chatbot"
-            >
-              ×
-              <span className="absolute inset-0 bg-[var(--teal-accent)] opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full -z-10"></span>
-            </motion.button>
+            {/* ── Header ── */}
+            <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 bg-gradient-to-r from-[var(--surface)] to-[var(--surface-elevated)] border-b border-[var(--border)]">
+              <div className="flex items-center gap-3">
+                <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white shadow-md">
+                  <FaRobot size={16} />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-400 border-2 border-[var(--surface)]" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white leading-none">Eventopic AI</p>
+                  <p className="text-[10px] text-[var(--primary)] mt-0.5 leading-none">● Online · Powered by GPT-4o</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleClear}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-light)] hover:text-white transition-colors"
+                  title="Clear conversation"
+                >
+                  <FaTrash size={13} />
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-light)] hover:text-white transition-colors"
+                  aria-label="Close chat"
+                >
+                  <FaTimes size={15} />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Messages ── */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scrollbar-thin">
+              {messages.map((msg) => (
+                <MessageBubble key={msg.id} msg={msg} />
+              ))}
+
+              {/* Typing Indicator */}
+              <AnimatePresence>
+                {isLoading && <TypingIndicator />}
+              </AnimatePresence>
+
+              {/* Quick Replies */}
+              <AnimatePresence>
+                {showQuickReplies && !isLoading && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="flex flex-wrap gap-2 pt-1"
+                  >
+                    {QUICK_REPLIES.map((qr) => (
+                      <button
+                        key={qr}
+                        onClick={() => sendMessage(qr)}
+                        className="px-3 py-1.5 text-xs rounded-full border border-[var(--primary)]/40 text-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--background)] transition-all duration-200 font-medium"
+                      >
+                        {qr}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div ref={bottomRef} />
+            </div>
+
+            {/* ── Input ── */}
+            <div className="flex-shrink-0 border-t border-[var(--border)] bg-[var(--surface)] p-3">
+              {error && (
+                <p className="text-xs text-red-400 mb-2 text-center">{error}</p>
+              )}
+              <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me anything…"
+                  disabled={isLoading}
+                  className="flex-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)] transition-colors disabled:opacity-50"
+                />
+                <motion.button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-[0_0_16px_rgba(0,212,255,0.4)] transition-shadow flex-shrink-0"
+                >
+                  {isLoading ? (
+                    <FaSpinner className="animate-spin" size={14} />
+                  ) : (
+                    <FaPaperPlane size={13} />
+                  )}
+                </motion.button>
+              </form>
+              <p className="text-center text-[10px] text-[var(--text-muted)] mt-2">
+                AI may make mistakes. Verify important info with our team.
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
-};
-
-export default ChatBotComponent;
+}

@@ -1,11 +1,11 @@
 // app/layout.tsx (Updated for better SEO with more meta tags and structured data)
 import type { Metadata } from "next";
 import "./globals.css";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "sonner";
 import { Inter } from "next/font/google";
 import { Space_Grotesk } from "next/font/google";
 import { AuthProvider } from "../contexts/AuthContext";
+import { ThemeProvider } from "../contexts/ThemeContext";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -95,17 +95,18 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${inter.className} antialiased`}>
-        <AuthProvider>
-          {children}
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            theme="colored"
-            style={{ zIndex: 9999 }}
-          />
-          <Analytics />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              richColors
+              closeButton
+              duration={3000}
+            />
+            <Analytics />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

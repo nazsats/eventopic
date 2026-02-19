@@ -6,7 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { doc, getDoc, collection, getDocs, query, where, addDoc, orderBy, limit } from "firebase/firestore";
 import { db } from "../../../../lib/firebase";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti";
 import AuthModal from "../../../../components/AuthModal";
