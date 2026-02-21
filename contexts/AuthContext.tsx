@@ -34,12 +34,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signInWithGoogle: async () => {},
-  signInWithFacebook: async () => {},
-  signInWithApple: async () => {},
-  signInWithEmail: async () => {},
-  signOut: async () => {},
-  resetPassword: async () => {},
+  signInWithGoogle: async () => { },
+  signInWithFacebook: async () => { },
+  signInWithApple: async () => { },
+  signInWithEmail: async () => { },
+  signOut: async () => { },
+  resetPassword: async () => { },
 });
 
 export const useAuth = () => {
@@ -91,8 +91,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const adminEmails = adminsSnapshot.docs.map(doc => doc.data().email as string);
 
           // Define protected routes where no redirect to /profile is needed
-          const protectedRoutes = ["/profile", "/portal", "/dashboard", "/admin"];
-          
+          const protectedRoutes = ["/profile", "/jobs", "/dashboard", "/admin"];
+
           // Define public routes where redirect to /profile is allowed if profile is incomplete
           const publicRoutes = ["/", "/about", "/services", "/gallery"];
 
@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userDoc = await getDoc(doc(db, "users", newUser.uid));
           const isProfileComplete = userDoc.exists() ? userDoc.data().isProfileComplete : false;
           const publicRoutes = ["/", "/about", "/services", "/gallery"];
-          const protectedRoutes = ["/profile", "/portal", "/dashboard", "/admin"];
+          const protectedRoutes = ["/profile", "/jobs", "/dashboard", "/admin"];
           if (
             !isProfileComplete &&
             publicRoutes.includes(pathname) &&

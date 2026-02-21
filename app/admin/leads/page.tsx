@@ -1,5 +1,6 @@
 // app/admin/leads/page.tsx
 "use client";
+import React from "react";
 
 import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ import {
     writeBatch,
 } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
+import { logActivity } from "../../../lib/activityLog";
 import Navbar from "../../../components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -86,6 +88,23 @@ interface Lead {
 
 type SortField = keyof Pick<Lead, "title" | "city" | "status" | "uploadedAt">;
 type SortDir = "asc" | "desc";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Returns true if the lead has at least one piece of contact info (phone, email, website, or any social link). */
+function hasContactInfo(lead: Omit<Lead, "id" | "status" | "uploadedAt">): boolean {
+    return !!(
+        lead.phone ||
+        lead.email1 || lead.email2 || lead.email3 || lead.email4 || lead.email5 ||
+        lead.website ||
+        lead.instagram || lead.instagram2 ||
+        lead.facebook || lead.facebook2 ||
+        lead.linkedin || lead.linkedin2 ||
+        lead.youtube || lead.youtube2 ||
+        lead.tiktok || lead.tiktok2 ||
+        lead.twitter || lead.twitter2
+    );
+}
 
 // ─── CSV Parser ───────────────────────────────────────────────────────────────
 
@@ -269,6 +288,9 @@ export default function LeadsPage() {
                 const mapped = mapRowToLead(row);
                 if (!mapped.title || mapped.title === "Unnamed") { skipped++; continue; }
 
+                // Skip rows that only have a name — no contact info at all
+                if (!hasContactInfo(mapped)) { skipped++; continue; }
+
                 const t = norm(mapped.title);
                 const p = norm(mapped.phone);
                 const e = norm(mapped.email1);
@@ -296,6 +318,14 @@ export default function LeadsPage() {
             if (newLeads.length > 0) {
                 await batch.commit();
                 setLeads((prev) => [...newLeads, ...prev]);
+                logActivity({
+                    actorEmail: user?.email || "unknown",
+                    actorRole: "admin",
+                    action: "uploaded_leads",
+                    category: "leads",
+                    targetLabel: file.name,
+                    details: `Uploaded ${newLeads.length} new leads (${skipped} duplicates skipped)`,
+                });
             }
 
             if (skipped === 0) {
@@ -324,26 +354,53 @@ export default function LeadsPage() {
 
     // ── Status Update ──
     const updateStatus = async (id: string, status: LeadStatus) => {
+        const lead = leads.find(l => l.id === id);
         await updateDoc(doc(db, "leads", id), { status });
         setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+        logActivity({
+            actorEmail: user?.email || "unknown",
+            actorRole: "admin",
+            action: "updated_lead_status",
+            category: "leads",
+            targetId: id,
+            targetLabel: lead?.title || id,
+            details: `Changed status to ${status}`,
+        });
     };
 
     // ── Delete ──
     const deleteLead = async (id: string) => {
+        const lead = leads.find(l => l.id === id);
         await deleteDoc(doc(db, "leads", id));
         setLeads((prev) => prev.filter((l) => l.id !== id));
         setSelectedIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
         toast.success("Lead deleted.");
+        logActivity({
+            actorEmail: user?.email || "unknown",
+            actorRole: "admin",
+            action: "deleted_lead",
+            category: "leads",
+            targetId: id,
+            targetLabel: lead?.title || id,
+        });
     };
 
     const deleteSelected = async () => {
-        if (!confirm(`Delete ${selectedIds.size} leads?`)) return;
+        const count = selectedIds.size;
+        if (!confirm(`Delete ${count} leads?`)) return;
         const batch = writeBatch(db);
         selectedIds.forEach((id) => batch.delete(doc(db, "leads", id)));
         await batch.commit();
         setLeads((prev) => prev.filter((l) => !selectedIds.has(l.id)));
         setSelectedIds(new Set());
-        toast.success(`Deleted ${selectedIds.size} leads.`);
+        toast.success(`Deleted ${count} leads.`);
+        logActivity({
+            actorEmail: user?.email || "unknown",
+            actorRole: "admin",
+            action: "deleted_leads_bulk",
+            category: "leads",
+            details: `Bulk deleted ${count} leads`,
+        });
     };
 
     // ── Save note ──
@@ -387,10 +444,12 @@ export default function LeadsPage() {
     const cities = Array.from(new Set(leads.map((l) => l.city).filter(Boolean))) as string[];
 
     const filtered = leads
+        // Hide leads that only have a name (no phone, email, website, or social link)
+        .filter((l) => hasContactInfo(l))
         .filter((l) => {
             const q = search.toLowerCase();
             const matchSearch = !q ||
-                l.title.toLowerCase().includes(q) ||
+                (l.title || "").toLowerCase().includes(q) ||
                 (l.phone || "").includes(q) ||
                 (l.email1 || "").toLowerCase().includes(q) ||
                 (l.city || "").toLowerCase().includes(q);
@@ -621,9 +680,8 @@ export default function LeadsPage() {
                                         </thead>
                                         <tbody className="divide-y divide-[var(--border)]">
                                             {paginated.map((lead) => (
-                                                <>
+                                                <React.Fragment key={lead.id}>
                                                     <tr
-                                                        key={lead.id}
                                                         className={`hover:bg-[var(--surface)]/50 transition-colors cursor-pointer ${selectedIds.has(lead.id) ? "bg-[var(--primary)]/5" : ""}`}
                                                         onClick={() => setExpandedId(expandedId === lead.id ? null : lead.id)}
                                                     >
@@ -801,7 +859,7 @@ export default function LeadsPage() {
                                                             </motion.tr>
                                                         )}
                                                     </AnimatePresence>
-                                                </>
+                                                </React.Fragment>
                                             ))}
                                         </tbody>
                                     </table>

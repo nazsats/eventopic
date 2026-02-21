@@ -85,7 +85,7 @@ async function fetchJobs(): Promise<Job[]> {
 // ─── Context Builder ──────────────────────────────────────────────────────────
 function buildJobsContext(jobs: Job[]): string {
     if (jobs.length === 0) {
-        return "**Live Jobs:** There are currently no active job listings. New jobs are added frequently — check back soon or visit /portal/applications.";
+        return "**Live Jobs:** There are currently no active job listings. New jobs are added frequently — check back soon or visit /jobs.";
     }
 
     const categoryLabels: Record<string, string> = {
@@ -131,8 +131,8 @@ Eventopic connects skilled event professionals with premium events across Dubai 
 Website: www.eventopic.com
 
 ## Site Pages You Can Direct Users To
-- **/portal/applications** — Browse ALL live jobs (filterable by category)
-- **/portal/applications/[jobId]** — Apply to a specific job directly
+- **/jobs** — Browse ALL live jobs (filterable by category)
+- **/jobs/[jobId]** — Apply to a specific job directly
 - **/profile** — Build your professional profile (required before applying)  
 - **/dashboard** — Track your applications and status
 - **/services** — See what staffing solutions we offer
@@ -151,7 +151,7 @@ Stand Speakers, MCs/Anchors, Hostesses, VIP Hostesses, Promoters, Sales Promoter
 
 ## For Job Seekers
 - First: complete your profile at /profile (photos, Emirates ID, experience)
-- Then: browse and apply at /portal/applications
+- Then: browse and apply at /jobs
 - Payment: AED-based, timely direct transfers
 - Support: 24/7 via WhatsApp or info@eventopic.com
 
@@ -184,7 +184,7 @@ ${jobsContext}
 
 1. **Job questions → Use the live data above.** 
    - "How many model jobs?" → Count jobs in models_entertainment category and give the exact number + list them.
-   - "I'm a promoter, show me jobs" → Find all jobs in promotions category, list each with title, location, rate. Tell them to apply at /portal/applications.
+   - "I'm a promoter, show me jobs" → Find all jobs in promotions category, list each with title, location, rate. Tell them to apply at /jobs.
    - "Any hostess jobs in Business Bay?" → Filter by title/location from the listings above.
    - NEVER say you don't have access to job listings — you DO (they are listed above).
 
@@ -200,7 +200,7 @@ ${jobsContext}
 
 4. **Client inquiries** → Ask about their event type, date, number of staff needed, then direct to info@eventopic.com or /contact.
 
-5. **Never fabricate jobs** that are not in the Live Listings above. If a category is empty, be honest and suggest they visit /portal/applications for updates.
+5. **Never fabricate jobs** that are not in the Live Listings above. If a category is empty, be honest and suggest they visit /jobs for updates.
 
 6. **For off-topic questions**, kindly redirect: "I'm here to help with Eventopic's jobs and services!"`;
 }
@@ -260,3 +260,4 @@ export async function POST(req: NextRequest) {
         );
     }
 }
+
