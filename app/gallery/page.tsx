@@ -1,13 +1,12 @@
-//app/gallery/page.tsx
 "use client";
 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { FaFilter, FaTimes, FaImages, FaPlay } from "react-icons/fa";
+import { FaTimes, FaExpand, FaArrowRight } from "react-icons/fa";
 
 interface GalleryImage {
   src: string;
@@ -16,305 +15,207 @@ interface GalleryImage {
   category: string;
 }
 
+const GALLERY: GalleryImage[] = [
+  { src: "/gallery/event1.png", alt: "Luxurious Wedding Event in Dubai by Eventopic", desc: "Elegant wedding at Burj Al Arab", category: "Weddings" },
+  { src: "/gallery/event2.png", alt: "Corporate Gala in Dubai — Eventopic Management", desc: "Tech conference at DWTC", category: "Corporate" },
+  { src: "/gallery/event3.png", alt: "Brand Activation Event in Dubai", desc: "Product launch with promoters", category: "Promotions" },
+  { src: "/gallery/event4.png", alt: "Private Party in Dubai by Eventopic", desc: "Exclusive rooftop party", category: "Parties" },
+  { src: "/gallery/event5.png", alt: "Cultural Event in Dubai — Eventopic Staffing", desc: "Government cultural festival", category: "Cultural" },
+  { src: "/gallery/event6.png", alt: "Luxury Event in Dubai — Eventopic Planning", desc: "High-profile gala dinner", category: "Corporate" },
+  { src: "/gallery/event1.png", alt: "Wedding Ceremony Dubai", desc: "Beachside wedding ceremony", category: "Weddings" },
+  { src: "/gallery/event2.png", alt: "Business Conference Dubai", desc: "Annual corporate summit", category: "Corporate" },
+  { src: "/gallery/event3.png", alt: "Mall Activation Dubai", desc: "Interactive brand experience", category: "Promotions" },
+];
+
+const CATEGORIES = [
+  { name: "All", icon: "🎯" },
+  { name: "Weddings", icon: "💒" },
+  { name: "Corporate", icon: "🏢" },
+  { name: "Promotions", icon: "📢" },
+  { name: "Parties", icon: "🎉" },
+  { name: "Cultural", icon: "🎭" },
+];
+
 export default function Gallery() {
   const [filter, setFilter] = useState("All");
-  const [visibleImages, setVisibleImages] = useState(9);
-  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+  const [visibleCount, setVisibleCount] = useState(9);
+  const [selected, setSelected] = useState<GalleryImage | null>(null);
 
-  const galleryImages: GalleryImage[] = [
-    { src: "/gallery/event1.png", alt: "Luxurious Wedding Event in Dubai by Eventopic", desc: "Elegant wedding at Burj Al Arab", category: "Weddings" },
-    { src: "/gallery/event2.png", alt: "Corporate Gala in Dubai - Eventopic Management", desc: "Tech conference at DWTC", category: "Corporate" },
-    { src: "/gallery/event3.png", alt: "Brand Activation Event in Dubai", desc: "Product launch with promoters", category: "Promotions" },
-    { src: "/gallery/event4.png", alt: "Private Party in Dubai by Eventopic", desc: "Exclusive rooftop party", category: "Parties" },
-    { src: "/gallery/event5.png", alt: "Cultural Event in Dubai - Eventopic Staffing", desc: "Government cultural festival", category: "Cultural" },
-    { src: "/gallery/event6.png", alt: "Luxury Event in Dubai - Eventopic Planning", desc: "High-profile gala dinner", category: "Corporate" },
-    { src: "/gallery/event1.png", alt: "Wedding Ceremony Dubai", desc: "Beachside wedding ceremony", category: "Weddings" },
-    { src: "/gallery/event2.png", alt: "Business Conference Dubai", desc: "Annual corporate summit", category: "Corporate" },
-    { src: "/gallery/event3.png", alt: "Mall Activation Dubai", desc: "Interactive brand experience", category: "Promotions" },
-  ];
-
-  const categories = [
-    { name: "All", icon: "🎯", count: galleryImages.length },
-    { name: "Weddings", icon: "💒", count: galleryImages.filter(img => img.category === "Weddings").length },
-    { name: "Corporate", icon: "🏢", count: galleryImages.filter(img => img.category === "Corporate").length },
-    { name: "Promotions", icon: "📢", count: galleryImages.filter(img => img.category === "Promotions").length },
-    { name: "Parties", icon: "🎉", count: galleryImages.filter(img => img.category === "Parties").length },
-    { name: "Cultural", icon: "🎭", count: galleryImages.filter(img => img.category === "Cultural").length }
-  ];
-
-  const filteredImages = filter === "All" ? galleryImages : galleryImages.filter((img) => img.category === filter);
-  const paginatedImages = filteredImages.slice(0, visibleImages);
+  const filtered = filter === "All" ? GALLERY : GALLERY.filter(i => i.category === filter);
+  const shown = filtered.slice(0, visibleCount);
 
   return (
-    <>
+    <div className="bg-[var(--background)] min-h-screen">
       <Navbar />
 
-      {/* Simplified Hero Section */}
-      <section className="pt-32 pb-12 relative overflow-hidden bg-[var(--background)]">
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[var(--primary)]/20 blur-[100px]" />
+      {/* ── Hero ── */}
+      <section className="relative pt-28 pb-12 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none -z-10">
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[var(--primary)]/8 rounded-full blur-[100px]" />
         </div>
-
-        <div className="container relative z-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="font-display text-5xl md:text-6xl font-bold mb-4">
-              Our <span className="gradient-text">Portfolio</span>
-            </h1>
-
-            <p className="text-xl max-w-2xl mx-auto text-[var(--text-secondary)]">
-              Explore our collection of unforgettable events across Dubai.
-            </p>
-          </motion.div>
+        <div className="container mx-auto px-5 max-w-3xl text-center">
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-3">
+            Our Work
+          </motion.p>
+          <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-display font-black mb-4 leading-tight">
+            Event <span className="gradient-text">Portfolio</span>
+          </motion.h1>
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+            className="text-[var(--text-secondary)] text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+            Explore our collection of unforgettable events, activations, and experiences across Dubai.
+          </motion.p>
         </div>
       </section>
 
-      {/* Filter Section */}
-      <section className="py-12 bg-[var(--background)] sticky top-20 z-40 border-b border-[var(--border)] backdrop-blur-xl">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center justify-center gap-4"
-          >
-            <div className="flex items-center gap-2 text-[var(--text-primary)]">
-              <FaFilter className="text-[var(--primary)]" />
-              <span className="font-heading font-semibold">Filter by:</span>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-3">
-              {categories.map((category, index) => (
-                <motion.button
-                  key={category.name}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  onClick={() => {
-                    setFilter(category.name);
-                    setVisibleImages(9);
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 ${filter === category.name
-                      ? "bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-lg"
-                      : "glass-card text-[var(--text-primary)] hover:border-[var(--border-hover)]"
+      {/* ── Sticky filter bar ── */}
+      <div className="sticky top-[64px] z-40 bg-[var(--background)]/90 backdrop-blur-xl border-b border-[var(--border)]">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
+            {CATEGORIES.map(cat => {
+              const active = filter === cat.name;
+              const count = cat.name === "All" ? GALLERY.length : GALLERY.filter(i => i.category === cat.name).length;
+              return (
+                <button
+                  key={cat.name}
+                  onClick={() => { setFilter(cat.name); setVisibleCount(9); }}
+                  className={`shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${active
+                      ? "bg-[var(--primary)] text-black shadow-[0_0_12px_rgba(0,212,255,0.3)]"
+                      : "glass-card text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)]"
                     }`}
-                  aria-label={`Filter by ${category.name}`}
-                  aria-pressed={filter === category.name}
                 >
-                  <span className="text-lg">{category.icon}</span>
-                  <span>{category.name}</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${filter === category.name
-                      ? "bg-white/20 text-white"
-                      : "bg-[var(--surface)] text-[var(--text-muted)]"
-                    }`}>
-                    {category.count}
+                  <span>{cat.icon}</span>
+                  {cat.name}
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${active ? "bg-black/20 text-black" : "bg-white/5 text-[var(--text-muted)]"}`}>
+                    {count}
                   </span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* Gallery Grid */}
-      <section className="section-standard">
-        <div className="container">
-          {paginatedImages.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20"
-            >
-              <div className="glass-card p-12 max-w-md mx-auto">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">No events found</h3>
-                <p className="text-[var(--text-secondary)]">
-                  No events found in this category. Try another filter!
-                </p>
-              </div>
-            </motion.div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {paginatedImages.map((image, index) => (
+      {/* ── Gallery grid ── */}
+      <section className="py-10 md:py-14">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <AnimatePresence mode="wait">
+            {shown.length === 0 ? (
+              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="text-center py-16 glass-card rounded-2xl">
+                <div className="text-4xl mb-3">🔍</div>
+                <h3 className="font-bold text-[var(--text-primary)] mb-1">No events found</h3>
+                <p className="text-sm text-[var(--text-secondary)]">Try another category.</p>
+              </motion.div>
+            ) : (
+              <motion.div key={filter} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {shown.map((img, i) => (
                   <motion.div
-                    key={`${image.src}-${index}`}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                    whileHover={{ y: -8, scale: 1.02 }}
-                    onClick={() => setSelectedImage(image)}
-                    className="gallery-item cursor-pointer group"
-                    style={{ height: "400px" }}
+                    key={`${img.src}-${i}`}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: i * 0.04 }}
+                    onClick={() => setSelected(img)}
+                    className="group cursor-pointer rounded-2xl overflow-hidden relative"
+                    style={{ aspectRatio: "4/3" }}
+                    whileHover={{ scale: 1.01 }}
                   >
-                    <div className="glass-card p-0 h-full overflow-hidden">
-                      <div className="relative h-full">
-                        <Image
-                          src={image.src}
-                          alt={image.alt}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          className="object-cover transition-transform duration-700 group-hover:scale-110"
-                          quality={85}
-                          loading={index < 6 ? "eager" : "lazy"}
-                        />
-
-                        {/* Category Badge */}
-                        <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[var(--primary)]/90 backdrop-blur-sm border border-[var(--border)]">
-                          <span className="text-white text-xs font-bold">{image.category}</span>
-                        </div>
-
-                        {/* Play Button */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <FaPlay className="text-white text-xl ml-1" />
-                          </div>
-                        </div>
-
-                        {/* Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                          <div>
-                            <h3 className="text-white font-heading font-bold text-xl mb-2">
-                              {image.desc}
-                            </h3>
-                            <p className="text-white/90 text-sm">
-                              Click to view details
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    <Image
+                      src={img.src} alt={img.alt} fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading={i < 6 ? "eager" : "lazy"}
+                    />
+                    {/* Category badge */}
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white">
+                      {img.category}
+                    </div>
+                    {/* Expand icon */}
+                    <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <FaExpand className="text-white text-[10px]" />
+                    </div>
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <p className="text-white font-bold text-sm">{img.desc}</p>
                     </div>
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              {/* Load More Button */}
-              {paginatedImages.length < filteredImages.length && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center mt-16"
-                >
-                  <motion.button
-                    onClick={() => setVisibleImages((prev) => prev + 6)}
-                    whileHover={{ scale: 1.05, y: -3 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary text-lg px-12 py-4"
-                    aria-label="Load More Images"
-                  >
-                    Load More Events
-                    <span className="ml-2">({filteredImages.length - paginatedImages.length} remaining)</span>
-                  </motion.button>
-                </motion.div>
-              )}
-            </>
+          {/* Load more */}
+          {shown.length < filtered.length && (
+            <div className="text-center mt-10">
+              <button
+                onClick={() => setVisibleCount(v => v + 6)}
+                className="btn-primary px-8 py-3 text-sm font-bold"
+              >
+                Load More ({filtered.length - shown.length} remaining)
+              </button>
+            </div>
           )}
         </div>
       </section>
 
-      {/* Image Modal/Lightbox */}
-      {selectedImage && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setSelectedImage(null)}
-          className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        >
-          <motion.button
-            onClick={() => setSelectedImage(null)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all z-10"
-            aria-label="Close modal"
-          >
-            <FaTimes className="text-white text-xl" />
-          </motion.button>
-
+      {/* ── Lightbox ── */}
+      <AnimatePresence>
+        {selected && (
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="relative max-w-6xl w-full"
+            key="lightbox"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setSelected(null)}
           >
-            <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl">
-              <Image
-                src={selectedImage.src}
-                alt={selectedImage.alt}
-                fill
-                className="object-cover"
-                quality={95}
-                priority
-              />
-            </div>
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="mt-8 text-center"
+              initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-3xl"
             >
-              <div className="glass-card p-6 mx-auto max-w-2xl">
-                <span className="inline-block px-4 py-2 rounded-full bg-[var(--primary)] text-white text-sm font-bold mb-4">
-                  {selectedImage.category}
+              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl mb-4">
+                <Image src={selected.src} alt={selected.alt} fill className="object-cover" quality={95} priority />
+              </div>
+              <div className="glass-card p-5 rounded-2xl text-center">
+                <span className="inline-block px-3 py-1 rounded-full bg-[var(--primary)] text-black text-xs font-bold mb-2">
+                  {selected.category}
                 </span>
-                <h3 className="font-display text-3xl font-bold text-[var(--text-primary)] mb-3">
-                  {selectedImage.desc}
-                </h3>
-                <p className="text-[var(--text-secondary)] text-lg">
-                  {selectedImage.alt}
-                </p>
+                <h3 className="font-bold text-lg text-[var(--text-primary)] mb-1">{selected.desc}</h3>
+                <p className="text-sm text-[var(--text-secondary)]">{selected.alt}</p>
               </div>
             </motion.div>
+            {/* Close */}
+            <button
+              className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
+              onClick={() => setSelected(null)}
+            >
+              <FaTimes className="text-white text-sm" />
+            </button>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* CTA Section */}
-      <section className="section-standard">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <div className="glass-card p-16 max-w-4xl mx-auto relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/10 to-[var(--accent)]/10 -z-10"></div>
-              <div className="relative z-10">
-                <h2 className="font-display text-5xl md:text-6xl font-bold mb-8 text-balance">
-                  Ready to Create Your Own <span className="gradient-text">Masterpiece?</span>
-                </h2>
-                <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed">
-                  From intimate celebrations to grand corporate events, we bring your vision to life
-                  with creativity, precision, and unmatched attention to detail.
-                </p>
-                <motion.div
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/contact"
-                    className="btn-primary text-lg px-12 py-5 inline-flex items-center gap-3"
-                    aria-label="Start Planning Your Event"
-                  >
-                    Start Planning Your Event
-                    <FaPlay />
-                  </Link>
-                </motion.div>
-              </div>
-            </div>
+      {/* ── CTA ── */}
+      <section className="py-14 md:py-20 border-t border-[var(--border)] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--primary)]/6 pointer-events-none" />
+        <div className="container mx-auto px-5 max-w-2xl text-center relative z-10">
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-3">
+              Ready to Create Your Own <span className="gradient-text">Masterpiece?</span>
+            </h2>
+            <p className="text-[var(--text-secondary)] text-sm mb-7 max-w-sm mx-auto">
+              From intimate celebrations to grand corporate events — we bring your vision to life.
+            </p>
+            <Link href="/contact" className="btn-primary px-8 py-3.5 text-sm font-bold inline-flex items-center gap-2">
+              Start Planning <FaArrowRight />
+            </Link>
           </motion.div>
         </div>
       </section>
 
       <Footer />
-    </>
+    </div>
   );
 }

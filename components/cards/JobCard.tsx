@@ -39,7 +39,7 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
       whileHover={{ y: -4 }}
-      onClick={() => router.push(`/portal/applications/${job.id}`)}
+      onClick={() => router.push(`/jobs/${job.id}`)}
       className="group bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100 dark:border-gray-700"
     >
       {/* Header */}

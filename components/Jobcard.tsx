@@ -42,7 +42,7 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
       transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 100 }}
       viewport={{ once: true }}
       whileHover={{ y: -12, scale: 1.02 }}
-      onClick={() => router.push(`/portal/applications/${job.id}`)}
+      onClick={() => router.push(`/jobs/${job.id}`)}
       className="glass-card p-6 lg:p-8 group cursor-pointer relative overflow-hidden h-full"
     >
       {/* Background Effects - Behind everything */}
