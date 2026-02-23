@@ -937,53 +937,58 @@ export default function LeadsPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm"
                     >
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                            className="glass-card w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl overflow-hidden border border-[var(--border)]"
+                            initial={{ y: 40, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 40, opacity: 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className="glass-card w-full sm:max-w-2xl flex flex-col rounded-t-2xl sm:rounded-2xl border border-[var(--border)] overflow-hidden"
+                            style={{ maxHeight: "90dvh" }}
                         >
-                            {/* Header */}
-                            <div className="p-6 border-b border-[var(--border)]">
-                                <h2 className="text-xl font-bold text-[var(--text-primary)]">Review Upload</h2>
-                                <p className="text-sm text-[var(--text-muted)] mt-0.5">Check the leads below before writing to the database.</p>
+                            {/* Header — fixed */}
+                            <div className="flex-shrink-0 px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-lg font-bold text-[var(--text-primary)]">Review Upload</h2>
+                                    <p className="text-xs text-[var(--text-muted)] mt-0.5">Confirm before writing to the database.</p>
+                                </div>
+                                <button
+                                    onClick={() => setPendingUpload(null)}
+                                    disabled={isUploading}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-white hover:bg-[var(--surface)] transition-colors disabled:opacity-40 text-lg leading-none"
+                                >
+                                    ×
+                                </button>
                             </div>
 
-                            {/* Stats row */}
-                            <div className="px-6 py-4 border-b border-[var(--border)] flex flex-wrap items-start gap-6">
-                                {/* Per-file breakdown */}
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Files</p>
-                                    <div className="space-y-1.5">
-                                        {pendingUpload.files.map((f, i) => (
-                                            <div key={i} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                                                <FaFileUpload size={10} className="text-[var(--primary)] flex-shrink-0" />
-                                                <span className="truncate font-medium">{f.name}</span>
-                                                <span className="text-[var(--text-muted)] flex-shrink-0">{f.count} new</span>
-                                            </div>
-                                        ))}
-                                    </div>
+                            {/* Stats row — fixed */}
+                            <div className="flex-shrink-0 px-5 py-3 border-b border-[var(--border)] flex flex-wrap items-center gap-4">
+                                <div className="flex-1 min-w-0 space-y-1">
+                                    {pendingUpload.files.map((f, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                                            <FaFileUpload size={10} className="text-[var(--primary)] flex-shrink-0" />
+                                            <span className="truncate font-medium">{f.name}</span>
+                                            <span className="text-[var(--text-muted)] flex-shrink-0 ml-auto">{f.count} new</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                {/* Counts */}
-                                <div className="flex gap-6">
+                                <div className="flex gap-4 flex-shrink-0">
                                     <div className="text-center">
-                                        <div className="text-3xl font-black text-[var(--primary)]">{pendingUpload.leads.length}</div>
-                                        <div className="text-xs text-[var(--text-muted)] font-semibold mt-0.5">New Leads</div>
+                                        <div className="text-2xl font-black text-[var(--primary)]">{pendingUpload.leads.length}</div>
+                                        <div className="text-xs text-[var(--text-muted)] font-semibold">New Leads</div>
                                     </div>
                                     {pendingUpload.skipped > 0 && (
                                         <div className="text-center">
-                                            <div className="text-3xl font-black text-amber-400">{pendingUpload.skipped}</div>
-                                            <div className="text-xs text-[var(--text-muted)] font-semibold mt-0.5">Skipped</div>
+                                            <div className="text-2xl font-black text-amber-400">{pendingUpload.skipped}</div>
+                                            <div className="text-xs text-[var(--text-muted)] font-semibold">Skipped</div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Lead preview list */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
+                            {/* Lead preview list — scrollable middle section */}
+                            <div className="flex-1 overflow-y-auto min-h-0 p-3 space-y-1.5">
                                 {pendingUpload.leads.slice(0, 100).map((lead, i) => (
                                     <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
                                         <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
@@ -1004,19 +1009,19 @@ export default function LeadsPage() {
                                 )}
                             </div>
 
-                            {/* Actions */}
-                            <div className="p-5 border-t border-[var(--border)] flex gap-3 justify-end bg-[var(--surface)]/60">
+                            {/* Actions — always pinned to bottom */}
+                            <div className="flex-shrink-0 px-5 py-4 border-t border-[var(--border)] flex gap-3 justify-end bg-[var(--surface)]/80">
                                 <button
                                     onClick={() => setPendingUpload(null)}
                                     disabled={isUploading}
-                                    className="btn-secondary px-6 py-2.5 text-sm disabled:opacity-50"
+                                    className="btn-secondary px-5 py-2.5 text-sm disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmUpload}
                                     disabled={isUploading}
-                                    className="btn-primary px-6 py-2.5 text-sm flex items-center gap-2 disabled:opacity-70"
+                                    className="btn-primary px-5 py-2.5 text-sm flex items-center gap-2 disabled:opacity-70"
                                 >
                                     {isUploading ? (
                                         <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading…</>
