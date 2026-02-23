@@ -1,6 +1,5 @@
 // lib/auth.ts
 import { NextRequest } from 'next/server';
-import { auth } from './firebase';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
