@@ -256,84 +256,87 @@ export default function LeadsPage() {
         }
     }, [user, loading, router]);
 
-    // ── CSV Upload with Dedup ──
-    const handleFile = useCallback(async (file: File) => {
-        if (!file.name.endsWith(".csv")) {
-            toast.error("Please upload a .csv file. In Google Sheets: File → Download → CSV");
+    // ── CSV Upload with Dedup (supports multiple files) ──
+    const handleFiles = useCallback(async (files: FileList | File[]) => {
+        const csvFiles = Array.from(files).filter((f) => f.name.endsWith(".csv"));
+        if (csvFiles.length === 0) {
+            toast.error("Please upload .csv files. In Google Sheets: File → Download → CSV");
             return;
         }
         setIsUploading(true);
         try {
-            const text = await file.text();
-            const rows = parseCSV(text);
-            if (rows.length === 0) { toast.error("No data found in CSV."); return; }
-
             const now = new Date().toISOString();
             const norm = (s?: string) => (s || "").toLowerCase().trim().replace(/\s+/g, " ");
 
             // Build fingerprint index of already-saved leads
-            // A match on ANY two of: (title, phone, email1) counts as a duplicate
             const existingTitle = new Set(leads.map((l) => norm(l.title)));
             const existingPhone = new Set(leads.map((l) => norm(l.phone)).filter(Boolean));
             const existingEmail = new Set(leads.map((l) => norm(l.email1)).filter(Boolean));
 
-            // Intra-file dedup: track what we've already added from this upload
+            // Cross-file dedup: track what we've added across all uploaded files
             const seenInBatch = new Set<string>();
 
             const batch = writeBatch(db);
-            const newLeads: Lead[] = [];
+            const allNewLeads: Lead[] = [];
             let skipped = 0;
 
-            for (const row of rows) {
-                const mapped = mapRowToLead(row);
-                if (!mapped.title || mapped.title === "Unnamed") { skipped++; continue; }
+            for (const file of csvFiles) {
+                const text = await file.text();
+                const rows = parseCSV(text);
+                if (rows.length === 0) continue;
 
-                // Skip rows that only have a name — no contact info at all
-                if (!hasContactInfo(mapped)) { skipped++; continue; }
+                for (const row of rows) {
+                    const mapped = mapRowToLead(row);
+                    if (!mapped.title || mapped.title === "Unnamed") { skipped++; continue; }
+                    if (!hasContactInfo(mapped)) { skipped++; continue; }
 
-                const t = norm(mapped.title);
-                const p = norm(mapped.phone);
-                const e = norm(mapped.email1);
+                    const t = norm(mapped.title);
+                    const p = norm(mapped.phone);
+                    const e = norm(mapped.email1);
 
-                // Duplicate if same title+phone, title+email, or phone+email already exist
-                const isDup =
-                    (existingTitle.has(t) && existingPhone.has(p) && p) ||
-                    (existingTitle.has(t) && existingEmail.has(e) && e) ||
-                    (existingPhone.has(p) && existingEmail.has(e) && p && e);
+                    const isDup =
+                        (existingTitle.has(t) && existingPhone.has(p) && p) ||
+                        (existingTitle.has(t) && existingEmail.has(e) && e) ||
+                        (existingPhone.has(p) && existingEmail.has(e) && p && e);
 
-                // Also deduplicate rows within this CSV
-                const batchKey = `${t}|${p || e}`;
-                const isDupInBatch = seenInBatch.has(batchKey) && batchKey !== "|";
+                    const batchKey = `${t}|${p || e}`;
+                    const isDupInBatch = seenInBatch.has(batchKey) && batchKey !== "|";
 
-                if (isDup || isDupInBatch) { skipped++; continue; }
+                    if (isDup || isDupInBatch) { skipped++; continue; }
 
-                seenInBatch.add(batchKey);
+                    seenInBatch.add(batchKey);
+                    // Add to existing sets so subsequent files deduplicate against this batch too
+                    existingTitle.add(t);
+                    if (p) existingPhone.add(p);
+                    if (e) existingEmail.add(e);
 
-                const leadData: Omit<Lead, "id"> = { ...mapped, status: "new", uploadedAt: now };
-                const ref = doc(collection(db, "leads"));
-                batch.set(ref, leadData);
-                newLeads.push({ id: ref.id, ...leadData });
+                    const leadData: Omit<Lead, "id"> = { ...mapped, status: "new", uploadedAt: now };
+                    const ref = doc(collection(db, "leads"));
+                    batch.set(ref, leadData);
+                    allNewLeads.push({ id: ref.id, ...leadData });
+                }
             }
 
-            if (newLeads.length > 0) {
+            if (allNewLeads.length > 0) {
                 await batch.commit();
-                setLeads((prev) => [...newLeads, ...prev]);
+                setLeads((prev) => [...allNewLeads, ...prev]);
                 logActivity({
                     actorEmail: user?.email || "unknown",
                     actorRole: "admin",
                     action: "uploaded_leads",
                     category: "leads",
-                    targetLabel: file.name,
-                    details: `Uploaded ${newLeads.length} new leads (${skipped} duplicates skipped)`,
+                    targetLabel: csvFiles.map((f) => f.name).join(", "),
+                    details: `Uploaded ${allNewLeads.length} new leads from ${csvFiles.length} file(s) (${skipped} duplicates skipped)`,
                 });
             }
 
+            const fileLabel = csvFiles.length > 1 ? `${csvFiles.length} files` : csvFiles[0].name;
             if (skipped === 0) {
-                toast.success(`✅ Uploaded ${newLeads.length} leads!`);
-            } else if (newLeads.length > 0) {
-                toast.success(`✅ ${newLeads.length} new leads added. ⚠️ ${skipped} duplicate${skipped !== 1 ? "s" : ""} skipped.`);
+                toast.success(`✅ Uploaded ${allNewLeads.length} leads from ${fileLabel}!`);
+            } else if (allNewLeads.length > 0) {
+                toast.success(`✅ ${allNewLeads.length} new leads added from ${fileLabel}. ⚠️ ${skipped} duplicate${skipped !== 1 ? "s" : ""} skipped.`);
             } else {
-                toast.info(`No new leads — all ${skipped} rows already exist in your database.`);
+                toast.info(`No new leads — all rows already exist in your database.`);
             }
         } catch (e) {
             console.error(e);
@@ -342,14 +345,13 @@ export default function LeadsPage() {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
         }
-    }, [leads]);
+    }, [leads, user]);
 
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-        const file = e.dataTransfer.files[0];
-        if (file) handleFile(file);
+        if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
     };
 
     // ── Status Update ──
@@ -560,7 +562,7 @@ export default function LeadsPage() {
                             onClick={() => fileInputRef.current?.click()}
                             className={`glass-card p-8 border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all duration-300 ${isDragging ? "border-[var(--primary)] bg-[var(--primary)]/10 scale-[1.01]" : "border-[var(--border)] hover:border-[var(--primary)]/50 hover:bg-[var(--surface)]"}`}
                         >
-                            <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+                            <input ref={fileInputRef} type="file" accept=".csv" multiple className="hidden" onChange={(e) => e.target.files && e.target.files.length > 0 && handleFiles(e.target.files)} />
                             {isUploading ? (
                                 <div className="flex flex-col items-center gap-3">
                                     <div className="w-12 h-12 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
@@ -572,7 +574,7 @@ export default function LeadsPage() {
                                         <FaFileUpload />
                                     </div>
                                     <div>
-                                        <p className="text-lg font-bold text-[var(--text-primary)]">Drop CSV here or click to upload</p>
+                                        <p className="text-lg font-bold text-[var(--text-primary)]">Drop one or more CSV files here or click to upload</p>
                                         <p className="text-sm text-[var(--text-muted)] mt-1">
                                             In Google Sheets: <strong>File → Download → Comma Separated Values (.csv)</strong>
                                         </p>
