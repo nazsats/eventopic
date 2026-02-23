@@ -228,6 +228,11 @@ export default function LeadsPage() {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [editingNote, setEditingNote] = useState<{ id: string; note: string } | null>(null);
+    const [pendingUpload, setPendingUpload] = useState<{
+        leads: Omit<Lead, "id">[];
+        skipped: number;
+        files: { name: string; count: number }[];
+    } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // ── Auth check ──
@@ -256,7 +261,7 @@ export default function LeadsPage() {
         }
     }, [user, loading, router]);
 
-    // ── CSV Upload with Dedup (supports multiple files) ──
+    // ── Phase 1: Read + parse CSVs, show confirmation (no Firestore write yet) ──
     const handleFiles = useCallback(async (files: FileList | File[]) => {
         const csvFiles = Array.from(files).filter((f) => f.name.endsWith(".csv"));
         if (csvFiles.length === 0) {
@@ -268,22 +273,20 @@ export default function LeadsPage() {
             const now = new Date().toISOString();
             const norm = (s?: string) => (s || "").toLowerCase().trim().replace(/\s+/g, " ");
 
-            // Build fingerprint index of already-saved leads
             const existingTitle = new Set(leads.map((l) => norm(l.title)));
             const existingPhone = new Set(leads.map((l) => norm(l.phone)).filter(Boolean));
             const existingEmail = new Set(leads.map((l) => norm(l.email1)).filter(Boolean));
-
-            // Cross-file dedup: track what we've added across all uploaded files
             const seenInBatch = new Set<string>();
 
-            const batch = writeBatch(db);
-            const allNewLeads: Lead[] = [];
+            const allNewLeads: Omit<Lead, "id">[] = [];
             let skipped = 0;
+            const fileStats: { name: string; count: number }[] = [];
 
             for (const file of csvFiles) {
                 const text = await file.text();
                 const rows = parseCSV(text);
-                if (rows.length === 0) continue;
+                let fileCount = 0;
+                if (rows.length === 0) { fileStats.push({ name: file.name, count: 0 }); continue; }
 
                 for (const row of rows) {
                     const mapped = mapRowToLead(row);
@@ -305,47 +308,68 @@ export default function LeadsPage() {
                     if (isDup || isDupInBatch) { skipped++; continue; }
 
                     seenInBatch.add(batchKey);
-                    // Add to existing sets so subsequent files deduplicate against this batch too
                     existingTitle.add(t);
                     if (p) existingPhone.add(p);
                     if (e) existingEmail.add(e);
 
-                    const leadData: Omit<Lead, "id"> = { ...mapped, status: "new", uploadedAt: now };
-                    const ref = doc(collection(db, "leads"));
-                    batch.set(ref, leadData);
-                    allNewLeads.push({ id: ref.id, ...leadData });
+                    allNewLeads.push({ ...mapped, status: "new", uploadedAt: now });
+                    fileCount++;
                 }
+                fileStats.push({ name: file.name, count: fileCount });
             }
 
-            if (allNewLeads.length > 0) {
-                await batch.commit();
-                setLeads((prev) => [...allNewLeads, ...prev]);
-                logActivity({
-                    actorEmail: user?.email || "unknown",
-                    actorRole: "admin",
-                    action: "uploaded_leads",
-                    category: "leads",
-                    targetLabel: csvFiles.map((f) => f.name).join(", "),
-                    details: `Uploaded ${allNewLeads.length} new leads from ${csvFiles.length} file(s) (${skipped} duplicates skipped)`,
-                });
+            if (allNewLeads.length === 0) {
+                toast.info("No new leads — all rows already exist in your database.");
+                return;
             }
 
-            const fileLabel = csvFiles.length > 1 ? `${csvFiles.length} files` : csvFiles[0].name;
-            if (skipped === 0) {
-                toast.success(`✅ Uploaded ${allNewLeads.length} leads from ${fileLabel}!`);
-            } else if (allNewLeads.length > 0) {
-                toast.success(`✅ ${allNewLeads.length} new leads added from ${fileLabel}. ⚠️ ${skipped} duplicate${skipped !== 1 ? "s" : ""} skipped.`);
-            } else {
-                toast.info(`No new leads — all rows already exist in your database.`);
-            }
+            // Show confirmation modal instead of uploading immediately
+            setPendingUpload({ leads: allNewLeads, skipped, files: fileStats });
         } catch (e) {
             console.error(e);
-            toast.error("Upload failed. Check CSV format.");
+            toast.error("Failed to read CSV. Check file format.");
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
         }
-    }, [leads, user]);
+    }, [leads]);
+
+    // ── Phase 2: Confirmed — write to Firestore ──
+    const confirmUpload = useCallback(async () => {
+        if (!pendingUpload) return;
+        setIsUploading(true);
+        try {
+            const batch = writeBatch(db);
+            const newLeads: Lead[] = [];
+            for (const leadData of pendingUpload.leads) {
+                const ref = doc(collection(db, "leads"));
+                batch.set(ref, leadData);
+                newLeads.push({ id: ref.id, ...leadData });
+            }
+            await batch.commit();
+            setLeads((prev) => [...newLeads, ...prev]);
+            logActivity({
+                actorEmail: user?.email || "unknown",
+                actorRole: "admin",
+                action: "uploaded_leads",
+                category: "leads",
+                targetLabel: pendingUpload.files.map((f) => f.name).join(", "),
+                details: `Uploaded ${newLeads.length} new leads from ${pendingUpload.files.length} file(s) (${pendingUpload.skipped} duplicates skipped)`,
+            });
+            const fileLabel = pendingUpload.files.length > 1 ? `${pendingUpload.files.length} files` : pendingUpload.files[0]?.name;
+            if (pendingUpload.skipped === 0) {
+                toast.success(`✅ Uploaded ${newLeads.length} leads from ${fileLabel}!`);
+            } else {
+                toast.success(`✅ ${newLeads.length} new leads added. ⚠️ ${pendingUpload.skipped} duplicate${pendingUpload.skipped !== 1 ? "s" : ""} skipped.`);
+            }
+            setPendingUpload(null);
+        } catch (e) {
+            console.error(e);
+            toast.error("Upload failed. Please try again.");
+        } finally {
+            setIsUploading(false);
+        }
+    }, [pendingUpload, user]);
 
 
     const handleDrop = (e: React.DragEvent) => {
@@ -905,6 +929,106 @@ export default function LeadsPage() {
                     )}
                 </div>
             </section>
+
+            {/* ── Upload Confirmation Modal ── */}
+            <AnimatePresence>
+                {pendingUpload && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                            className="glass-card w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl overflow-hidden border border-[var(--border)]"
+                        >
+                            {/* Header */}
+                            <div className="p-6 border-b border-[var(--border)]">
+                                <h2 className="text-xl font-bold text-[var(--text-primary)]">Review Upload</h2>
+                                <p className="text-sm text-[var(--text-muted)] mt-0.5">Check the leads below before writing to the database.</p>
+                            </div>
+
+                            {/* Stats row */}
+                            <div className="px-6 py-4 border-b border-[var(--border)] flex flex-wrap items-start gap-6">
+                                {/* Per-file breakdown */}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Files</p>
+                                    <div className="space-y-1.5">
+                                        {pendingUpload.files.map((f, i) => (
+                                            <div key={i} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                                                <FaFileUpload size={10} className="text-[var(--primary)] flex-shrink-0" />
+                                                <span className="truncate font-medium">{f.name}</span>
+                                                <span className="text-[var(--text-muted)] flex-shrink-0">{f.count} new</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* Counts */}
+                                <div className="flex gap-6">
+                                    <div className="text-center">
+                                        <div className="text-3xl font-black text-[var(--primary)]">{pendingUpload.leads.length}</div>
+                                        <div className="text-xs text-[var(--text-muted)] font-semibold mt-0.5">New Leads</div>
+                                    </div>
+                                    {pendingUpload.skipped > 0 && (
+                                        <div className="text-center">
+                                            <div className="text-3xl font-black text-amber-400">{pendingUpload.skipped}</div>
+                                            <div className="text-xs text-[var(--text-muted)] font-semibold mt-0.5">Skipped</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Lead preview list */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
+                                {pendingUpload.leads.slice(0, 100).map((lead, i) => (
+                                    <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                        <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
+                                            <FaBuilding size={11} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-[var(--text-primary)] truncate">{lead.title}</p>
+                                            <p className="text-xs text-[var(--text-muted)] truncate">
+                                                {[lead.phone, lead.email1, lead.city].filter(Boolean).join(" · ")}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                                {pendingUpload.leads.length > 100 && (
+                                    <p className="text-center text-xs text-[var(--text-muted)] py-2 italic">
+                                        +{pendingUpload.leads.length - 100} more leads…
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="p-5 border-t border-[var(--border)] flex gap-3 justify-end bg-[var(--surface)]/60">
+                                <button
+                                    onClick={() => setPendingUpload(null)}
+                                    disabled={isUploading}
+                                    className="btn-secondary px-6 py-2.5 text-sm disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmUpload}
+                                    disabled={isUploading}
+                                    className="btn-primary px-6 py-2.5 text-sm flex items-center gap-2 disabled:opacity-70"
+                                >
+                                    {isUploading ? (
+                                        <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading…</>
+                                    ) : (
+                                        <><FaUpload size={12} /> Upload {pendingUpload.leads.length} Leads</>
+                                    )}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 }
