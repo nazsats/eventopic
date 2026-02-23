@@ -962,51 +962,55 @@ export default function LeadsPage() {
                                 </button>
                             </div>
 
-                            {/* Stats row — fixed */}
-                            <div className="flex-shrink-0 px-5 py-3 border-b border-[var(--border)] flex flex-wrap items-center gap-4">
-                                <div className="flex-1 min-w-0 space-y-1">
-                                    {pendingUpload.files.map((f, i) => (
-                                        <div key={i} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                                            <FaFileUpload size={10} className="text-[var(--primary)] flex-shrink-0" />
-                                            <span className="truncate font-medium">{f.name}</span>
-                                            <span className="text-[var(--text-muted)] flex-shrink-0 ml-auto">{f.count} new</span>
+                            {/* Scrollable body — stats + lead list together */}
+                            <div className="flex-1 overflow-y-auto min-h-0">
+
+                                {/* Stats: counts always visible at top of scroll area */}
+                                <div className="px-5 py-3 border-b border-[var(--border)] flex flex-wrap items-center gap-4">
+                                    <div className="flex gap-4 flex-shrink-0 w-full justify-center sm:justify-start sm:w-auto">
+                                        <div className="text-center">
+                                            <div className="text-2xl font-black text-[var(--primary)]">{pendingUpload.leads.length}</div>
+                                            <div className="text-xs text-[var(--text-muted)] font-semibold">New Leads</div>
+                                        </div>
+                                        {pendingUpload.skipped > 0 && (
+                                            <div className="text-center">
+                                                <div className="text-2xl font-black text-amber-400">{pendingUpload.skipped}</div>
+                                                <div className="text-xs text-[var(--text-muted)] font-semibold">Skipped</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0 space-y-1 w-full sm:w-auto">
+                                        {pendingUpload.files.map((f, i) => (
+                                            <div key={i} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                                                <FaFileUpload size={10} className="text-[var(--primary)] flex-shrink-0" />
+                                                <span className="truncate font-medium">{f.name}</span>
+                                                <span className="text-[var(--text-muted)] flex-shrink-0 ml-auto">{f.count} new</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Lead preview list */}
+                                <div className="p-3 space-y-1.5">
+                                    {pendingUpload.leads.slice(0, 100).map((lead, i) => (
+                                        <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                            <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
+                                                <FaBuilding size={11} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold text-[var(--text-primary)] truncate">{lead.title}</p>
+                                                <p className="text-xs text-[var(--text-muted)] truncate">
+                                                    {[lead.phone, lead.email1, lead.city].filter(Boolean).join(" · ")}
+                                                </p>
+                                            </div>
                                         </div>
                                     ))}
-                                </div>
-                                <div className="flex gap-4 flex-shrink-0">
-                                    <div className="text-center">
-                                        <div className="text-2xl font-black text-[var(--primary)]">{pendingUpload.leads.length}</div>
-                                        <div className="text-xs text-[var(--text-muted)] font-semibold">New Leads</div>
-                                    </div>
-                                    {pendingUpload.skipped > 0 && (
-                                        <div className="text-center">
-                                            <div className="text-2xl font-black text-amber-400">{pendingUpload.skipped}</div>
-                                            <div className="text-xs text-[var(--text-muted)] font-semibold">Skipped</div>
-                                        </div>
+                                    {pendingUpload.leads.length > 100 && (
+                                        <p className="text-center text-xs text-[var(--text-muted)] py-2 italic">
+                                            +{pendingUpload.leads.length - 100} more leads…
+                                        </p>
                                     )}
                                 </div>
-                            </div>
-
-                            {/* Lead preview list — scrollable middle section */}
-                            <div className="flex-1 overflow-y-auto min-h-0 p-3 space-y-1.5">
-                                {pendingUpload.leads.slice(0, 100).map((lead, i) => (
-                                    <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                                        <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
-                                            <FaBuilding size={11} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-bold text-[var(--text-primary)] truncate">{lead.title}</p>
-                                            <p className="text-xs text-[var(--text-muted)] truncate">
-                                                {[lead.phone, lead.email1, lead.city].filter(Boolean).join(" · ")}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {pendingUpload.leads.length > 100 && (
-                                    <p className="text-center text-xs text-[var(--text-muted)] py-2 italic">
-                                        +{pendingUpload.leads.length - 100} more leads…
-                                    </p>
-                                )}
                             </div>
 
                             {/* Actions — always pinned to bottom */}
