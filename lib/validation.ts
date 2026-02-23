@@ -1,6 +1,5 @@
 // lib/validation.ts
 import validator from 'validator';
-import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Validates and normalizes an email address
@@ -45,11 +44,8 @@ export function sanitizeText(text: string, maxLength: number = 1000): string {
         return '';
     }
 
-    // Remove any HTML tags and scripts
-    const sanitized = DOMPurify.sanitize(text, {
-        ALLOWED_TAGS: [],
-        ALLOWED_ATTR: []
-    });
+    // Strip all HTML tags and entities
+    const sanitized = text.replace(/<[^>]*>/g, '').replace(/&[a-zA-Z0-9#]+;/g, '');
 
     // Trim and limit length
     return sanitized.trim().substring(0, maxLength);
