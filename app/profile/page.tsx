@@ -6,6 +6,7 @@ import { useState, useEffect, Suspense } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
+import DottedAvatar from "../../components/DottedAvatar";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
@@ -490,15 +491,17 @@ function ProfileContent() {
         <section className="pt-20 pb-16 min-h-screen bg-[var(--background)] relative overflow-hidden">
           {/* Background orbs */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[var(--primary)]/6 rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 left-10 w-[400px] h-[400px] bg-[var(--secondary)]/6 rounded-full blur-[100px]" />
+            <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[var(--primary)]/6 rounded-full blur-[120px] animate-drift" />
+            <div className="absolute bottom-0 left-10 w-[400px] h-[400px] bg-[var(--secondary)]/6 rounded-full blur-[100px] animate-drift" style={{ animationDelay: "5s" }} />
           </div>
 
           <div className="container mx-auto px-4 max-w-5xl relative z-10">
 
-            {/* ── Mobile Hero Card ── */}
+            {/* ── Profile Hero Card (rotating gradient frame) ── */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-2xl overflow-hidden mb-6 border border-[var(--border)]">
+              className="relative rounded-[26px] p-[1.5px] overflow-hidden mb-6">
+              <div className="absolute inset-[-150%] opacity-50 bg-[conic-gradient(from_0deg,#7C3AED,#E879F9,#C084FC,#7C3AED)] animate-spin-slow pointer-events-none" />
+              <div className="relative rounded-[24px] overflow-hidden bg-[var(--surface)]">
 
               {/* Profile photo(s) */}
               {allPhotos.length > 0 ? (
@@ -545,7 +548,7 @@ function ProfileContent() {
                       </h1>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {subcategory?.name && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--primary)] text-black text-xs font-bold">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--primary)] text-white text-xs font-bold">
                             {subcategory.name}
                           </span>
                         )}
@@ -566,7 +569,7 @@ function ProfileContent() {
                         </a>
                       )}
                       <Link href="/profile?edit=true"
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--primary)] text-black text-xs font-bold hover:opacity-90 transition-all">
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-bold hover:opacity-90 transition-all">
                         <FaEdit className="text-[10px]" /> Edit
                       </Link>
                     </div>
@@ -575,8 +578,8 @@ function ProfileContent() {
               ) : (
                 /* No photo — show initials avatar */
                 <div className="p-6 flex flex-col sm:flex-row items-center gap-5 border-b border-[var(--border)]">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-black font-black text-4xl shrink-0 shadow-lg shadow-[var(--primary)]/20">
-                    {(profile.firstName?.[0] || "?")}
+                  <div className="shrink-0">
+                    <DottedAvatar initial={(profile.firstName?.[0] || "?").toUpperCase()} emoji={subcategory ? "⭐" : undefined} />
                   </div>
                   <div className="flex-1 text-center sm:text-left">
                     <h1 className="font-display font-black text-2xl sm:text-3xl gradient-text leading-tight">
@@ -614,7 +617,7 @@ function ProfileContent() {
                 <div className="flex gap-2 p-3 bg-[var(--surface)]/60 overflow-x-auto scrollbar-hide">
                   {allPhotos.map((p, i) => (
                     <button key={i} onClick={() => setCurrentPhotoIndex(i)}
-                      className={`relative w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${currentPhotoIndex === i ? 'border-[var(--primary)] shadow-sm shadow-[var(--primary)]/30' : 'border-transparent hover:border-white/30'}`}
+                      className={`relative w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${currentPhotoIndex === i ? 'border-[var(--primary)] shadow-sm shadow-[var(--primary)]/30' : 'border-transparent hover:border-[var(--border-hover)]'}`}
                     >
                       <Image src={p} alt="" fill sizes="64px" className="object-cover" />
                     </button>
@@ -651,6 +654,7 @@ function ProfileContent() {
                   )}
                 </div>
               )}
+              </div>
             </motion.div>
 
             {/* ── Detail Grid ── */}
@@ -868,42 +872,63 @@ function ProfileContent() {
       <section className="pt-28 pb-16 min-h-screen bg-[var(--background)] relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-1/3 w-[500px] h-[500px] bg-[var(--primary)]/6 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-0 left-10 w-[400px] h-[400px] bg-[var(--secondary)]/6 rounded-full blur-[100px]" />
+          <div className="absolute top-0 right-1/3 w-[500px] h-[500px] bg-[var(--primary)]/6 rounded-full blur-[120px] animate-drift" />
+          <div className="absolute bottom-0 left-10 w-[400px] h-[400px] bg-[var(--secondary)]/6 rounded-full blur-[100px] animate-drift" style={{ animationDelay: "5s" }} />
         </div>
         <div className="container max-w-6xl mx-auto px-4 relative z-10">
 
-          {/* Step Progress — shown from step 1 onwards */}
+          {/* Step Progress — animated stepper, shown from step 1 onwards */}
           {currentStep >= 1 && (
-            <div className="mb-8 max-w-3xl mx-auto">
-              {/* Step pills */}
-              <div className="hidden md:flex items-center justify-center gap-1 mb-4 flex-wrap">
-                {steps.slice(1).map((step, i) => {
-                  const stepIndex = i + 1;
-                  const isDone = currentStep > stepIndex;
-                  const isActive = currentStep === stepIndex;
-                  return (
-                    <div key={i} className="flex items-center gap-1">
-                      <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${isDone ? 'bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30'
-                        : isActive ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-lg'
-                          : 'bg-[var(--surface-elevated)] text-[var(--text-muted)] border border-[var(--border)]'
-                        }`}>
-                        <span>{isDone ? '✓' : stepIndex}</span>
-                        <span className="hidden lg:inline">{step}</span>
-                      </div>
-                      {i < steps.length - 2 && <div className="w-4 h-px bg-[var(--border)]" />}
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Progress bar */}
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-bold text-[var(--text-secondary)]">{steps[currentStep]} — Step {currentStep} of {totalSteps - 1}</span>
-                <span className="text-sm font-bold text-[var(--primary)]">{Math.round((currentStep / (totalSteps - 1)) * 100)}%</span>
-              </div>
-              <div className="h-2 bg-[var(--surface-elevated)] rounded-full overflow-hidden">
+            <div className="mb-9 max-w-3xl mx-auto">
+              {/* Stepper nodes with a filling track */}
+              <div className="relative hidden md:block mb-6">
+                <div className="absolute top-4 left-0 right-0 h-0.5 bg-[var(--surface-elevated)]" />
                 <motion.div
-                  className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--accent)]"
+                  className="absolute top-4 left-0 h-0.5 bg-[image:var(--gradient-primary)]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${((currentStep - 1) / (totalSteps - 2)) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+                <div className="relative flex justify-between">
+                  {steps.slice(1).map((step, i) => {
+                    const stepIndex = i + 1;
+                    const isDone = currentStep > stepIndex;
+                    const isActive = currentStep === stepIndex;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => isDone && setCurrentStep(stepIndex)}
+                        className={`flex flex-col items-center gap-1.5 ${isDone ? "cursor-pointer" : "cursor-default"}`}
+                      >
+                        <motion.div
+                          animate={isActive ? { scale: 1.12 } : { scale: 1 }}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-colors ${isDone
+                            ? "bg-[image:var(--gradient-primary)] text-white"
+                            : isActive
+                              ? "bg-[image:var(--gradient-primary)] text-white ring-4 ring-[var(--primary-muted)] shadow-[var(--shadow-glow)]"
+                              : "bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]"
+                            }`}
+                        >
+                          {isDone ? "✓" : stepIndex}
+                        </motion.div>
+                        <span className={`text-[10px] font-bold transition-colors ${isActive ? "text-[var(--primary)]" : isDone ? "text-[var(--text-secondary)]" : "text-[var(--text-muted)]"}`}>{step}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Percent bar */}
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold text-[var(--text-primary)]">{steps[currentStep]}
+                  <span className="text-[var(--text-muted)] font-medium"> · Step {currentStep} of {totalSteps - 1}</span>
+                </span>
+                <span className="text-sm font-black gradient-text">{Math.round((currentStep / (totalSteps - 1)) * 100)}%</span>
+              </div>
+              <div className="h-2.5 bg-[var(--surface-elevated)] rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full gradient-animated"
                   initial={{ width: 0 }}
                   animate={{ width: `${(currentStep / (totalSteps - 1)) * 100}%` }}
                   transition={{ duration: 0.5 }}
@@ -1131,7 +1156,7 @@ function ProfileContent() {
                         name="firstName"
                         value={profile.firstName}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                         placeholder="John"
                       />
                     </div>
@@ -1142,7 +1167,7 @@ function ProfileContent() {
                         name="lastName"
                         value={profile.lastName}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                         placeholder="Doe"
                       />
                     </div>
@@ -1155,7 +1180,7 @@ function ProfileContent() {
                         name="phoneNumber"
                         value={profile.phoneNumber}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                         placeholder="+971 50 000 0000"
                       />
                       <p className="text-xs text-[var(--text-secondary)]">Start with +971 for UAE</p>
@@ -1167,7 +1192,7 @@ function ProfileContent() {
                         name="whatsappNumber"
                         value={profile.whatsappNumber}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                         placeholder="+971 50 000 0000"
                       />
                       <p className="text-xs text-[var(--text-secondary)]">Start with +971 for UAE</p>
@@ -1181,7 +1206,7 @@ function ProfileContent() {
                         name="nationality"
                         value={profile.nationality}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                       >
                         <option value="">Select Nationality</option>
                         {["UAE", "India", "Pakistan", "Philippines", "Egypt", "UK", "USA", "Canada", "Lebanon", "Jordan", "Syria", "Other"].map(nat => (
@@ -1198,7 +1223,7 @@ function ProfileContent() {
                         name="educationLevel"
                         value={profile.educationLevel}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                       >
                         <option value="">Select Education</option>
                         {EDUCATION_LEVELS.map(level => (
@@ -1215,7 +1240,7 @@ function ProfileContent() {
                         name="gender"
                         value={profile.gender}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                       >
                         <option value="">Select Gender</option>
                         <option value="male">Male</option>
@@ -1232,7 +1257,7 @@ function ProfileContent() {
                         name="dateOfBirth"
                         value={profile.dateOfBirth}
                         onChange={handleInputChange}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                       />
                     </div>
                   </div>
@@ -1274,7 +1299,7 @@ function ProfileContent() {
                           name="city"
                           value={profile.city}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select City</option>
                           {["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain"].map(c => (
@@ -1289,7 +1314,7 @@ function ProfileContent() {
                           name="area"
                           value={profile.area}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                           placeholder="e.g., Dubai Marina"
                         />
                       </div>
@@ -1383,7 +1408,7 @@ function ProfileContent() {
                         <input
                           type="text"
                           placeholder="Add a language..."
-                          className="modern-input flex-1 p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input flex-1"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -1481,7 +1506,7 @@ function ProfileContent() {
                           name="visaType"
                           value={profile.visaType}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Visa Type</option>
                           {VISA_TYPES.map(visa => (
@@ -1497,7 +1522,7 @@ function ProfileContent() {
                           name="visaExpiry"
                           value={profile.visaExpiry}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         />
                       </div>
 
@@ -1508,7 +1533,7 @@ function ProfileContent() {
                           name="passportExpiry"
                           value={profile.passportExpiry}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         />
                       </div>
 
@@ -1537,7 +1562,7 @@ function ProfileContent() {
                           value={profile.healthIssues}
                           onChange={handleInputChange}
                           rows={2}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                           placeholder="Please mention if any..."
                         />
                       </div>
@@ -1581,7 +1606,7 @@ function ProfileContent() {
                         value={profile.introduction}
                         onChange={handleInputChange}
                         rows={4}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                         placeholder="Introduce yourself to potential employers..."
                       />
                     </div>
@@ -1595,7 +1620,7 @@ function ProfileContent() {
                         value={profile.previousExperience}
                         onChange={handleInputChange}
                         rows={4}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                         placeholder="List your previous work experience, companies, roles..."
                       />
                     </div>
@@ -1609,7 +1634,7 @@ function ProfileContent() {
                         value={profile.eventsAttended}
                         onChange={handleInputChange}
                         rows={3}
-                        className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        className="modern-input"
                         placeholder="Name of the event, Location, Position"
                       />
                     </div>
@@ -1655,7 +1680,7 @@ function ProfileContent() {
                           name="height"
                           value={profile.height}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select</option>
                           {Array.from({ length: 61 }, (_, i) => 140 + i).map(h => (
@@ -1672,7 +1697,7 @@ function ProfileContent() {
                           name="weight"
                           value={profile.weight}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select</option>
                           {Array.from({ length: 91 }, (_, i) => 40 + i).map(w => (
@@ -1687,7 +1712,7 @@ function ProfileContent() {
                           name="bust"
                           value={profile.bust}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                           placeholder="e.g. 90"
                         />
                       </div>
@@ -1698,7 +1723,7 @@ function ProfileContent() {
                           name="waist"
                           value={profile.waist}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                           placeholder="e.g. 60"
                         />
                       </div>
@@ -1709,7 +1734,7 @@ function ProfileContent() {
                           name="hips"
                           value={profile.hips}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                           placeholder="e.g. 90"
                         />
                       </div>
@@ -1722,7 +1747,7 @@ function ProfileContent() {
                           name="shirtSize"
                           value={profile.shirtSize}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Size</option>
                           {SHIRT_SIZES.map(size => (
@@ -1737,7 +1762,7 @@ function ProfileContent() {
                           name="trouserSize"
                           value={profile.trouserSize}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Size</option>
                           {TROUSER_SIZES.map(t => (
@@ -1752,7 +1777,7 @@ function ProfileContent() {
                           name="dressSize"
                           value={profile.dressSize}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Size</option>
                           {DRESS_SIZES.map(d => (
@@ -1769,7 +1794,7 @@ function ProfileContent() {
                           name="shoeSize"
                           value={profile.shoeSize}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Size</option>
                           {SHOE_SIZES.map(s => (
@@ -1786,7 +1811,7 @@ function ProfileContent() {
                           name="eyeColor"
                           value={profile.eyeColor}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Color</option>
                           {EYE_COLORS.map(c => (
@@ -1803,7 +1828,7 @@ function ProfileContent() {
                           name="skinColor"
                           value={profile.skinColor}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Color</option>
                           {SKIN_COLORS.map(c => (
@@ -1820,7 +1845,7 @@ function ProfileContent() {
                           name="hairColor"
                           value={profile.hairColor}
                           onChange={handleInputChange}
-                          className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                          className="modern-input"
                         >
                           <option value="">Select Color</option>
                           {HAIR_COLORS.map(c => (
@@ -1938,7 +1963,7 @@ function ProfileContent() {
                             name="linkedinUrl"
                             value={profile.linkedinUrl}
                             onChange={handleInputChange}
-                            className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                            className="modern-input"
                             placeholder="https://linkedin.com/in/yourprofile"
                           />
                         </div>
@@ -1951,7 +1976,7 @@ function ProfileContent() {
                             name="instagramUrl"
                             value={profile.instagramUrl}
                             onChange={handleInputChange}
-                            className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                            className="modern-input"
                             placeholder="https://instagram.com/yourhandle"
                           />
                         </div>
@@ -1964,7 +1989,7 @@ function ProfileContent() {
                             name="twitterUrl"
                             value={profile.twitterUrl}
                             onChange={handleInputChange}
-                            className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                            className="modern-input"
                             placeholder="https://x.com/yourhandle"
                           />
                         </div>
@@ -1977,7 +2002,7 @@ function ProfileContent() {
                             name="facebookUrl"
                             value={profile.facebookUrl}
                             onChange={handleInputChange}
-                            className="modern-input w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                            className="modern-input"
                             placeholder="https://facebook.com/yourprofile"
                           />
                         </div>

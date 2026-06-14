@@ -550,7 +550,7 @@ export default function LeadsPage() {
                                         <FaTrash size={12} /> Delete ({selectedIds.size})
                                     </button>
                                 )}
-                                <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-xl glass-card border border-[var(--border)] hover:border-[var(--primary)] text-[var(--text-secondary)] hover:text-white transition-all text-sm font-bold">
+                                <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-xl glass-card border border-[var(--border)] hover:border-[var(--primary)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-all text-sm font-bold">
                                     <FaDownload size={12} /> Export CSV
                                 </button>
                             </div>
@@ -685,19 +685,19 @@ export default function LeadsPage() {
                                                     />
                                                 </th>
                                                 <th className="px-4 py-3 text-left text-[var(--text-muted)] font-semibold uppercase tracking-wider text-xs min-w-[200px]">
-                                                    <button onClick={() => handleSort("title")} className="flex items-center gap-1 hover:text-white transition-colors">
+                                                    <button onClick={() => handleSort("title")} className="flex items-center gap-1 hover:text-[var(--primary)] transition-colors">
                                                         Company / Lead <SortIcon field="title" />
                                                     </button>
                                                 </th>
                                                 <th className="px-4 py-3 text-left text-[var(--text-muted)] font-semibold uppercase tracking-wider text-xs min-w-[140px]">Contact</th>
                                                 <th className="px-4 py-3 text-left text-[var(--text-muted)] font-semibold uppercase tracking-wider text-xs">
-                                                    <button onClick={() => handleSort("city")} className="flex items-center gap-1 hover:text-white transition-colors">
+                                                    <button onClick={() => handleSort("city")} className="flex items-center gap-1 hover:text-[var(--primary)] transition-colors">
                                                         City <SortIcon field="city" />
                                                     </button>
                                                 </th>
                                                 <th className="px-4 py-3 text-left text-[var(--text-muted)] font-semibold uppercase tracking-wider text-xs">Socials</th>
                                                 <th className="px-4 py-3 text-left text-[var(--text-muted)] font-semibold uppercase tracking-wider text-xs">
-                                                    <button onClick={() => handleSort("status")} className="flex items-center gap-1 hover:text-white transition-colors">
+                                                    <button onClick={() => handleSort("status")} className="flex items-center gap-1 hover:text-[var(--primary)] transition-colors">
                                                         Status <SortIcon field="status" />
                                                     </button>
                                                 </th>
@@ -901,7 +901,7 @@ export default function LeadsPage() {
                                             <button
                                                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                                                 disabled={page === 1}
-                                                className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-white disabled:opacity-30 transition-colors"
+                                                className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] disabled:opacity-30 transition-colors"
                                             >
                                                 <FaChevronLeft size={12} />
                                             </button>
@@ -909,7 +909,7 @@ export default function LeadsPage() {
                                                 <button
                                                     key={p}
                                                     onClick={() => setPage(p)}
-                                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${page === p ? "bg-[var(--primary)] text-white" : "glass-card text-[var(--text-secondary)] hover:text-white"}`}
+                                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${page === p ? "bg-[var(--primary)] text-white" : "glass-card text-[var(--text-secondary)] hover:text-[var(--primary)]"}`}
                                                 >
                                                     {p}
                                                 </button>
@@ -917,7 +917,7 @@ export default function LeadsPage() {
                                             <button
                                                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                                                 disabled={page === totalPages}
-                                                className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-white disabled:opacity-30 transition-colors"
+                                                className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] disabled:opacity-30 transition-colors"
                                             >
                                                 <FaChevronRight size={12} />
                                             </button>
@@ -956,7 +956,7 @@ export default function LeadsPage() {
                                 <button
                                     onClick={() => setPendingUpload(null)}
                                     disabled={isUploading}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-white hover:bg-[var(--surface)] transition-colors disabled:opacity-40 text-lg leading-none"
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-40 text-lg leading-none"
                                 >
                                     ×
                                 </button>

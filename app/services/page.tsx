@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
+import CursorGlow from "../../components/CursorGlow";
 import Footer from "../../components/Footer";
 import { motion } from "framer-motion";
 import {
@@ -28,16 +29,17 @@ const PROCESS = [
 ];
 
 const WHY = [
-  { icon: <FaBriefcase />, title: "32+ Role Types", desc: "From models to MCs — every event role you can imagine." },
-  { icon: <FaStar />, title: "Top-Tier Events", desc: "Work at flagship Dubai venues, exhibitions, and luxury galas." },
-  { icon: <FaHeadset />, title: "24 / 7 AI Support", desc: "Our AI assistant guides you around the clock." },
-  { icon: <FaUsers />, title: "Verified Community", desc: "All professionals are ID-verified through Firebase Auth." },
+  { icon: <FaBriefcase />, title: "30+ Role Types", desc: "Hostesses, promoters, models, MCs, hospitality and more." },
+  { icon: <FaStar />, title: "Events & Promotions", desc: "Exhibitions, launches, activations and part-time work across the UAE." },
+  { icon: <FaHeadset />, title: "24 / 7 AI Support", desc: "Our AI assistant answers your questions any time of day." },
+  { icon: <FaUsers />, title: "Profiles We Check", desc: "Accounts are secured with Firebase, and we review profiles before booking." },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Services() {
   return (
     <div className="bg-[var(--background)] min-h-screen">
+      <CursorGlow />
       <Navbar />
 
       {/* ── Hero ── */}
@@ -57,14 +59,14 @@ export default function Services() {
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.5 }}
             className="text-[var(--text-secondary)] text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-8">
-            Dubai's most comprehensive event staffing platform — connecting brands with skilled professionals 24/7 through smart technology.
+            A simple UAE staffing platform — connecting people with event, promotion and part-time work, and helping clients hire reliable staff.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
             <Link href="/jobs" className="btn-primary px-7 py-3 font-bold text-sm inline-flex items-center justify-center gap-2">
               Browse Live Jobs <FaArrowRight />
             </Link>
-            <Link href="/contact" className="px-7 py-3 rounded-full border border-[var(--border)] hover:border-[var(--primary)] text-[var(--text-secondary)] hover:text-white text-sm font-bold transition-all text-center">
+            <Link href="/contact" className="btn-secondary px-7 py-3 text-sm text-center">
               Hire Staff
             </Link>
           </motion.div>
@@ -102,8 +104,8 @@ export default function Services() {
               All Role Types
             </motion.p>
             <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="text-2xl md:text-3xl font-display font-bold text-white mb-3">
-              We Cover Every <span className="gradient-text">Event Role</span>
+              className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-3">
+              We Cover Every <span className="gradient-text">Kind of Role</span>
             </motion.h2>
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="text-[var(--text-secondary)] text-sm max-w-md mx-auto">
@@ -144,8 +146,8 @@ export default function Services() {
               How It Works
             </motion.p>
             <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="text-2xl md:text-3xl font-display font-bold text-white mb-3">
-              From Sign-Up to <span className="text-[var(--accent)]">Pay Day</span>
+              className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-3">
+              From Sign-Up to <span className="gradient-text">Pay Day</span>
             </motion.h2>
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="text-[var(--text-secondary)] text-sm max-w-md mx-auto">
@@ -165,7 +167,7 @@ export default function Services() {
                   <div className="w-14 h-14 mx-auto rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-xl text-[var(--primary)] group-hover:scale-110 transition-transform">
                     {item.icon}
                   </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center font-black text-black text-[10px] shadow-md">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center font-black text-white text-[10px] shadow-md">
                     {item.step}
                   </div>
                 </div>
@@ -183,7 +185,7 @@ export default function Services() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[var(--primary)]/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="container mx-auto px-5 max-w-2xl text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-3 leading-snug">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-[var(--text-primary)] mb-3 leading-snug">
               Need Staff for Your <span className="gradient-text">Event?</span>
             </h2>
             <p className="text-[var(--text-secondary)] text-sm mb-8 max-w-md mx-auto">
@@ -193,7 +195,7 @@ export default function Services() {
               <Link href="/contact" className="btn-primary px-8 py-3.5 text-sm font-bold inline-flex items-center justify-center gap-2">
                 Contact Us <FaArrowRight />
               </Link>
-              <Link href="/jobs" className="px-8 py-3.5 rounded-full border border-white/20 hover:border-[var(--primary)] text-white font-bold text-sm transition-all text-center">
+              <Link href="/jobs" className="btn-secondary px-8 py-3.5 text-sm text-center">
                 <FaUsers className="inline mr-2 text-xs" />Browse Jobs
               </Link>
             </div>

@@ -25,13 +25,13 @@ export interface Theme {
 export const themes: Theme[] = [
     {
         id: "dark-luxury",
-        name: "Dark Luxury",
-        emoji: "⚡",
-        description: "Electric cyber vibes",
+        name: "Desert Gold",
+        emoji: "👑",
+        description: "Midnight navy & gold luxury",
         preview: {
-            background: "#0A0A0F",
-            primary: "#00D4FF",
-            accent: "#FFB800",
+            background: "#0B0F1A",
+            primary: "#D4AF37",
+            accent: "#E8C766",
         },
     },
     {

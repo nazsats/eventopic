@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { auth, db } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
-import { collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 interface AuthContextType {
   user: User | null;
@@ -81,60 +81,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(newUser);
       setLoading(false);
 
-      if (newUser) {
-        // Save user email to Firestore on login
+      if (!newUser) {
+        // Redirect unauthenticated users away from the profile page
+        if (pathname === "/profile") router.replace("/");
+        return;
+      }
+
+      try {
         await saveUserToFirestore(newUser);
 
-        try {
-          // Fetch admin emails to check if the user is an admin
-          const adminsSnapshot = await getDocs(collection(db, "admins"));
-          const adminEmails = adminsSnapshot.docs.map(doc => doc.data().email as string);
+        // One read of the user's own profile doc.
+        const userSnap = await getDoc(doc(db, "users", newUser.uid));
+        const isProfileComplete = userSnap.exists() ? !!userSnap.data().isProfileComplete : false;
 
-          // Define protected routes where no redirect to /profile is needed
-          const protectedRoutes = ["/profile", "/jobs", "/dashboard", "/admin"];
-
-          // Define public routes where redirect to /profile is allowed if profile is incomplete
-          const publicRoutes = ["/", "/about", "/services", "/gallery"];
-
-          // Check if the user’s profile is complete
-          const userDoc = await getDoc(doc(db, "users", newUser.uid));
-          const isProfileComplete = userDoc.exists() ? userDoc.data().isProfileComplete : false;
-
-          // Redirect to /profile only if:
-          // 1. The user is not an admin
-          // 2. The profile is incomplete
-          // 3. The current route is a public route (not a protected route)
-          if (
-            !adminEmails.includes(newUser.email!) &&
-            !isProfileComplete &&
-            publicRoutes.includes(pathname) &&
-            !protectedRoutes.includes(pathname)
-          ) {
-            console.log(`AuthContext: Redirecting to /profile for non-admin user with incomplete profile: ${newUser.email}, current path: ${pathname}`);
-            router.replace("/profile");
-          } else {
-            console.log(`AuthContext: No redirect needed for user: ${newUser.email}, current path: ${pathname}, isProfileComplete: ${isProfileComplete}`);
-          }
-        } catch (error: unknown) {
-          console.error("AuthContext: Error checking profile or admins:", error instanceof Error ? error.message : error);
-          // Avoid redirect in error case unless profile is incomplete and route is public
-          const userDoc = await getDoc(doc(db, "users", newUser.uid));
-          const isProfileComplete = userDoc.exists() ? userDoc.data().isProfileComplete : false;
-          const publicRoutes = ["/", "/about", "/services", "/gallery"];
-          const protectedRoutes = ["/profile", "/jobs", "/dashboard", "/admin"];
-          if (
-            !isProfileComplete &&
-            publicRoutes.includes(pathname) &&
-            !protectedRoutes.includes(pathname)
-          ) {
-            console.log(`AuthContext: Fallback redirect to /profile due to error, user: ${newUser.email}, path: ${pathname}, isProfileComplete: ${isProfileComplete}`);
-            router.replace("/profile");
+        // Cheap single-doc admin check — the security rules allow a user to
+        // read their OWN admin doc, so we never fetch the whole collection.
+        let isAdminUser = false;
+        if (newUser.email) {
+          try {
+            const adminSnap = await getDoc(doc(db, "admins", newUser.email.toLowerCase()));
+            isAdminUser = adminSnap.exists();
+          } catch {
+            // Read denied => not an admin. Safe to ignore.
           }
         }
-      } else if (pathname === "/profile") {
-        // Redirect unauthenticated users away from /profile
-        console.log("AuthContext: Redirecting to / for unauthenticated user, current path: /profile");
-        router.replace("/");
+
+        // Only nudge non-admins with an incomplete profile, and only from
+        // public marketing pages (never mid-task on protected routes).
+        const publicRoutes = ["/", "/about", "/services"];
+        if (!isAdminUser && !isProfileComplete && publicRoutes.includes(pathname)) {
+          router.replace("/profile");
+        }
+      } catch (error: unknown) {
+        console.error("AuthContext: profile/admin check failed:", error instanceof Error ? error.message : error);
       }
     });
     return () => unsubscribe();
