@@ -230,6 +230,24 @@ export default function JobDetailPage() {
     return (
         <>
             <Navbar />
+            {/* JobPosting structured data — Google Jobs eligibility */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "JobPosting",
+                        title: job.title,
+                        description: job.summary || job.description || `${job.title} — event staffing role in ${job.location}, UAE.`,
+                        datePosted: new Date().toISOString().split("T")[0],
+                        validThrough: new Date(Date.now() + 30 * 864e5).toISOString().split("T")[0],
+                        employmentType: ({ "Full-time": "FULL_TIME", "Part-time": "PART_TIME", "Freelance": "CONTRACTOR", "Contract": "CONTRACTOR", "Temporary": "TEMPORARY", "One-time Event": "TEMPORARY" } as Record<string, string>)[job.type] || "OTHER",
+                        hiringOrganization: { "@type": "Organization", name: "Eventopic", sameAs: "https://eventopic.com" },
+                        jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: job.location, addressRegion: job.location, addressCountry: "AE" } },
+                        baseSalary: { "@type": "MonetaryAmount", currency: "AED", value: { "@type": "QuantitativeValue", value: job.rate, unitText: ({ hourly: "HOUR", daily: "DAY", weekly: "WEEK", monthly: "MONTH", annual: "YEAR" } as Record<string, string>)[(job.paymentFrequency || "daily").toLowerCase()] || "DAY" } },
+                    }),
+                }}
+            />
             {showConfetti && <Confetti recycle={false} numberOfPieces={300} />}
 
             <section className="pt-28 pb-20 bg-[var(--background)] min-h-screen relative overflow-hidden">

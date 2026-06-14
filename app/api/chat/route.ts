@@ -124,10 +124,10 @@ function buildJobsContext(jobs: Job[]): string {
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 function buildSystemPrompt(jobsContext: string): string {
-    return `You are **Eventopic AI** — an intelligent, warm, and highly proactive AI assistant for Eventopic, Dubai's fastest-growing event staffing platform.
+    return `You are **Eventopic AI** — a warm, honest and helpful assistant for Eventopic, a UAE staffing platform. Be friendly and concise. Never exaggerate or invent facts, clients, or numbers.
 
 ## About Eventopic
-Eventopic connects skilled event professionals with premium events across Dubai and the UAE. We handle sourcing, vetting, and on-site deployment.
+Eventopic connects people with event, promotion and part-time work across Dubai and the Emirates. We're a small, hands-on team that handles sourcing, vetting and on-site coordination — for job seekers and for clients who need reliable staff.
 Website: www.eventopic.com
 
 ## Site Pages You Can Direct Users To
@@ -137,7 +137,6 @@ Website: www.eventopic.com
 - **/dashboard** — Track your applications and status
 - **/services** — See what staffing solutions we offer
 - **/contact** — Contact the team or submit a client inquiry
-- **/gallery** — View our past event photos
 - **/about** — Company background and values
 
 ## Roles on Our Platform
@@ -159,13 +158,14 @@ Stand Speakers, MCs/Anchors, Hostesses, VIP Hostesses, Promoters, Sales Promoter
 - Email: info@eventopic.com
 - WhatsApp: https://chat.whatsapp.com/CvC6QGyQlKFEz5s9vhJRXC
 - Contact form: /contact
-- We staff corporate events, weddings, exhibitions, fashion shows, product launches, government functions
+- We staff corporate events, exhibitions, product launches, promotions, activations and part-time roles
 
-## Stats & Credibility
-- 500+ vetted professionals
-- 50+ satisfied clients (luxury brands, government entities, Fortune 500 companies)
-- 3+ years of excellence in UAE event staffing
-- Past highlight events: FIFA operations, Emaar launches, Dubai Fashion Week, luxury brand activations
+## About the company (be honest, never exaggerate)
+- A small, hands-on team of 3 with 4 years of experience in Dubai's event scene
+- Launched in 2025
+- We staff events, promotions, exhibitions, activations and part-time roles across all 7 emirates
+- Honest pay in AED, no hidden fees
+- If you don't know something, say so and point them to /contact or info@eventopic.com
 
 ## Contact
 - Email: info@eventopic.com
@@ -216,8 +216,27 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { messages } = await req.json();
-        if (!messages || !Array.isArray(messages)) {
+        const body = await req.json().catch(() => null);
+        const messages = body?.messages;
+        if (!Array.isArray(messages) || messages.length === 0) {
+            return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+        }
+
+        // Validate shape and cap sizes to bound OpenAI cost / abuse.
+        const MAX_MSG_CHARS = 2000;
+        const MAX_TOTAL_CHARS = 12000;
+        const cleanMessages: { role: "user" | "assistant"; content: string }[] = [];
+        let totalChars = 0;
+        for (const m of messages.slice(-20)) {
+            if (!m || (m.role !== "user" && m.role !== "assistant") || typeof m.content !== "string") {
+                return NextResponse.json({ error: "Invalid message format" }, { status: 400 });
+            }
+            const content = m.content.slice(0, MAX_MSG_CHARS);
+            totalChars += content.length;
+            if (totalChars > MAX_TOTAL_CHARS) break;
+            cleanMessages.push({ role: m.role, content });
+        }
+        if (cleanMessages.length === 0) {
             return NextResponse.json({ error: "Invalid request" }, { status: 400 });
         }
 
@@ -226,14 +245,11 @@ export async function POST(req: NextRequest) {
         const jobsContext = buildJobsContext(jobs);
         const systemPrompt = buildSystemPrompt(jobsContext);
 
-        // Keep last 20 messages for context window
-        const trimmedMessages = messages.slice(-20);
-
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
-                ...trimmedMessages,
+                ...cleanMessages,
             ],
             temperature: 0.6,
             max_tokens: 700,

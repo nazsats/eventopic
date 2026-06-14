@@ -3,11 +3,13 @@
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import UAEJobMap from "../../components/UAEJobMap";
+import CursorGlow from "../../components/CursorGlow";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import AuthModal from "../../components/AuthModal";
@@ -56,10 +58,26 @@ export default function JobsPage() {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
     const [selectedCategory, setSelectedCategory] = useState("all");
+    const [locationFilter, setLocationFilter] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [page, setPage] = useState(1);
+    const jobsListRef = useRef<HTMLElement>(null);
+
+    // Selecting an emirate on the map filters the list AND scrolls down to it.
+    const selectLocation = (loc: string | null) => {
+        setLocationFilter(loc);
+        if (loc) {
+            requestAnimationFrame(() => {
+                const el = jobsListRef.current;
+                if (el) {
+                    const y = el.getBoundingClientRect().top + window.scrollY - 130;
+                    window.scrollTo({ top: y, behavior: "smooth" });
+                }
+            });
+        }
+    };
 
     // Fetch jobs + user's existing applications
     useEffect(() => {
@@ -96,6 +114,7 @@ export default function JobsPage() {
     const filteredJobs = useMemo(() => {
         let result = jobs;
         if (selectedCategory !== "all") result = result.filter(j => j.category === selectedCategory);
+        if (locationFilter) result = result.filter(j => j.location === locationFilter);
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
             result = result.filter(j =>
@@ -105,10 +124,10 @@ export default function JobsPage() {
             );
         }
         return result;
-    }, [selectedCategory, searchQuery, jobs]);
+    }, [selectedCategory, locationFilter, searchQuery, jobs]);
 
     // Reset to page 1 when filter/search changes
-    useEffect(() => { setPage(1); }, [selectedCategory, searchQuery]);
+    useEffect(() => { setPage(1); }, [selectedCategory, locationFilter, searchQuery]);
 
     const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
     const pagedJobs = filteredJobs.slice((page - 1) * JOBS_PER_PAGE, page * JOBS_PER_PAGE);
@@ -139,6 +158,7 @@ export default function JobsPage() {
 
     return (
         <>
+            <CursorGlow />
             <Navbar />
 
             {/* ── Hero ── */}
@@ -178,6 +198,29 @@ export default function JobsPage() {
                 </div>
             </section>
 
+            {/* ── Browse by emirate (interactive map) ── */}
+            <section className="pb-6 bg-[var(--background)]">
+                <div className="container mx-auto px-4 max-w-5xl">
+                    <motion.div
+                        initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                        className="glass-card rounded-3xl p-5 md:p-7"
+                    >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                            <div>
+                                <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-1">Browse by location</p>
+                                <h2 className="text-lg md:text-xl font-display font-bold text-[var(--text-primary)]">
+                                    {locationFilter ? `Showing jobs in ${locationFilter}` : "Tap an emirate to filter jobs"}
+                                </h2>
+                            </div>
+                            <FaMapMarkerAlt className="hidden sm:block text-2xl text-[var(--primary)]/30" />
+                        </div>
+                        <div className="max-w-2xl mx-auto">
+                            <UAEJobMap mode="browse" selectedLocation={locationFilter} onSelectLocation={selectLocation} />
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
             {/* ── Sticky category filter ── */}
             <div className="sticky top-[64px] z-40 bg-[var(--background)]/90 backdrop-blur-xl border-b border-[var(--border)] py-2.5">
                 <div className="container mx-auto px-4 max-w-5xl flex items-center gap-2.5 overflow-x-auto scrollbar-none">
@@ -202,7 +245,7 @@ export default function JobsPage() {
             </div>
 
             {/* ── Jobs grid ── */}
-            <section className="py-10 bg-[var(--background)]">
+            <section ref={jobsListRef} className="py-10 bg-[var(--background)] scroll-mt-32">
                 <div className="container mx-auto px-4 max-w-5xl">
 
                     {/* Results count */}

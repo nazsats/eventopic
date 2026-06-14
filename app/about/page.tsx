@@ -1,6 +1,8 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
+import CursorGlow from "../../components/CursorGlow";
+import DottedAvatar from "../../components/DottedAvatar";
 import Footer from "../../components/Footer";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -12,10 +14,10 @@ import {
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const STATS = [
-  { value: "50+", label: "Events Delivered" },
-  { value: "3+", label: "Years in Dubai" },
-  { value: "500+", label: "Professionals Placed" },
-  { value: "24/7", label: "AI Support" },
+  { value: "3", label: "People on the team" },
+  { value: "4 yrs", label: "In Dubai's event scene" },
+  { value: "7", label: "Emirates covered" },
+  { value: "2025", label: "Year we launched" },
 ];
 
 const VALUES = [
@@ -28,15 +30,16 @@ const VALUES = [
 ];
 
 const TEAM = [
-  { name: "Ahmed Hassan", role: "Founder & CEO", initials: "AH", bio: "8+ years in Dubai's events industry. Built Eventopic to fix what traditional agencies couldn't." },
-  { name: "Sara Al Mutairi", role: "Head of Talent", initials: "SM", bio: "Former model & promoter — now leads the team that connects talent with the best events in Dubai." },
-  { name: "James Okonkwo", role: "Tech Lead", initials: "JO", bio: "Full-stack engineer focused on making the platform fast, reliable, and beautifully simple." },
+  { name: "Naz", role: "Co-founder · Tech & Product", initial: "N", emoji: "💻", bio: "The engineer behind Eventopic. He's been taking things apart and building them back better since he was a kid, and he keeps the platform fast, reliable and genuinely useful." },
+  { name: "San", role: "Co-founder · Growth & Partnerships", initial: "S", emoji: "🤝", bio: "Our connector. Confident and persistent, San is great with people and has a knack for finding a way through just about any problem." },
+  { name: "Dor", role: "Operations Lead", initial: "D", emoji: "🗂️", bio: "Keeps everything moving. From bookings to on-the-day logistics, Dor makes the whole process feel effortless for staff and clients alike." },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function About() {
   return (
     <div className="bg-[var(--background)] min-h-screen">
+      <CursorGlow />
       <Navbar />
 
       {/* ── Hero ── */}
@@ -53,18 +56,18 @@ export default function About() {
           </motion.p>
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="text-4xl sm:text-5xl md:text-6xl font-display font-black mb-4 leading-tight">
-            Dubai's <span className="gradient-text">Event Staffing</span><br />Platform
+A Small Team, <span className="gradient-text">Big on Reliability.</span>
           </motion.h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
             className="text-[var(--text-secondary)] text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-8">
-            Eventopic was born from a simple frustration — finding quality event staff in Dubai was slow, opaque, and expensive. We built the platform we wished existed.
+            Eventopic started because hiring (and finding) good staff in Dubai was harder than it needed to be. We&apos;re three people connecting staff with event, promotion and part-time work across the UAE — and we keep it simple and honest.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
             <Link href="/jobs" className="btn-primary px-7 py-3 font-bold text-sm inline-flex items-center justify-center gap-2">
               Explore Jobs <FaArrowRight />
             </Link>
-            <Link href="/contact" className="px-7 py-3 rounded-full border border-[var(--border)] hover:border-[var(--primary)] text-[var(--text-secondary)] hover:text-white text-sm font-bold transition-all text-center">
+            <Link href="/contact" className="btn-secondary px-7 py-3 text-sm text-center">
               Work With Us
             </Link>
           </motion.div>
@@ -81,7 +84,7 @@ export default function About() {
                 viewport={{ once: true }} transition={{ delay: i * 0.07, type: "spring" }}
                 className="flex flex-col items-center py-6 px-4 text-center"
               >
-                <div className="text-2xl md:text-3xl font-display font-black text-white mb-1">{s.value}</div>
+                <div className="text-2xl md:text-3xl font-display font-black text-[var(--text-primary)] mb-1">{s.value}</div>
                 <div className="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">{s.label}</div>
               </motion.div>
             ))}
@@ -95,14 +98,14 @@ export default function About() {
           <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
               <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Our Story</p>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-4 leading-snug">
-                Built by Event People, <br className="hidden md:block" /><span className="text-[var(--accent)]">for Event People</span>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-4 leading-snug">
+                Built by Event People, <br className="hidden md:block" /><span className="gradient-text">for Event People</span>
               </h2>
               <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">
-                We started in 2021 with a small team and a big frustration: hiring quality event staff in Dubai involved endless WhatsApp groups, unreliable agency middlemen, and late-night scrambles. We knew there had to be a better way.
+                After four years working in Dubai&apos;s event scene, the three of us kept hitting the same wall: hiring and finding reliable staff meant endless WhatsApp groups, middlemen, and last-minute scrambles. We knew it could be simpler.
               </p>
               <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-6">
-                Eventopic is built on technology — a platform that connects talent with brands directly, tracks applications in real time, and uses AI to match the right person to the right role, instantly.
+                So in 2025 we built Eventopic — a straightforward platform that connects staff with events, promotions and part-time work directly, tracks applications in real time, and skips the middleman.
               </p>
               <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                 <FaMapMarkerAlt className="text-[var(--accent)] shrink-0" />
@@ -114,10 +117,10 @@ export default function About() {
             <motion.div initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="space-y-3">
               {[
-                { title: "2021", desc: "Founded in Dubai with a mission to modernize event staffing." },
-                { title: "2022", desc: "Launched the AI chatbot and mobile-first platform." },
-                { title: "2023", desc: "Crossed 500 placements; partnered with top Dubai event organizers." },
-                { title: "2024+", desc: "Real-time job postings, Firebase-secured profiles, and live dashboards." },
+                { title: "4 yrs", desc: "Between us, working Dubai's events, promotions and part-time staffing." },
+                { title: "2025", desc: "Launched Eventopic — a live job board and talent platform for the UAE." },
+                { title: "Now", desc: "Growing the talent pool and adding jobs across all 7 emirates." },
+                { title: "Next", desc: "Smarter matching, faster bookings, and more roles beyond events." },
               ].map((item, i) => (
                 <motion.div key={i} initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                   className="flex gap-4 glass-card p-4 rounded-xl border border-transparent hover:border-[var(--primary)]/20 transition-all">
@@ -142,7 +145,7 @@ export default function About() {
               Our Values
             </motion.p>
             <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="text-2xl md:text-3xl font-display font-bold text-white">
+              className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
               What We Stand For
             </motion.h2>
           </div>
@@ -173,7 +176,7 @@ export default function About() {
               The Team
             </motion.p>
             <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="text-2xl md:text-3xl font-display font-bold text-white">
+              className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
               People Behind <span className="gradient-text">Eventopic</span>
             </motion.h2>
           </div>
@@ -184,17 +187,17 @@ export default function About() {
                 viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                 className="glass-card p-6 rounded-2xl text-center group hover:border-[var(--primary)]/25 border border-transparent transition-all hover:-translate-y-1"
               >
-                <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-black font-black text-xl mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-[var(--primary)]/15">
-                  {member.initials}
+                <div className="mb-5">
+                  <DottedAvatar initial={member.initial} emoji={member.emoji} />
                 </div>
                 <h3 className="font-bold text-[var(--text-primary)] mb-0.5">{member.name}</h3>
                 <p className="text-[10px] font-bold text-[var(--primary)] uppercase tracking-wider mb-3">{member.role}</p>
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{member.bio}</p>
                 <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-[var(--border)]">
-                  <button className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-white/10 transition-all text-xs">
+                  <button className="w-7 h-7 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-muted)] transition-all text-xs">
                     <FaLinkedin />
                   </button>
-                  <button className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-white/10 transition-all text-xs">
+                  <button className="w-7 h-7 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-muted)] transition-all text-xs">
                     <FaInstagram />
                   </button>
                 </div>
@@ -210,17 +213,17 @@ export default function About() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[var(--primary)]/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="container mx-auto px-5 max-w-2xl text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-3 leading-snug">
-              Join Thousands of Event <span className="gradient-text">Professionals</span>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-[var(--text-primary)] mb-3 leading-snug">
+              Join a Growing UAE <span className="gradient-text">Talent Community</span>
             </h2>
             <p className="text-[var(--text-secondary)] text-sm mb-8 max-w-sm mx-auto">
-              Free to join. No hidden fees. Real Dubai events, real pay.
+              Free to join. No hidden fees. Event, promotion and part-time work — real pay, on time.
             </p>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
               <Link href="/jobs" className="btn-primary px-8 py-3.5 text-sm font-bold inline-flex items-center justify-center gap-2">
                 Browse Jobs <FaArrowRight />
               </Link>
-              <Link href="/contact" className="px-8 py-3.5 rounded-full border border-white/20 hover:border-[var(--primary)] text-white font-bold text-sm transition-all text-center">
+              <Link href="/contact" className="btn-secondary px-8 py-3.5 text-sm text-center">
                 Contact the Team
               </Link>
             </div>

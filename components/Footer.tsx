@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Jobs", href: "/jobs" },
   { label: "Services", href: "/services" },
-  { label: "Gallery", href: "/gallery" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
@@ -40,16 +39,16 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
               <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Ready to get started?</p>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-white leading-snug">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] leading-snug">
                 Find your next event opportunity <br className="hidden md:block" />
-                <span className="text-[var(--text-muted)]">in Dubai today.</span>
+                <span className="gradient-text">in Dubai today.</span>
               </h2>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
               <Link href="/jobs" className="btn-primary px-7 py-3 text-sm font-bold inline-flex items-center gap-2">
                 <FaBriefcase /> Browse Jobs
               </Link>
-              <a href="mailto:info@eventopic.com" className="px-7 py-3 rounded-full border border-[var(--border)] text-[var(--text-secondary)] hover:text-white hover:border-[var(--primary)] text-sm font-bold transition-all flex items-center gap-2">
+              <a href="mailto:info@eventopic.com" className="px-7 py-3 rounded-full border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)] text-sm font-bold transition-all flex items-center gap-2">
                 <FaEnvelope /> Get in Touch
               </a>
             </div>
@@ -66,7 +65,7 @@ export default function Footer() {
             <div className="col-span-2 md:col-span-1">
               <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-3">Eventopic</p>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-                Dubai's #1 event staffing platform. Connecting talented professionals with exclusive event opportunities since 2021.
+                A UAE staffing platform connecting people with event, promotion and part-time work across Dubai and the Emirates. Built by a small team, launched in 2025.
               </p>
               <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                 <FaMapMarkerAlt className="text-[var(--accent)] text-[10px]" />
@@ -117,7 +116,7 @@ export default function Footer() {
                   <li key={s.label}>
                     <a href={s.href} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors group">
-                      <span className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-[var(--primary)]/10 transition-colors text-xs">
+                      <span className="w-7 h-7 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center group-hover:bg-[var(--primary-muted)] transition-colors text-xs">
                         {s.icon}
                       </span>
                       {s.label}
@@ -142,15 +141,15 @@ export default function Footer() {
         <div className="container mx-auto px-5 max-w-5xl flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-[var(--text-muted)]">
           <p>© {year} Eventopic. All rights reserved.</p>
           <div className="flex items-center gap-5">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-[var(--primary)] transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-[var(--primary)] transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>
 
       {/* Giant watermark */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none opacity-[0.025] select-none">
-        <p className="text-[18vw] font-display font-black leading-none text-center text-white whitespace-nowrap">
+        <p className="text-[18vw] font-display font-black leading-none text-center text-[var(--primary)] whitespace-nowrap">
           EVENTOPIC
         </p>
       </div>

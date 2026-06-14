@@ -2,46 +2,48 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { Inter } from "next/font/google";
-import { Space_Grotesk } from "next/font/google";
+import { Sora } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { AuthProvider } from "../contexts/AuthContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 
-const inter = Inter({
+// Display — geometric, modern, luxurious (headings, hero, gradient titles).
+const sora = Sora({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-inter",
+  variable: "--font-sora",
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
+// Body — refined humanist sans for readable copy.
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-space-grotesk",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://eventopic.com"),
-  title: "Eventopic - Professional Event Staffing Solutions in Dubai | Hire Promoters, Models & Staff",
+  title: "Eventopic — Event Staff, Promotions & Part-Time Jobs in the UAE",
   description:
-    "Leading event staffing agency in Dubai. Hire verified promoters, models, event staff, waitstaff, and hospitality professionals quickly. Trusted by top brands for premium staffing services.",
+    "Eventopic is a UAE staffing platform connecting hostesses, promoters, models and hospitality staff with events, promotions and part-time work across Dubai and the Emirates. Browse jobs or hire reliable staff.",
   keywords:
-    "event staffing Dubai, hire promoters Dubai, event staff agency, models for hire Dubai, hospitality staffing, brand ambassadors Dubai, waitstaff Dubai, event jobs Dubai, temporary staff Dubai, professional staffing services",
+    "event staff UAE, part time jobs Dubai, promotion staff Dubai, hire promoters Dubai, hostesses Dubai, event jobs Dubai, hospitality staff, brand ambassadors, models Dubai, staffing UAE",
   openGraph: {
-    title: "Eventopic - Premium Event Staffing Platform in Dubai",
+    title: "Eventopic — Staffing for Events, Promotions & Part-Time Work in the UAE",
     description:
-      "Connect with 2,500+ verified professionals for events. Quick hiring for promoters, models, staff in 24-48 hours. Reliable & efficient.",
+      "Browse event, promotion and part-time jobs across the UAE, or hire reliable staff. A simple platform built by a small Dubai team.",
     images: ["/og-image.png"],
     type: "website",
     url: "https://eventopic.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Eventopic - Event Staffing Experts in Dubai",
-    description: "Hire top-tier event staff, promoters, and models instantly. Verified professionals for your events.",
+    title: "Eventopic — UAE Event, Promo & Part-Time Staffing",
+    description: "Find event, promotion and part-time work in the UAE — or hire vetted staff.",
     images: ["/og-image.png"],
   },
   robots: "index, follow",
@@ -56,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${sora.variable} ${jakarta.variable}`}>
       <head>
         {/* Enhanced Google Analytics */}
         <Script
@@ -79,7 +81,7 @@ export default function RootLayout({
             name: "Eventopic",
             url: "https://eventopic.com",
             logo: "https://eventopic.com/logo.png",
-            description: "Premier event staffing platform in Dubai connecting businesses with verified professionals.",
+            description: "A UAE staffing platform connecting people with event, promotion and part-time work across Dubai and the Emirates.",
             address: {
               "@type": "PostalAddress",
               addressLocality: "Dubai",
@@ -94,7 +96,7 @@ export default function RootLayout({
           })}
         </Script>
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${jakarta.className} antialiased`}>
         <ThemeProvider>
           <AuthProvider>
             {children}

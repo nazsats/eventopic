@@ -65,7 +65,9 @@ export function validateName(name: string): string {
         throw new Error('Name must be at least 2 characters');
     }
 
-    if (!/^[a-zA-Z\s'-]+$/.test(sanitized)) {
+    // Allow Unicode letters (Arabic, accented Latin, etc.) plus spaces,
+    // apostrophes and hyphens — UAE audience has many non-ASCII names.
+    if (!/^[\p{L}\p{M}\s'-]+$/u.test(sanitized)) {
         throw new Error('Name contains invalid characters');
     }
 

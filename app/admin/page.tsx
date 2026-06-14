@@ -4,7 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, query, where, orderBy, limit } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { logActivity } from "../../lib/activityLog";
 import type { ActivityLogEntry } from "../../lib/activityLog";
@@ -111,7 +111,6 @@ export default function Admin() {
   const [newRequirement, setNewRequirement] = useState("");
   const [newBenefit, setNewBenefit] = useState("");
 
-  const SUPER_ADMIN_EMAIL = "test1@gmail.com";
   const normalize = (str?: string) => str?.toLowerCase().trim() || "";
   const availableTabs = isSuperAdmin ? SUPER_ADMIN_TABS : ADMIN_TABS;
 
@@ -155,21 +154,16 @@ export default function Admin() {
             addedBy: d.data().addedBy, addedAt: d.data().addedAt,
           }));
 
-          // Seed if empty
+          // Seed if empty — admin docs are keyed by (lowercased) email so the
+          // Firestore rule exists(admins/{email}) matches. See scripts/migrate-admins.js.
           if (adminsSnap.empty) {
-            const initEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(",").map(e => e.trim()) || ["ansarinazrul91@gmail.com"];
+            const initEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(",").map(e => e.trim()).filter(Boolean)) || [];
             for (const email of initEmails) {
-              await addDoc(collection(db, "admins"), { email, role: "super_admin", addedAt: new Date().toISOString() });
+              const key = normalize(email);
+              await setDoc(doc(db, "admins", key), { email: key, role: "super_admin", addedAt: new Date().toISOString() });
             }
             const snap2 = await getDocs(collection(db, "admins"));
             records = snap2.docs.map(d => ({ id: d.id, email: d.data().email, role: d.data().role || "admin", addedBy: d.data().addedBy, addedAt: d.data().addedAt }));
-          }
-
-          // Ensure super admin email has super_admin role
-          const superRec = records.find(r => normalize(r.email) === normalize(SUPER_ADMIN_EMAIL));
-          if (superRec && superRec.role !== "super_admin") {
-            await updateDoc(doc(db, "admins", superRec.id), { role: "super_admin" });
-            superRec.role = "super_admin";
           }
 
           setAdminRecords(records);
@@ -181,7 +175,7 @@ export default function Admin() {
           }
 
           const myRec = records.find(r => normalize(r.email) === normalize(user.email || ""));
-          const amISuperAdmin = myRec?.role === "super_admin" || normalize(user.email || "") === normalize(SUPER_ADMIN_EMAIL);
+          const amISuperAdmin = myRec?.role === "super_admin";
           setIsSuperAdmin(amISuperAdmin);
           setMyRole(amISuperAdmin ? "super_admin" : "admin");
           setIsAdmin(true);
@@ -278,9 +272,10 @@ export default function Admin() {
       toast.error("This email is already an admin."); return;
     }
     try {
-      const newRec = { email: newAdminEmail, role: newAdminRole, addedBy: user?.email || "", addedAt: new Date().toISOString() };
-      const docRef = await addDoc(collection(db, "admins"), newRec);
-      setAdminRecords([...adminRecords, { id: docRef.id, ...newRec }]);
+      const key = normalize(newAdminEmail);
+      const newRec = { email: key, role: newAdminRole, addedBy: user?.email || "", addedAt: new Date().toISOString() };
+      await setDoc(doc(db, "admins", key), newRec);
+      setAdminRecords([...adminRecords, { id: key, ...newRec }]);
       setNewAdminEmail("");
       toast.success(`Admin added as ${newAdminRole}!`);
       await logActivity({ actorEmail: user?.email || "", actorRole: myRole, action: "added_admin", category: "admins", targetLabel: newAdminEmail, details: `Role: ${newAdminRole}` });
@@ -434,7 +429,7 @@ export default function Admin() {
                 onClick={() => setSelectedTab(tab)}
                 className={`px-4 md:px-6 py-3 rounded-lg font-bold transition-all whitespace-nowrap flex items-center gap-2 ${selectedTab === tab
                   ? "bg-[var(--primary)] text-white shadow-lg"
-                  : "text-[var(--text-secondary)] hover:text-white"}`}
+                  : "text-[var(--text-secondary)] hover:text-[var(--primary)]"}`}
               >
                 {TAB_ICONS[tab]}
                 <span className="hidden sm:inline">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
@@ -1150,14 +1145,14 @@ export default function Admin() {
                         Showing {(usersPage - 1) * usersPerPage + 1}–{Math.min(usersPage * usersPerPage, filteredUsers.length)} of {filteredUsers.length}
                       </p>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => setUsersPage(p => Math.max(1, p - 1))} disabled={usersPage === 1} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-white disabled:opacity-30 transition-colors text-sm">‹</button>
+                        <button onClick={() => setUsersPage(p => Math.max(1, p - 1))} disabled={usersPage === 1} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] disabled:opacity-30 transition-colors text-sm">‹</button>
                         {Array.from({ length: Math.min(totalUserPages, 7) }, (_, i) => {
                           const pg = totalUserPages <= 7 ? i + 1 : usersPage <= 4 ? i + 1 : Math.min(usersPage - 3 + i, totalUserPages);
                           return (
-                            <button key={pg} onClick={() => setUsersPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${usersPage === pg ? "bg-[var(--primary)] text-white" : "glass-card text-[var(--text-secondary)] hover:text-white"}`}>{pg}</button>
+                            <button key={pg} onClick={() => setUsersPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${usersPage === pg ? "bg-[var(--primary)] text-white" : "glass-card text-[var(--text-secondary)] hover:text-[var(--primary)]"}`}>{pg}</button>
                           );
                         })}
-                        <button onClick={() => setUsersPage(p => Math.min(totalUserPages, p + 1))} disabled={usersPage === totalUserPages} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-white disabled:opacity-30 transition-colors text-sm">›</button>
+                        <button onClick={() => setUsersPage(p => Math.min(totalUserPages, p + 1))} disabled={usersPage === totalUserPages} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] disabled:opacity-30 transition-colors text-sm">›</button>
                       </div>
                     </div>
                   )}
@@ -1299,14 +1294,14 @@ export default function Admin() {
                         Showing {(activityPage - 1) * logsPerPage + 1}–{Math.min(activityPage * logsPerPage, filteredLogs.length)} of {filteredLogs.length}
                       </p>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => setActivityPage(p => Math.max(1, p - 1))} disabled={activityPage === 1} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-white disabled:opacity-30 transition-colors text-sm">‹</button>
+                        <button onClick={() => setActivityPage(p => Math.max(1, p - 1))} disabled={activityPage === 1} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] disabled:opacity-30 transition-colors text-sm">‹</button>
                         {Array.from({ length: Math.min(totalLogPages, 7) }, (_, i) => {
                           const pg = totalLogPages <= 7 ? i + 1 : activityPage <= 4 ? i + 1 : Math.min(activityPage - 3 + i, totalLogPages);
                           return (
-                            <button key={pg} onClick={() => setActivityPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${activityPage === pg ? "bg-[var(--primary)] text-white" : "glass-card text-[var(--text-secondary)] hover:text-white"}`}>{pg}</button>
+                            <button key={pg} onClick={() => setActivityPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${activityPage === pg ? "bg-[var(--primary)] text-white" : "glass-card text-[var(--text-secondary)] hover:text-[var(--primary)]"}`}>{pg}</button>
                           );
                         })}
-                        <button onClick={() => setActivityPage(p => Math.min(totalLogPages, p + 1))} disabled={activityPage === totalLogPages} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-white disabled:opacity-30 transition-colors text-sm">›</button>
+                        <button onClick={() => setActivityPage(p => Math.min(totalLogPages, p + 1))} disabled={activityPage === totalLogPages} className="w-8 h-8 rounded-lg glass-card flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] disabled:opacity-30 transition-colors text-sm">›</button>
                       </div>
                     </div>
                   )}

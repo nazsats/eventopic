@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import AuthModal from "./AuthModal";
-import ThemeSwitcher from "./ThemeSwitcher";
 import { toast } from "sonner";
-import { collection, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import {
   FaBars, FaTimes, FaBriefcase, FaChartPie,
@@ -19,7 +18,6 @@ const PUBLIC_NAV = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
-  { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -35,10 +33,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
   const { user, loading, signOut } = useAuth();
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -50,15 +46,15 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close menu on route change
   useEffect(() => { setIsMenuOpen(false); }, [pathname]);
 
+  // Single cheap doc read (new rules let a user read only their own admin doc).
   useEffect(() => {
     const checkAdmin = async () => {
       if (!user?.email) { setIsAdmin(false); return; }
       try {
-        const snap = await getDocs(collection(db, "admins"));
-        setIsAdmin(snap.docs.some(d => d.data().email === user.email));
+        const snap = await getDoc(doc(db, "admins", user.email.toLowerCase()));
+        setIsAdmin(snap.exists());
       } catch { setIsAdmin(false); }
     };
     checkAdmin();
@@ -80,7 +76,6 @@ export default function Navbar() {
 
   if (loading) return null;
 
-  // Avatar initials
   const avatarChar = user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || "U";
 
   return (
@@ -91,8 +86,8 @@ export default function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${scrolled
-            ? "bg-[var(--background)]/85 backdrop-blur-xl border-b border-[var(--border)] shadow-lg"
-            : "bg-transparent"
+          ? "bg-[var(--surface)]/80 backdrop-blur-xl border-b border-[var(--border)] shadow-[var(--shadow-sm)]"
+          : "bg-transparent"
           }`}
       >
         <div className="container mx-auto px-4 max-w-6xl">
@@ -100,8 +95,8 @@ export default function Navbar() {
 
             {/* ── Logo ── */}
             <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <span className="text-black font-black text-sm leading-none">E</span>
+              <div className="w-9 h-9 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center shadow-[var(--shadow-sm)] group-hover:scale-110 transition-transform duration-300">
+                <span className="text-white font-black text-sm leading-none">E</span>
               </div>
               <span className="font-display font-bold text-lg text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">
                 Eventopic
@@ -117,15 +112,15 @@ export default function Navbar() {
                     key={item.href}
                     href={item.href}
                     className={`relative px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${active
-                        ? "text-[var(--primary)] bg-[var(--primary)]/10"
-                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5"
+                      ? "text-[var(--primary)]"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--primary-muted)]"
                       }`}
                   >
                     {item.label}
                     {active && (
                       <motion.div
                         layoutId="nav-pill"
-                        className="absolute inset-0 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 -z-10"
+                        className="absolute inset-0 rounded-full bg-[var(--primary-muted)] border border-[var(--border-hover)] -z-10"
                       />
                     )}
                   </Link>
@@ -144,8 +139,8 @@ export default function Navbar() {
                         key={item.href}
                         href={item.href}
                         className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${active
-                            ? "bg-[var(--primary)] text-black shadow-[0_0_14px_rgba(0,212,255,0.35)]"
-                            : "bg-white/5 text-[var(--text-secondary)] hover:bg-white/10 hover:text-[var(--text-primary)] border border-[var(--border)]"
+                          ? "bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-glow)]"
+                          : "bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--primary)] border border-[var(--border)]"
                           }`}
                       >
                         <span className="text-[11px]">{item.icon}</span>
@@ -156,17 +151,14 @@ export default function Navbar() {
                 </div>
               )}
 
-              <ThemeSwitcher />
-
               {user ? (
                 <div className="flex items-center gap-2 ml-1">
-                  {/* Avatar */}
-                  <Link href="/profile" className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-black font-bold text-sm hover:scale-110 transition-transform shadow-md">
+                  <Link href="/profile" className="w-9 h-9 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white font-bold text-sm hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
                     {avatarChar}
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-2 py-1.5 rounded-lg hover:bg-white/5"
+                    className="text-xs text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors px-2 py-1.5 rounded-lg hover:bg-[var(--primary-muted)]"
                   >
                     Sign Out
                   </button>
@@ -176,7 +168,7 @@ export default function Navbar() {
                   <button onClick={() => setIsModalOpen(true)} className="text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-3 py-1.5">
                     Sign In
                   </button>
-                  <button onClick={() => setIsModalOpen(true)} className="btn-primary text-xs px-5 py-2 rounded-full font-bold shadow-[0_0_18px_rgba(0,212,255,0.25)] hover:shadow-[0_0_28px_rgba(0,212,255,0.4)] transition-all">
+                  <button onClick={() => setIsModalOpen(true)} className="btn-primary text-xs px-5 py-2 rounded-full">
                     Join Free
                   </button>
                 </div>
@@ -185,21 +177,18 @@ export default function Navbar() {
 
             {/* ── Mobile right side ── */}
             <div className="flex lg:hidden items-center gap-2">
-              <ThemeSwitcher />
-              {/* Mobile avatar or sign-in pill */}
               {user ? (
-                <button onClick={() => setIsMenuOpen(true)} className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-black font-bold text-sm shadow-md">
+                <button onClick={() => setIsMenuOpen(true)} className="w-9 h-9 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white font-bold text-sm shadow-[var(--shadow-sm)]">
                   {avatarChar}
                 </button>
               ) : (
-                <button onClick={() => setIsModalOpen(true)} className="text-xs font-bold text-[var(--primary)] border border-[var(--primary)]/30 px-3.5 py-1.5 rounded-full hover:bg-[var(--primary)]/10 transition-all">
+                <button onClick={() => setIsModalOpen(true)} className="text-xs font-bold text-[var(--primary)] border border-[var(--border-hover)] px-3.5 py-1.5 rounded-full hover:bg-[var(--primary-muted)] transition-all">
                   Sign In
                 </button>
               )}
-              {/* Hamburger */}
               <button
                 onClick={() => setIsMenuOpen(v => !v)}
-                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/10 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-all"
                 aria-label="Toggle menu"
               >
                 {isMenuOpen ? <FaTimes size={15} /> : <FaBars size={15} />}
@@ -213,45 +202,39 @@ export default function Navbar() {
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               key="backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[110] bg-[#1E1233]/40 backdrop-blur-sm lg:hidden"
               onClick={() => setIsMenuOpen(false)}
             />
 
-            {/* Drawer */}
             <motion.div
               key="drawer"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 w-[80vw] max-w-[320px] z-[120] bg-[var(--surface)] border-l border-[var(--border)] flex flex-col lg:hidden shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 w-[80vw] max-w-[320px] z-[120] bg-[var(--surface)] border-l border-[var(--border)] flex flex-col lg:hidden shadow-[var(--shadow-lg)]"
             >
-              {/* Drawer header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
                 <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center">
-                    <span className="text-black font-black text-xs">E</span>
+                  <div className="w-7 h-7 rounded-lg bg-[image:var(--gradient-primary)] flex items-center justify-center">
+                    <span className="text-white font-black text-xs">E</span>
                   </div>
                   <span className="font-display font-bold text-base text-[var(--text-primary)]">Eventopic</span>
                 </Link>
-                <button onClick={() => setIsMenuOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all">
+                <button onClick={() => setIsMenuOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-muted)] transition-all">
                   <FaTimes size={15} />
                 </button>
               </div>
 
-              {/* Drawer body */}
               <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-
-                {/* User info */}
                 {user && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-white/4 border border-[var(--border)]">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-black font-bold text-base shrink-0">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
+                    <div className="w-10 h-10 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white font-bold text-base shrink-0">
                       {avatarChar}
                     </div>
                     <div className="min-w-0">
@@ -261,7 +244,6 @@ export default function Navbar() {
                   </div>
                 )}
 
-                {/* Public nav */}
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2.5 px-1">Menu</p>
                   <div className="space-y-1">
@@ -273,8 +255,8 @@ export default function Navbar() {
                           href={item.href}
                           onClick={() => setIsMenuOpen(false)}
                           className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${active
-                              ? "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20"
-                              : "text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]"
+                            ? "bg-[var(--primary-muted)] text-[var(--primary)] border border-[var(--border-hover)]"
+                            : "text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text-primary)]"
                             }`}
                         >
                           {item.label}
@@ -285,7 +267,6 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                {/* User apps */}
                 {user && (
                   <div>
                     <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2.5 px-1">My Account</p>
@@ -298,8 +279,8 @@ export default function Navbar() {
                             href={item.href}
                             onClick={() => setIsMenuOpen(false)}
                             className={`flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${active
-                                ? "bg-[var(--primary)] text-black shadow-[0_0_12px_rgba(0,212,255,0.3)]"
-                                : "bg-white/5 text-[var(--text-secondary)] hover:bg-white/10 hover:text-[var(--text-primary)] border border-[var(--border)]"
+                              ? "bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-glow)]"
+                              : "bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--primary)] border border-[var(--border)]"
                               }`}
                           >
                             <span className="text-base">{item.icon}</span>
@@ -312,12 +293,11 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* Drawer footer */}
               <div className="px-4 py-4 border-t border-[var(--border)]">
                 {user ? (
                   <button
                     onClick={handleSignOut}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/8 border border-[var(--border)] transition-all"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/8 border border-[var(--border)] transition-all"
                   >
                     <FaSignOutAlt className="text-xs" /> Sign Out
                   </button>
@@ -325,7 +305,7 @@ export default function Navbar() {
                   <div className="space-y-2">
                     <button
                       onClick={() => { setIsModalOpen(true); setIsMenuOpen(false); }}
-                      className="w-full btn-primary py-2.5 text-sm font-bold rounded-xl"
+                      className="w-full btn-primary py-2.5 text-sm rounded-xl"
                     >
                       Join Free
                     </button>

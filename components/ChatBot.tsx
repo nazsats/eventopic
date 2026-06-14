@@ -46,7 +46,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
     // Bold heading lines (e.g. **Title**)
     if (line.startsWith("## ") || line.startsWith("### ")) {
       result.push(
-        <p key={lineIdx} className="font-bold text-white mt-2">
+        <p key={lineIdx} className="font-bold text-[var(--text-primary)] mt-2">
           {inlineMarkdown(line.replace(/^#{2,3} /, ""))}
         </p>
       );
@@ -82,7 +82,7 @@ function inlineMarkdown(text: string): React.ReactNode {
     }
     if (match[1] !== undefined) {
       // bold
-      parts.push(<strong key={match.index} className="text-white font-semibold">{match[1]}</strong>);
+      parts.push(<strong key={match.index} className="text-[var(--text-primary)] font-semibold">{match[1]}</strong>);
     } else if (match[2] !== undefined) {
       // link
       parts.push(
@@ -91,7 +91,7 @@ function inlineMarkdown(text: string): React.ReactNode {
           href={match[3]}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline text-[var(--primary)] hover:text-white transition-colors"
+          className="underline text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
         >
           {match[2]}
         </a>
@@ -320,7 +320,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(0,212,255,0.4)] hover:shadow-[0_0_40px_rgba(0,212,255,0.6)] transition-shadow"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-shadow"
             aria-label="Open AI Chat"
           >
             {/* Pulse ring */}
@@ -351,21 +351,21 @@ export default function ChatBot() {
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-400 border-2 border-[var(--surface)]" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white leading-none">Eventopic AI</p>
+                  <p className="text-sm font-bold text-[var(--text-primary)] leading-none">Eventopic AI</p>
                   <p className="text-[10px] text-[var(--primary)] mt-0.5 leading-none">● Online · Powered by GPT-4o</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleClear}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-light)] hover:text-white transition-colors"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-elevated)] hover:text-[var(--primary)] transition-colors"
                   title="Clear conversation"
                 >
                   <FaTrash size={13} />
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-light)] hover:text-white transition-colors"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-elevated)] hover:text-[var(--primary)] transition-colors"
                   aria-label="Close chat"
                 >
                   <FaTimes size={15} />
@@ -429,7 +429,7 @@ export default function ChatBot() {
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   whileTap={{ scale: 0.9 }}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-[0_0_16px_rgba(0,212,255,0.4)] transition-shadow flex-shrink-0"
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-[0_0_16px_rgba(124,58,237,0.4)] transition-shadow flex-shrink-0"
                 >
                   {isLoading ? (
                     <FaSpinner className="animate-spin" size={14} />

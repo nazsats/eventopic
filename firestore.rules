@@ -1,88 +1,119 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if user is authenticated
+
+    // ─────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    // Helper function to check if user is admin
+
+    // Lowercased so it matches admin docs keyed by a normalized email.
+    function userEmail() {
+      return request.auth.token.email.lower();
+    }
+
+    // Admin docs are keyed by the admin's email (see scripts/migrate-admins.js).
+    // exists() is cheap and never throws, unlike get().data on a missing doc.
+    function adminDoc() {
+      return get(/databases/$(database)/documents/admins/$(userEmail()));
+    }
+
     function isAdmin() {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/admins/$(request.auth.token.email)).data.email == request.auth.token.email;
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/admins/$(userEmail()));
     }
-    
-    // Helper function to check if user is super admin
+
     function isSuperAdmin() {
-      return isAuthenticated() && request.auth.token.email == 'test1@gmail.com';
+      return isAdmin() && adminDoc().data.role == 'super_admin';
     }
-    
-    // Users collection - users can only read/write their own profile
+
+    // Field-level guards
+    function isString(v, max) {
+      return v is string && v.size() <= max;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // users — owner or admin only. Protects PII (phone, DOB, visa,
+    // passport expiry, measurements, health notes, photos).
+    // ─────────────────────────────────────────────────────────────
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && request.auth.uid == userId;
-      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create, update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
     }
-    
-    // User skills collection - users can only read/write their own skills
+
+    // user_skills — owner or admin only
     match /user_skills/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && request.auth.uid == userId;
-      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create, update, delete: if isAuthenticated() && request.auth.uid == userId;
     }
-    
-    // Admins collection - only admins can read, super admin can write
-    match /admins/{adminDoc} {
-      allow read: if isAdmin() || isSuperAdmin();
-      allow write: if isSuperAdmin();
-      allow create: if isSuperAdmin();
-      allow delete: if isSuperAdmin();
+
+    // ─────────────────────────────────────────────────────────────
+    // admins — a user may read ONLY their own admin doc (to discover
+    // their own role cheaply); admins may read all; super admins write.
+    // ─────────────────────────────────────────────────────────────
+    match /admins/{adminEmail} {
+      allow read: if isAuthenticated()
+                    && (adminEmail == userEmail() || isAdmin());
+      allow create, update, delete: if isSuperAdmin();
     }
-    
-    // Jobs collection - public read, admin write
+
+    // ─────────────────────────────────────────────────────────────
+    // jobs — public read; admins write their own (super admins, any)
+    // ─────────────────────────────────────────────────────────────
     match /jobs/{jobId} {
-      allow read: if true; // Public read for job listings
-      allow create: if isAdmin();
-      allow update: if isAdmin() && 
-                      (isSuperAdmin() || resource.data.postedBy == request.auth.token.email);
-      allow delete: if isAdmin() && 
-                      (isSuperAdmin() || resource.data.postedBy == request.auth.token.email);
+      allow read: if true;
+      allow create: if isAdmin()
+                      && request.resource.data.postedBy == userEmail();
+      allow update, delete: if isAdmin()
+                      && (isSuperAdmin() || resource.data.postedBy == userEmail());
     }
-    
-    // Applications collection - users can create, admins and applicants can read
+
+    // ─────────────────────────────────────────────────────────────
+    // applications — applicant creates own; applicant + admin read;
+    // only admins change status.
+    // ─────────────────────────────────────────────────────────────
     match /applications/{appId} {
-      allow create: if isAuthenticated() && 
-                      request.resource.data.userEmail == request.auth.token.email;
-      allow read: if isAuthenticated() && 
-                    (isAdmin() || resource.data.userEmail == request.auth.token.email);
-      allow update: if isAdmin(); // Only admins can update status
-      allow delete: if isAdmin();
+      allow create: if isAuthenticated()
+                      && request.resource.data.userEmail == userEmail()
+                      && request.resource.data.userId == request.auth.uid
+                      && isString(request.resource.data.jobId, 200)
+                      && isString(request.resource.data.whyYou, 5000);
+      allow read: if isAuthenticated()
+                    && (isAdmin() || resource.data.userEmail == userEmail());
+      allow update, delete: if isAdmin();
     }
-    
-    // Staff inquiries - authenticated users can create, admins can read/update
+
+    // ─────────────────────────────────────────────────────────────
+    // staff_inquiries / leads — auth users create; admins manage.
+    // (leads also written in bulk by admins via CSV import)
+    // ─────────────────────────────────────────────────────────────
     match /staff_inquiries/{inquiryId} {
       allow create: if isAuthenticated();
-      allow read: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read, update, delete: if isAdmin();
     }
-    
-    // Client leads - authenticated users can create, admins can read/update
+
     match /leads/{leadId} {
       allow create: if isAuthenticated();
-      allow read: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read, update, delete: if isAdmin();
     }
-    
-    // Settings collection - admins only
+
+    // settings (company profile) — admins only
     match /settings/{settingId} {
-      allow read: if isAdmin();
+      allow read: if true; // public company info shown on site
       allow write: if isAdmin();
     }
-    
-    // Default deny all other collections
+
+    // activity logs — admins read; created by admin actions
+    match /activityLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false; // logs are immutable
+    }
+
+    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
