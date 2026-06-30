@@ -152,11 +152,11 @@ Stand Speakers, MCs/Anchors, Hostesses, VIP Hostesses, Promoters, Sales Promoter
 - First: complete your profile at /profile (photos, Emirates ID, experience)
 - Then: browse and apply at /jobs
 - Payment: AED-based, timely direct transfers
-- Support: 24/7 via WhatsApp or info@eventopic.com
+- Support: via info@eventopic.com or Instagram DM (@eventopic_official)
 
 ## For Clients (Event Organizers)
 - Email: info@eventopic.com
-- WhatsApp: https://chat.whatsapp.com/CvC6QGyQlKFEz5s9vhJRXC
+- Instagram: @eventopic_official
 - Contact form: /contact
 - We staff corporate events, exhibitions, product launches, promotions, activations and part-time roles
 
@@ -172,7 +172,7 @@ Stand Speakers, MCs/Anchors, Hostesses, VIP Hostesses, Promoters, Sales Promoter
 - Location: Business Bay, Dubai, UAE
 - Hours: Mon–Fri 9am–6pm (24/7 support available)
 - Instagram: @eventopic_official
-- WhatsApp: https://chat.whatsapp.com/CvC6QGyQlKFEz5s9vhJRXC
+- LinkedIn: linkedin.com/company/eventopic
 
 ---
 

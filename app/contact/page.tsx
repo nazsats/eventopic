@@ -12,14 +12,14 @@ import Confetti from "react-confetti";
 import {
   FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaBriefcase,
   FaPaperPlane, FaCalendarAlt, FaBuilding, FaFileAlt,
-  FaWhatsapp, FaArrowRight, FaClock, FaCheckCircle, FaRedo,
+  FaInstagram, FaLinkedin, FaArrowRight, FaCheckCircle, FaRedo,
 } from "react-icons/fa";
 
 const INFO_CARDS = [
-  { icon: <FaWhatsapp />, title: "WhatsApp", detail: "Join our community", sub: "Fastest way to reach us", link: "https://chat.whatsapp.com/CvC6QGyQlKFEz5s9vhJRXC" },
+  { icon: <FaInstagram />, title: "Instagram", detail: "@eventopic_official", sub: "Follow & DM us", link: "https://instagram.com/eventopic_official" },
+  { icon: <FaLinkedin />, title: "LinkedIn", detail: "Eventopic", sub: "Connect with us", link: "https://www.linkedin.com/company/eventopic" },
   { icon: <FaEnvelope />, title: "Email", detail: "info@eventopic.com", sub: "We reply within a day", link: "mailto:info@eventopic.com" },
-  { icon: <FaMapMarkerAlt />, title: "Based in", detail: "Dubai, UAE", sub: "Working across all 7 emirates" },
-  { icon: <FaClock />, title: "Hours", detail: "Mon – Sat", sub: "9 am – 6 pm GST" },
+  { icon: <FaMapMarkerAlt />, title: "Based in", detail: "Dubai, UAE", sub: "Across all 7 emirates" },
 ];
 
 const INPUT = "w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-muted)] transition-all";

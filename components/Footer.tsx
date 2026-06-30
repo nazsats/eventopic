@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  FaInstagram, FaLinkedin, FaWhatsapp,
+  FaInstagram, FaLinkedin,
   FaArrowRight, FaBriefcase, FaEnvelope, FaMapMarkerAlt,
 } from "react-icons/fa";
 
@@ -18,8 +18,7 @@ const NAV_LINKS = [
 
 const SOCIALS = [
   { icon: <FaInstagram />, label: "Instagram", href: "https://instagram.com/eventopic_official" },
-  { icon: <FaWhatsapp />, label: "WhatsApp Community", href: "https://chat.whatsapp.com/CvC6QGyQlKFEz5s9vhJRXC" },
-  { icon: <FaLinkedin />, label: "LinkedIn", href: "#" },
+  { icon: <FaLinkedin />, label: "LinkedIn", href: "https://www.linkedin.com/company/eventopic" },
 ];
 
 export default function Footer() {
