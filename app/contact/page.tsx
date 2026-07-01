@@ -83,7 +83,7 @@ export default function Contact() {
 
   return (
     <div className="bg-[var(--background)] min-h-screen">
-      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={300} gravity={0.25} colors={["#7C3AED", "#A855F7", "#C084FC", "#E9D5FF", "#ffffff"]} className="!fixed !z-[400]" />}
+      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={300} gravity={0.25} colors={["#C9A84C", "#0B132B", "#00A896", "#E0C878", "#ffffff"]} className="!fixed !z-[400]" />}
       <CursorGlow />
       <Navbar />
 

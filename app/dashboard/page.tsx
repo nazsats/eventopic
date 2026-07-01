@@ -198,7 +198,7 @@ export default function Dashboard() {
 
   return (
     <div className="bg-[var(--background)] min-h-screen">
-      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={320} gravity={0.25} colors={["#7C3AED", "#A855F7", "#C084FC", "#22C55E", "#ffffff"]} className="!fixed !z-[400]" />}
+      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={320} gravity={0.25} colors={["#C9A84C", "#0B132B", "#22C55E", "#E0C878", "#ffffff"]} className="!fixed !z-[400]" />}
       <CursorGlow />
       <Navbar />
 
@@ -258,7 +258,7 @@ export default function Dashboard() {
               { label: "Applications", value: total, icon: <FaPaperPlane />, color: "var(--primary)" },
               { label: "Pending", value: pendingApps, icon: <FaHourglassHalf />, color: "#F59E0B" },
               { label: "Accepted", value: acceptedApps, icon: <FaCheckCircle />, color: "#22C55E" },
-              { label: "Accept rate", value: acceptRate, suffix: "%", icon: <FaStar />, color: "#A855F7" },
+              { label: "Accept rate", value: acceptRate, suffix: "%", icon: <FaStar />, color: "#3B82F6" },
             ].map((s, i) => (
               <motion.div key={s.label} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} whileHover={{ y: -5 }}
                 className="group relative glass-card p-5 rounded-2xl overflow-hidden">
@@ -320,7 +320,7 @@ export default function Dashboard() {
                       transition={{ duration: 1.1, ease: "easeOut" }} />
                     <defs>
                       <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#7C3AED" /><stop offset="100%" stopColor="#C084FC" />
+                        <stop offset="0%" stopColor="#2563EB" /><stop offset="100%" stopColor="#60A5FA" />
                       </linearGradient>
                     </defs>
                   </svg>

@@ -1,58 +1,188 @@
 /* ============================================================
-   Eventopic — "Pearl & Royal Purple" luxury light theme
+   Eventopic — luxury multi-theme (5 switchable palettes, default Dubai Luxury)
    Fonts (Sora display + Plus Jakarta Sans body) loaded via
    next/font in app/layout.tsx and exposed as CSS variables.
    ============================================================ */
 @import "tailwindcss";
 
 :root {
-  /* Typography */
+  /* Typography (shared across all themes) */
   --font-display: var(--font-sora), 'Sora', system-ui, sans-serif;
   --font-heading: var(--font-sora), 'Sora', system-ui, sans-serif;
   --font-body: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
-  /* Surfaces — pearl white & soft lavender */
-  --background: #FBFAFF;
+  /* ── Theme 1: Dubai Luxury (default) — navy + gold + teal ── */
+  --background: #FAF8F4;
   --surface: #FFFFFF;
-  --surface-elevated: #F5F2FD;
-  --surface-light: #EBE5FA;
+  --surface-elevated: #F2EEE6;
+  --surface-light: #E7E0D3;
+  --primary: #0B132B;
+  --primary-hover: #1C2B4A;
+  --primary-muted: rgba(11, 19, 43, 0.07);
+  --accent: #C9A84C;
+  --accent-hover: #B4923A;
+  --accent-muted: rgba(201, 168, 76, 0.15);
+  --secondary: #00A896;
+  --secondary-muted: rgba(0, 168, 150, 0.10);
+  --text-primary: #1E293B;
+  --text-secondary: #55607A;
+  --text-muted: #94A0B8;
+  --text-accent: var(--accent);
+  --border: rgba(11, 19, 43, 0.12);
+  --border-hover: rgba(201, 168, 76, 0.50);
+  --shadow-sm: 0 2px 12px rgba(11, 19, 43, 0.06);
+  --shadow-md: 0 12px 34px rgba(11, 19, 43, 0.10);
+  --shadow-lg: 0 28px 64px rgba(11, 19, 43, 0.16);
+  --shadow-glow: 0 0 40px rgba(201, 168, 76, 0.28);
+  --gradient-primary: linear-gradient(135deg, #0B132B 0%, #1C2B4A 100%);
+  --gradient-heading: linear-gradient(120deg, #0B132B, #C9A84C, #E0C878, #C9A84C, #0B132B);
+  --gradient-animated: linear-gradient(120deg, #0B132B, #16213E, #00A896, #16213E, #0B132B);
+  --gradient-accent: linear-gradient(135deg, #C9A84C 0%, #E0C878 100%);
+  --gradient-surface: linear-gradient(160deg, #FFFFFF 0%, #F2EEE6 100%);
+  --gradient-royal: linear-gradient(120deg, #0B132B, #1C2B4A, #C9A84C);
+  --gradient-mesh: radial-gradient(circle at 15% 18%, rgba(11, 19, 43, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 12%, rgba(201, 168, 76, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 92%, rgba(0, 168, 150, 0.08) 0%, transparent 50%);
+}
 
-  /* Primary — rich royal purple */
-  --primary: #7C3AED;
-  --primary-hover: #6D28D9;
-  --primary-muted: rgba(124, 58, 237, 0.10);
+/* ── Theme 2: Hospitality Premium — navy + gold ── */
+[data-theme="hospitality"] {
+  --background: #F8F6F2;
+  --surface: #FFFFFF;
+  --surface-elevated: #F1ECE4;
+  --surface-light: #E8E1D6;
+  --primary: #112D4E;
+  --primary-hover: #1E4470;
+  --primary-muted: rgba(17, 45, 78, 0.07);
+  --accent: #D4AF37;
+  --accent-hover: #B8942A;
+  --accent-muted: rgba(212, 175, 55, 0.15);
+  --secondary: #5B7BA3;
+  --secondary-muted: rgba(91, 123, 163, 0.10);
+  --text-primary: #2B2D42;
+  --text-secondary: #5A5C74;
+  --text-muted: #9A9CB0;
+  --text-accent: var(--accent);
+  --border: rgba(17, 45, 78, 0.12);
+  --border-hover: rgba(212, 175, 55, 0.50);
+  --shadow-sm: 0 2px 12px rgba(17, 45, 78, 0.06);
+  --shadow-md: 0 12px 34px rgba(17, 45, 78, 0.10);
+  --shadow-lg: 0 28px 64px rgba(17, 45, 78, 0.16);
+  --shadow-glow: 0 0 40px rgba(212, 175, 55, 0.28);
+  --gradient-primary: linear-gradient(135deg, #112D4E 0%, #1E4470 100%);
+  --gradient-heading: linear-gradient(120deg, #112D4E, #D4AF37, #E6CB6A, #D4AF37, #112D4E);
+  --gradient-animated: linear-gradient(120deg, #112D4E, #1E4470, #5B7BA3, #1E4470, #112D4E);
+  --gradient-accent: linear-gradient(135deg, #D4AF37 0%, #E6CB6A 100%);
+  --gradient-surface: linear-gradient(160deg, #FFFFFF 0%, #F1ECE4 100%);
+  --gradient-royal: linear-gradient(120deg, #112D4E, #1E4470, #D4AF37);
+  --gradient-mesh: radial-gradient(circle at 15% 18%, rgba(17, 45, 78, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 12%, rgba(212, 175, 55, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 92%, rgba(91, 123, 163, 0.08) 0%, transparent 50%);
+}
 
-  /* Accent — luminous violet */
-  --accent: #A855F7;
-  --accent-hover: #9333EA;
-  --accent-muted: rgba(168, 85, 247, 0.10);
+/* ── Theme 3: Modern Expo — deep blue + teal + gold ── */
+[data-theme="expo"] {
+  --background: #F7F9FC;
+  --surface: #FFFFFF;
+  --surface-elevated: #EDF1F7;
+  --surface-light: #DCE5F0;
+  --primary: #003566;
+  --primary-hover: #0A4F8A;
+  --primary-muted: rgba(0, 53, 102, 0.07);
+  --accent: #E9C46A;
+  --accent-hover: #CBA23F;
+  --accent-muted: rgba(233, 196, 106, 0.16);
+  --secondary: #2A9D8F;
+  --secondary-muted: rgba(42, 157, 143, 0.10);
+  --text-primary: #1D3557;
+  --text-secondary: #4A5B78;
+  --text-muted: #8A99B3;
+  --text-accent: var(--secondary);
+  --border: rgba(0, 53, 102, 0.12);
+  --border-hover: rgba(42, 157, 143, 0.50);
+  --shadow-sm: 0 2px 12px rgba(0, 53, 102, 0.06);
+  --shadow-md: 0 12px 34px rgba(0, 53, 102, 0.10);
+  --shadow-lg: 0 28px 64px rgba(0, 53, 102, 0.16);
+  --shadow-glow: 0 0 40px rgba(42, 157, 143, 0.26);
+  --gradient-primary: linear-gradient(135deg, #003566 0%, #0A4F8A 100%);
+  --gradient-heading: linear-gradient(120deg, #003566, #2A9D8F, #E9C46A, #2A9D8F, #003566);
+  --gradient-animated: linear-gradient(120deg, #003566, #0A4F8A, #2A9D8F, #0A4F8A, #003566);
+  --gradient-accent: linear-gradient(135deg, #2A9D8F 0%, #E9C46A 100%);
+  --gradient-surface: linear-gradient(160deg, #FFFFFF 0%, #EDF1F7 100%);
+  --gradient-royal: linear-gradient(120deg, #003566, #0A4F8A, #E9C46A);
+  --gradient-mesh: radial-gradient(circle at 15% 18%, rgba(0, 53, 102, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 12%, rgba(233, 196, 106, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 92%, rgba(42, 157, 143, 0.08) 0%, transparent 50%);
+}
 
-  /* Secondary — light orchid (gradient richness) */
-  --secondary: #C084FC;
-  --secondary-muted: rgba(192, 132, 252, 0.10);
+/* ── Theme 4: Black & Gold Executive ── */
+[data-theme="executive"] {
+  --background: #F9F7F3;
+  --surface: #FFFFFF;
+  --surface-elevated: #F1EEE7;
+  --surface-light: #E7E2D8;
+  --primary: #111827;
+  --primary-hover: #2A3444;
+  --primary-muted: rgba(17, 24, 39, 0.07);
+  --accent: #C8A14D;
+  --accent-hover: #A8842F;
+  --accent-muted: rgba(200, 161, 77, 0.15);
+  --secondary: #6B7280;
+  --secondary-muted: rgba(107, 114, 128, 0.10);
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  --text-accent: var(--accent);
+  --border: rgba(17, 24, 39, 0.12);
+  --border-hover: rgba(200, 161, 77, 0.50);
+  --shadow-sm: 0 2px 12px rgba(17, 24, 39, 0.06);
+  --shadow-md: 0 12px 34px rgba(17, 24, 39, 0.10);
+  --shadow-lg: 0 28px 64px rgba(17, 24, 39, 0.16);
+  --shadow-glow: 0 0 40px rgba(200, 161, 77, 0.28);
+  --gradient-primary: linear-gradient(135deg, #111827 0%, #2A3444 100%);
+  --gradient-heading: linear-gradient(120deg, #111827, #C8A14D, #DEBE78, #C8A14D, #111827);
+  --gradient-animated: linear-gradient(120deg, #111827, #2A3444, #4B5563, #2A3444, #111827);
+  --gradient-accent: linear-gradient(135deg, #C8A14D 0%, #DEBE78 100%);
+  --gradient-surface: linear-gradient(160deg, #FFFFFF 0%, #F1EEE7 100%);
+  --gradient-royal: linear-gradient(120deg, #111827, #2A3444, #C8A14D);
+  --gradient-mesh: radial-gradient(circle at 15% 18%, rgba(17, 24, 39, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 12%, rgba(200, 161, 77, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 92%, rgba(17, 24, 39, 0.05) 0%, transparent 50%);
+}
 
-  /* Text — deep plum ink on white */
-  --text-primary: #1E1233;
-  --text-secondary: #5B5470;
-  --text-muted: #908AA3;
-  --text-accent: var(--primary);
-
-  /* Borders & effects (soft, light-theme) */
-  --border: rgba(124, 58, 237, 0.12);
-  --border-hover: rgba(124, 58, 237, 0.40);
-  --shadow-sm: 0 2px 12px rgba(76, 29, 149, 0.06);
-  --shadow-md: 0 12px 34px rgba(76, 29, 149, 0.10);
-  --shadow-lg: 0 28px 64px rgba(76, 29, 149, 0.16);
-  --shadow-glow: 0 0 44px rgba(124, 58, 237, 0.18);
-
-  /* Rich, smooth, luxurious gradients */
-  --gradient-primary: linear-gradient(135deg, #6D28D9 0%, #7C3AED 35%, #A855F7 70%, #C084FC 100%);
-  --gradient-accent: linear-gradient(135deg, #A855F7 0%, #E879F9 100%);
-  --gradient-surface: linear-gradient(160deg, #FFFFFF 0%, #F5F2FD 100%);
-  --gradient-royal: linear-gradient(120deg, #4C1D95 0%, #6D28D9 30%, #9333EA 60%, #C084FC 100%);
-  --gradient-mesh: radial-gradient(circle at 15% 18%, rgba(124, 58, 237, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 85% 12%, rgba(232, 121, 249, 0.10) 0%, transparent 45%),
-    radial-gradient(circle at 50% 92%, rgba(168, 85, 247, 0.10) 0%, transparent 50%);
+/* ── Theme 5: Desert Luxury — brown + sand gold + emerald ── */
+[data-theme="desert"] {
+  --background: #FCFAF5;
+  --surface: #FFFFFF;
+  --surface-elevated: #F4EFE4;
+  --surface-light: #EBE3D3;
+  --primary: #3E2723;
+  --primary-hover: #5A3E32;
+  --primary-muted: rgba(62, 39, 35, 0.07);
+  --accent: #D6B36A;
+  --accent-hover: #B89347;
+  --accent-muted: rgba(214, 179, 106, 0.15);
+  --secondary: #2E8B57;
+  --secondary-muted: rgba(46, 139, 87, 0.10);
+  --text-primary: #2D2D2D;
+  --text-secondary: #5C5651;
+  --text-muted: #9C948C;
+  --text-accent: var(--accent);
+  --border: rgba(62, 39, 35, 0.12);
+  --border-hover: rgba(214, 179, 106, 0.50);
+  --shadow-sm: 0 2px 12px rgba(62, 39, 35, 0.06);
+  --shadow-md: 0 12px 34px rgba(62, 39, 35, 0.10);
+  --shadow-lg: 0 28px 64px rgba(62, 39, 35, 0.16);
+  --shadow-glow: 0 0 40px rgba(214, 179, 106, 0.28);
+  --gradient-primary: linear-gradient(135deg, #3E2723 0%, #5A3E32 100%);
+  --gradient-heading: linear-gradient(120deg, #3E2723, #D6B36A, #E6CD95, #D6B36A, #3E2723);
+  --gradient-animated: linear-gradient(120deg, #3E2723, #5A3E32, #2E8B57, #5A3E32, #3E2723);
+  --gradient-accent: linear-gradient(135deg, #D6B36A 0%, #E6CD95 100%);
+  --gradient-surface: linear-gradient(160deg, #FFFFFF 0%, #F4EFE4 100%);
+  --gradient-royal: linear-gradient(120deg, #3E2723, #5A3E32, #D6B36A);
+  --gradient-mesh: radial-gradient(circle at 15% 18%, rgba(62, 39, 35, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 12%, rgba(214, 179, 106, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 92%, rgba(46, 139, 87, 0.08) 0%, transparent 50%);
 }
 
 /* Base Styles */
@@ -100,7 +230,7 @@ body {
 
 /* Smoothly animated rich gradient text — the "slow luxurious" feel */
 .gradient-text {
-  background: linear-gradient(120deg, #6D28D9, #9333EA, #C084FC, #9333EA, #6D28D9);
+  background: var(--gradient-heading);
   background-size: 300% 300%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -121,7 +251,7 @@ body {
 
 /* Animated rich gradient surface (hero panels, banners) */
 .gradient-animated {
-  background: linear-gradient(120deg, #4C1D95, #6D28D9, #9333EA, #C084FC, #7C3AED);
+  background: var(--gradient-animated);
   background-size: 300% 300%;
   animation: gradient-pan 14s ease infinite;
 }
@@ -203,8 +333,8 @@ body {
 .job-card:hover {
   transform: translateY(-10px);
   border-color: var(--border-hover);
-  box-shadow: var(--shadow-lg), 0 0 48px rgba(124, 58, 237, 0.15);
-  background: linear-gradient(160deg, #FFFFFF 0%, #F0EAFE 100%);
+  box-shadow: var(--shadow-lg), 0 0 48px rgba(37, 99, 235, 0.15);
+  background: linear-gradient(160deg, #FFFFFF 0%, #EAF3FE 100%);
 }
 
 .job-card-header {
@@ -301,7 +431,7 @@ body {
 .btn-primary:hover {
   transform: translateY(-4px);
   background-position: 100% 50%;
-  box-shadow: var(--shadow-md), 0 0 28px rgba(124, 58, 237, 0.45);
+  box-shadow: var(--shadow-md), 0 0 28px rgba(37, 99, 235, 0.45);
 }
 
 .btn-secondary {
@@ -376,7 +506,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.025) 50%, transparent 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(37, 99, 235, 0.025) 50%, transparent 100%);
   pointer-events: none;
 }
 
@@ -389,8 +519,8 @@ body {
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(124, 58, 237, 0.55); }
+  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.55); }
 }
 
 .animate-float {
@@ -456,7 +586,7 @@ body {
 .gallery-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgba(30, 18, 51, 0.82) 100%);
+  background: linear-gradient(180deg, transparent 55%, rgba(15, 27, 45, 0.82) 100%);
   opacity: 0;
   transition: all 0.3s ease;
   display: flex;

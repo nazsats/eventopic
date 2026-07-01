@@ -97,7 +97,7 @@ const PROFESSION_CATEGORIES = [
     id: "model_influencer",
     name: "Model or Influencer",
     icon: FaCamera,
-    color: "from-purple-500 to-pink-500",
+    color: "from-blue-500 to-sky-500",
     subcategories: [
       { id: "fashion_model", name: "Fashion Model", icon: FaCamera },
       { id: "commercial_model", name: "Commercial Model", icon: FaCamera },
@@ -160,7 +160,7 @@ const PROFESSION_CATEGORIES = [
     id: "beauty_service",
     name: "Beauty Service",
     icon: FaPalette,
-    color: "from-pink-400 to-rose-400",
+    color: "from-sky-400 to-blue-400",
     subcategories: [
       { id: "makeup_artist", name: "Makeup Artist", icon: FaPalette },
       { id: "hair_stylist", name: "Hair Stylist", icon: FaCut },
@@ -500,7 +500,7 @@ function ProfileContent() {
             {/* ── Profile Hero Card (rotating gradient frame) ── */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
               className="relative rounded-[26px] p-[1.5px] overflow-hidden mb-6">
-              <div className="absolute inset-[-150%] opacity-50 bg-[conic-gradient(from_0deg,#7C3AED,#E879F9,#C084FC,#7C3AED)] animate-spin-slow pointer-events-none" />
+              <div className="absolute inset-[-150%] opacity-50 bg-[conic-gradient(from_0deg,#2563EB,#93C5FD,#60A5FA,#2563EB)] animate-spin-slow pointer-events-none" />
               <div className="relative rounded-[24px] overflow-hidden bg-[var(--surface)]">
 
               {/* Profile photo(s) */}

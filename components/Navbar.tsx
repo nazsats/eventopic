@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import AuthModal from "./AuthModal";
+import ThemeSwitcher from "./ThemeSwitcher";
 import { toast } from "sonner";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -151,6 +152,8 @@ export default function Navbar() {
                 </div>
               )}
 
+              <ThemeSwitcher />
+
               {user ? (
                 <div className="flex items-center gap-2 ml-1">
                   <Link href="/profile" className="w-9 h-9 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white font-bold text-sm hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
@@ -186,6 +189,7 @@ export default function Navbar() {
                   Sign In
                 </button>
               )}
+              <ThemeSwitcher />
               <button
                 onClick={() => setIsMenuOpen(v => !v)}
                 className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-all"
@@ -207,7 +211,7 @@ export default function Navbar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[110] bg-[#1E1233]/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[110] bg-[#0F1B2D]/40 backdrop-blur-sm lg:hidden"
               onClick={() => setIsMenuOpen(false)}
             />
 
