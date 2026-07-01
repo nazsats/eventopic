@@ -320,7 +320,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-shadow"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(37, 99, 235,0.4)] hover:shadow-[0_0_40px_rgba(37, 99, 235,0.6)] transition-shadow"
             aria-label="Open AI Chat"
           >
             {/* Pulse ring */}
@@ -429,7 +429,7 @@ export default function ChatBot() {
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   whileTap={{ scale: 0.9 }}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-[0_0_16px_rgba(124,58,237,0.4)] transition-shadow flex-shrink-0"
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-[0_0_16px_rgba(37, 99, 235,0.4)] transition-shadow flex-shrink-0"
                 >
                   {isLoading ? (
                     <FaSpinner className="animate-spin" size={14} />

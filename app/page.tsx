@@ -6,7 +6,6 @@ import Navbar from "../components/Navbar";
 import ChatBot from "../components/ChatBot";
 import Footer from "../components/Footer";
 import UAEGlobe from "../components/UAEGlobe";
-import UAEJobsModal from "../components/UAEJobsModal";
 import CursorGlow from "../components/CursorGlow";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -33,10 +32,10 @@ interface Job {
 
 // ─── Service categories (animated, image-free) ───
 const CATEGORIES = [
-  { label: "Hostesses & Ushers", emoji: "💁", blurb: "The faces of your event — warm, polished, on-brand.", grad: "from-[#6D28D9] to-[#A855F7]", roles: ["Hostess", "Usher", "VIP Host", "Registration", "Greeter"] },
-  { label: "Models & Entertainment", emoji: "🎭", blurb: "Runway, promo models, dancers, MCs & performers.", grad: "from-[#9333EA] to-[#E879F9]", roles: ["Model", "Dancer", "MC", "DJ", "Performer"] },
-  { label: "Promoters & Brand", emoji: "📢", blurb: "Activation crews that get people talking.", grad: "from-[#7C3AED] to-[#C084FC]", roles: ["Promoter", "Brand Ambassador", "Sampling", "Sales", "Lead Gen"] },
-  { label: "Hospitality", emoji: "🍸", blurb: "Waitstaff, bartenders & catering, service-ready.", grad: "from-[#5B21B6] to-[#C084FC]", roles: ["Waiter", "Bartender", "Barista", "Catering", "Steward"] },
+  { label: "Hostesses & Ushers", emoji: "💁", blurb: "The faces of your event — warm, polished, on-brand.", grad: "from-[#1D4ED8] to-[#3B82F6]", roles: ["Hostess", "Usher", "VIP Host", "Registration", "Greeter"] },
+  { label: "Models & Entertainment", emoji: "🎭", blurb: "Runway, promo models, dancers, MCs & performers.", grad: "from-[#2563EB] to-[#93C5FD]", roles: ["Model", "Dancer", "MC", "DJ", "Performer"] },
+  { label: "Promoters & Brand", emoji: "📢", blurb: "Activation crews that get people talking.", grad: "from-[#2563EB] to-[#60A5FA]", roles: ["Promoter", "Brand Ambassador", "Sampling", "Sales", "Lead Gen"] },
+  { label: "Hospitality", emoji: "🍸", blurb: "Waitstaff, bartenders & catering, service-ready.", grad: "from-[#1E3A8A] to-[#60A5FA]", roles: ["Waiter", "Bartender", "Barista", "Catering", "Steward"] },
 ];
 
 const ROLE_MARQUEE = [
@@ -145,7 +144,6 @@ export default function Home() {
   const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
-  const [showJobsModal, setShowJobsModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -259,19 +257,13 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Right: interactive globe — click the UAE pin for live jobs */}
+            {/* Right: animated UAE globe */}
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
               className="relative flex flex-col items-center"
             >
-              <UAEGlobe onUAEClick={() => setShowJobsModal(true)} />
-              <button
-                onClick={() => setShowJobsModal(true)}
-                className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-sm)] text-xs font-bold text-[var(--primary)] hover:bg-[var(--primary-muted)] transition-colors"
-              >
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                Click the 🇦🇪 UAE for live jobs
-              </button>
+              <UAEGlobe />
+              <p className="mt-1 text-xs font-medium text-[var(--text-muted)]">Drag to explore · UAE highlighted</p>
             </motion.div>
           </div>
         </div>
@@ -337,8 +329,8 @@ export default function Home() {
               >
                 <Link href="/services" className="relative block rounded-[26px] p-[1.5px] overflow-hidden shadow-[var(--shadow-sm)] group-hover:shadow-[var(--shadow-lg)] transition-shadow">
                   {/* rotating conic ring (revealed on hover) */}
-                  <div className="absolute inset-[-150%] opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[conic-gradient(from_0deg,#7C3AED,#E879F9,#C084FC,#7C3AED)] animate-spin-slow" />
-                  <div className={`relative rounded-[24px] p-5 min-h-[270px] flex flex-col bg-gradient-to-br ${c.grad} overflow-hidden`}>
+                  <div className="absolute inset-[-150%] opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[conic-gradient(from_0deg,var(--accent),var(--secondary),var(--accent))] animate-spin-slow" />
+                  <div className="relative rounded-[24px] p-5 min-h-[270px] flex flex-col bg-[image:var(--gradient-royal)] overflow-hidden">
                     {/* sheen + grain */}
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.4),transparent_55%)] opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute -bottom-8 -right-6 text-[7rem] leading-none opacity-15 group-hover:opacity-25 group-hover:scale-110 transition-all duration-500 select-none">{c.emoji}</div>
@@ -586,7 +578,7 @@ export default function Home() {
               className="absolute -top-10 -left-6 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
             <motion.div animate={{ y: [0, 16, 0], x: [0, -12, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -bottom-12 right-0 w-52 h-52 rounded-full bg-white/10 blur-2xl" />
-            <div className="absolute inset-0 bg-[#2E1A47]/30" />
+            <div className="absolute inset-0 bg-[#0F1B2D]/30" />
             <div className="relative z-10 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-3 leading-snug">
                 Ready to Work at Dubai&apos;s Best Events?
@@ -639,7 +631,6 @@ export default function Home() {
       <ChatBot />
       <Footer />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode={authMode} />
-      <UAEJobsModal open={showJobsModal} onClose={() => setShowJobsModal(false)} />
     </div>
   );
 }

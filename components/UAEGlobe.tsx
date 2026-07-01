@@ -132,6 +132,25 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
     const ro = new ResizeObserver(resize);
     ro.observe(wrap);
 
+    // Read theme colours from CSS variables (re-read when the theme changes).
+    const themeCols = { land: "11, 19, 43", sea: "148, 163, 184", accent: "201, 168, 76", accentHex: "#C9A84C", primaryHex: "#0B132B" };
+    const hexToRgb = (h: string) => {
+      const m = h.trim().replace("#", "");
+      if (m.length < 6) return null;
+      return `${parseInt(m.slice(0, 2), 16)}, ${parseInt(m.slice(2, 4), 16)}, ${parseInt(m.slice(4, 6), 16)}`;
+    };
+    const readTheme = () => {
+      const cs = getComputedStyle(document.documentElement);
+      const prim = cs.getPropertyValue("--primary").trim();
+      const acc = cs.getPropertyValue("--accent").trim();
+      const pr = hexToRgb(prim), ar = hexToRgb(acc);
+      if (pr) { themeCols.land = pr; themeCols.primaryHex = prim; }
+      if (ar) { themeCols.accent = ar; themeCols.accentHex = acc; }
+    };
+    readTheme();
+    const onTheme = () => readTheme();
+    window.addEventListener("themechange", onTheme);
+
     const project = (p: Vec) => {
       const a = rotX(rotY(p, yaw), TILT);
       return { sx: cx + a.x * R, sy: cy - a.y * R, z: a.z };
@@ -143,8 +162,8 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const halo = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.3);
-      halo.addColorStop(0, "rgba(168,85,247,0.16)");
-      halo.addColorStop(1, "rgba(168,85,247,0)");
+      halo.addColorStop(0, `rgba(${themeCols.accent}, 0.16)`);
+      halo.addColorStop(1, `rgba(${themeCols.accent}, 0)`);
       ctx.fillStyle = halo;
       ctx.beginPath();
       ctx.arc(cx, cy, R * 1.3, 0, Math.PI * 2);
@@ -174,7 +193,7 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
         const t = (z + 1) / 2;
         let radius = (dot.land ? lerp(0.7, 2.3, t) : lerp(0.4, 1.3, t)) * dpr;
         let alpha = dot.land ? (z < 0 ? 0.12 : lerp(0.45, 1, t)) : (z < 0 ? 0.04 : lerp(0.12, 0.4, t));
-        let col = dot.land ? "124,58,237" : "176,132,234";
+        let col = dot.land ? themeCols.land : themeCols.sea;
 
         if (pointer.active && z > -0.1) {
           const dd = Math.hypot(sx - pointer.x, sy - pointer.y);
@@ -182,7 +201,7 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
             const k = 1 - dd / lr;
             radius += 2.4 * dpr * k;
             alpha = Math.min(1, alpha + 0.55 * k);
-            col = "216,180,254";
+            col = themeCols.accent;
           }
         }
         ctx.beginPath();
@@ -206,18 +225,18 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
           ctx.beginPath();
           ctx.moveTo(u.sx, u.sy);
           ctx.quadraticCurveTo(cxp, cyp, hp.sx, hp.sy);
-          ctx.strokeStyle = "rgba(168,85,247,0.20)";
+          ctx.strokeStyle = `rgba(${themeCols.accent}, 0.22)`;
           ctx.lineWidth = 1 * dpr;
           ctx.stroke();
         }
         if (hp.z <= 0.02) continue;
         ctx.beginPath();
-        ctx.fillStyle = `rgba(147,51,234,${0.4 + hp.z * 0.5})`;
+        ctx.fillStyle = `rgba(${themeCols.land},${0.4 + hp.z * 0.5})`;
         ctx.arc(hp.sx, hp.sy, 2.6 * dpr, 0, Math.PI * 2);
         ctx.fill();
         if (hp.z > 0.42) {
           ctx.font = `600 ${10 * dpr}px 'Plus Jakarta Sans', system-ui, sans-serif`;
-          ctx.fillStyle = `rgba(91,84,112,${hp.z})`;
+          ctx.fillStyle = `rgba(71, 85, 105,${hp.z})`;
           ctx.fillText(c.name, hp.sx + 5 * dpr, hp.sy + 3 * dpr);
         }
       }
@@ -227,8 +246,8 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
       if (u.z > -0.05) {
         const pulse = (Math.sin(time / 420) + 1) / 2;
         const g = ctx.createRadialGradient(u.sx, u.sy, 0, u.sx, u.sy, 36 * dpr);
-        g.addColorStop(0, "rgba(124,58,237,0.6)");
-        g.addColorStop(1, "rgba(124,58,237,0)");
+        g.addColorStop(0, `rgba(${themeCols.accent},0.6)`);
+        g.addColorStop(1, `rgba(${themeCols.accent},0)`);
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(u.sx, u.sy, 36 * dpr, 0, Math.PI * 2);
@@ -236,13 +255,13 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
         for (let k = 0; k < 2; k++) {
           const rp = (pulse + k * 0.5) % 1;
           ctx.beginPath();
-          ctx.strokeStyle = `rgba(124,58,237,${0.5 * (1 - rp)})`;
+          ctx.strokeStyle = `rgba(${themeCols.accent},${0.5 * (1 - rp)})`;
           ctx.lineWidth = 2 * dpr;
           ctx.arc(u.sx, u.sy, (8 + rp * 26) * dpr, 0, Math.PI * 2);
           ctx.stroke();
         }
         ctx.beginPath();
-        ctx.fillStyle = "#7C3AED";
+        ctx.fillStyle = themeCols.accentHex;
         ctx.arc(u.sx, u.sy, 8 * dpr, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
@@ -262,7 +281,7 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
         ctx.arcTo(bx, by + bh, bx, by, rr);
         ctx.arcTo(bx, by, bx + bw, by, rr);
         ctx.fill();
-        ctx.fillStyle = "#5B21B6";
+        ctx.fillStyle = themeCols.primaryHex;
         ctx.fillText(label, px, py);
       }
 
@@ -310,6 +329,7 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      window.removeEventListener("themechange", onTheme);
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);

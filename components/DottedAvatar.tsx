@@ -26,7 +26,7 @@ const DOTS = (() => {
 export default function DottedAvatar({
   initial,
   emoji,
-  gradient = "from-[#7C3AED] to-[#C084FC]",
+  gradient = "from-[var(--primary)] to-[var(--accent)]",
 }: {
   initial: string;
   emoji?: string;
