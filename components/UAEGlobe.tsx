@@ -133,7 +133,7 @@ export default function UAEGlobe({ onUAEClick }: { onUAEClick?: () => void }) {
     ro.observe(wrap);
 
     // Read theme colours from CSS variables (re-read when the theme changes).
-    const themeCols = { land: "11, 19, 43", sea: "148, 163, 184", accent: "201, 168, 76", accentHex: "#C9A84C", primaryHex: "#0B132B" };
+    const themeCols = { land: "0, 70, 67", sea: "138, 153, 147", accent: "176, 141, 74", accentHex: "#B08D4A", primaryHex: "#004643" };
     const hexToRgb = (h: string) => {
       const m = h.trim().replace("#", "");
       if (m.length < 6) return null;

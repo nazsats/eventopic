@@ -2,19 +2,10 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   FaInstagram, FaLinkedin,
-  FaArrowRight, FaBriefcase, FaEnvelope, FaMapMarkerAlt,
+  FaBriefcase, FaEnvelope, FaMapMarkerAlt,
 } from "react-icons/fa";
-
-const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Jobs", href: "/jobs" },
-  { label: "Services", href: "/services" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-];
 
 const SOCIALS = [
   { icon: <FaInstagram />, label: "Instagram", href: "https://instagram.com/eventopic_official" },
@@ -39,8 +30,8 @@ export default function Footer() {
             <div>
               <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Ready to get started?</p>
               <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] leading-snug">
-                Find your next event opportunity <br className="hidden md:block" />
-                <span className="gradient-text">in Dubai today.</span>
+                Find your next opportunity — <br className="hidden md:block" />
+                <span className="gradient-text">or your next team — today.</span>
               </h2>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
@@ -55,80 +46,42 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Main footer grid */}
-      <div className="relative z-10 py-12 md:py-16">
+      {/* Compact info row */}
+      <div className="relative z-10 py-10">
         <div className="container mx-auto px-5 max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
-
-            {/* Brand */}
-            <div className="col-span-2 md:col-span-1">
-              <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-3">Eventopic</p>
-              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-                A UAE staffing platform connecting people with event, promotion and part-time work across Dubai and the Emirates. Built by a small team, launched in 2025.
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+            {/* Brand + address */}
+            <div className="max-w-sm">
+              <p className="text-[var(--primary)] text-sm font-display font-black uppercase tracking-widest mb-3">Eventopic</p>
+              <p className="flex items-start gap-2 text-sm text-[var(--text-secondary)] leading-relaxed">
+                <FaMapMarkerAlt className="text-[var(--accent)] text-xs mt-1 shrink-0" />
+                International City, CBD 05, Office No. 8, Dubai, UAE
               </p>
-              <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-                <FaMapMarkerAlt className="text-[var(--accent)] text-[10px]" />
-                Dubai, United Arab Emirates
-              </div>
             </div>
 
-            {/* Navigation */}
-            <div>
-              <h3 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4">Navigate</h3>
-              <ul className="space-y-3">
-                {NAV_LINKS.map(l => (
-                  <li key={l.href}>
-                    <Link href={l.href} className="text-sm text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors flex items-center gap-1.5 group">
-                      <FaArrowRight className="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Platform */}
-            <div>
-              <h3 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4">Platform</h3>
-              <ul className="space-y-3">
-                {[
-                  { label: "Browse Jobs", href: "/jobs" },
-                  { label: "My Profile", href: "/profile" },
-                  { label: "Dashboard", href: "/dashboard" },
-                  { label: "AI Assistant", href: "/#chatbot" },
-                ].map(l => (
-                  <li key={l.href}>
-                    <Link href={l.href} className="text-sm text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors flex items-center gap-1.5 group">
-                      <FaArrowRight className="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            {/* Contact emails */}
+            <div className="text-sm space-y-2">
+              <p className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider mb-3">Contact</p>
+              <p className="text-[var(--text-secondary)]">
+                Job applications ·{" "}
+                <a href="mailto:hiring@eventopic.com" className="text-[var(--primary)] hover:underline font-medium">hiring@eventopic.com</a>
+              </p>
+              <p className="text-[var(--text-secondary)]">
+                Business enquiries ·{" "}
+                <a href="mailto:info@eventopic.com" className="text-[var(--primary)] hover:underline font-medium">info@eventopic.com</a>
+              </p>
             </div>
 
             {/* Socials */}
             <div>
-              <h3 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4">Follow Us</h3>
-              <ul className="space-y-3">
+              <p className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider mb-3">Follow Us</p>
+              <div className="flex items-center gap-2.5">
                 {SOCIALS.map(s => (
-                  <li key={s.label}>
-                    <a href={s.href} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors group">
-                      <span className="w-7 h-7 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center group-hover:bg-[var(--primary-muted)] transition-colors text-xs">
-                        {s.icon}
-                      </span>
-                      {s.label}
-                    </a>
-                  </li>
+                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                    className="w-9 h-9 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] hover:bg-[var(--primary-muted)] hover:border-[var(--border-hover)] transition-all">
+                    {s.icon}
+                  </a>
                 ))}
-              </ul>
-
-              <div className="mt-5 pt-5 border-t border-[var(--border)]">
-                <p className="text-xs text-[var(--text-muted)] mb-2">Email us directly</p>
-                <a href="mailto:info@eventopic.com" className="text-sm text-[var(--primary)] hover:underline font-medium">
-                  info@eventopic.com
-                </a>
               </div>
             </div>
           </div>
@@ -141,7 +94,7 @@ export default function Footer() {
           <p>© {year} Eventopic. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/privacy" className="hover:text-[var(--primary)] transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-[var(--primary)] transition-colors">Terms of Service</Link>
+            <Link href="/terms" className="hover:text-[var(--primary)] transition-colors">Terms & Conditions</Link>
           </div>
         </div>
       </div>

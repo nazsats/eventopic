@@ -70,7 +70,7 @@ export default function JobsPage() {
                 const jobList = jobSnap.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
-                    description: doc.data().description || "Join our professional team for exciting event opportunities in Dubai.",
+                    description: doc.data().description || "Join our professional team for part-time and short-term opportunities in the UAE.",
                 } as Job));
                 setJobs(jobList);
 
@@ -159,10 +159,10 @@ export default function JobsPage() {
                         </div>
 
                         <h1 className="text-4xl md:text-6xl font-bold font-display gradient-text mb-3 leading-tight">
-                            Event Jobs in Dubai
+                            Part-Time Jobs in the UAE
                         </h1>
                         <p className="text-base text-[var(--text-secondary)] mb-8 max-w-xl mx-auto">
-                            Exclusive staffing, modelling, and promotion roles at Dubai's top events and luxury venues. Apply in minutes.
+                            Professional staffing, modelling and promotion roles with the UAE's top brands and venues. Apply in minutes.
                         </p>
 
                         {/* Search bar */}

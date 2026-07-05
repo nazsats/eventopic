@@ -407,7 +407,7 @@ export default function Admin() {
               { label: "Pending", value: pendingApps, icon: <FaHourglassHalf />, color: "#eab308" },
               { label: "Accept Rate", value: `${acceptRate}%`, icon: <FaCheckCircle />, color: "#22c55e" },
               ...(isSuperAdmin ? [
-                { label: "Users", value: allUsers.length, icon: <FaUsers />, color: "#8b5cf6" },
+                { label: "Users", value: allUsers.length, icon: <FaUsers />, color: "#2E7D74" },
                 { label: "Admins", value: adminRecords.length, icon: <FaShieldAlt />, color: "#f97316" },
               ] : []),
             ].map((stat, i) => (
@@ -535,17 +535,13 @@ export default function Admin() {
                             <option value="Reels Creator">Reels Creator</option>
                           </optgroup>
 
-                          <optgroup label="Entertainment">
+                          <optgroup label="Hosting & Stage">
                             <option value="Stand Speaker">Stand Speaker</option>
                             <option value="MC / Anchor">MC / Anchor</option>
                             <option value="Hostess">Hostess</option>
                             <option value="VIP Hostess">VIP Hostess</option>
-                            <option value="Dancer">Dancer</option>
-                            <option value="Singer">Singer</option>
-                            <option value="DJ">DJ</option>
-                            <option value="Musician">Musician</option>
-                            <option value="Flash Mob Artist">Flash Mob Artist</option>
-                            <option value="Live Artist">Live Artist</option>
+                            <option value="Exhibition Staff">Exhibition Staff</option>
+                            <option value="Event Support Staff">Event Support Staff</option>
                           </optgroup>
 
                           <optgroup label="Technology & IT">
@@ -585,10 +581,9 @@ export default function Admin() {
                           </optgroup>
 
                           <optgroup label="Hospitality">
-                            <option value="Waiter/Waitress">Waiter/Waitress</option>
-                            <option value="Bartender">Bartender</option>
-                            <option value="Chef">Chef</option>
+                            <option value="Hospitality Staff">Hospitality Staff</option>
                             <option value="Hotel Staff">Hotel Staff</option>
+                            <option value="Chef">Chef</option>
                             <option value="Kitchen Staff">Kitchen Staff</option>
                           </optgroup>
 
@@ -1249,12 +1244,12 @@ export default function Admin() {
                     {filteredLogs.length === 0 && <div className="text-center py-12 text-[var(--text-muted)]">No activity logs yet. Actions will be tracked here.</div>}
                     {paginatedLogs.map(log => {
                       const actionColors: Record<string, string> = {
-                        posted_job: "#22c55e", updated_job: "#3b82f6", deleted_job: "#ef4444",
+                        posted_job: "#22c55e", updated_job: "#2E7D74", deleted_job: "#ef4444",
                         accepted_application: "#22c55e", rejected_application: "#ef4444",
-                        added_admin: "#8b5cf6", removed_admin: "#ef4444", changed_admin_role: "#f97316",
-                        updated_company_profile: "#3b82f6", exported_database: "#6366f1",
-                        user_joined: "#22c55e", profile_completed: "#8b5cf6",
-                        uploaded_leads: "#22c55e", deleted_lead: "#ef4444", deleted_leads_bulk: "#ef4444", updated_lead_status: "#3b82f6",
+                        added_admin: "#2E7D74", removed_admin: "#ef4444", changed_admin_role: "#f97316",
+                        updated_company_profile: "#2E7D74", exported_database: "#004643",
+                        user_joined: "#22c55e", profile_completed: "#2E7D74",
+                        uploaded_leads: "#22c55e", deleted_lead: "#ef4444", deleted_leads_bulk: "#ef4444", updated_lead_status: "#2E7D74",
                       };
                       const color = actionColors[log.action] || "var(--primary)";
                       const actionLabels: Record<string, string> = {

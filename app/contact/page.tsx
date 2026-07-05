@@ -11,15 +11,15 @@ import { toast } from "sonner";
 import Confetti from "react-confetti";
 import {
   FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaBriefcase,
-  FaPaperPlane, FaCalendarAlt, FaBuilding, FaFileAlt,
-  FaInstagram, FaLinkedin, FaArrowRight, FaCheckCircle, FaRedo,
+  FaPaperPlane, FaCalendarAlt, FaClock, FaBuilding, FaFileAlt,
+  FaInstagram, FaArrowRight, FaCheckCircle, FaRedo,
 } from "react-icons/fa";
 
 const INFO_CARDS = [
+  { icon: <FaBriefcase />, title: "Job Applications", detail: "hiring@eventopic.com", sub: "For talent & job seekers", link: "mailto:hiring@eventopic.com" },
+  { icon: <FaEnvelope />, title: "Business Enquiries", detail: "info@eventopic.com", sub: "For clients & partners", link: "mailto:info@eventopic.com" },
   { icon: <FaInstagram />, title: "Instagram", detail: "@eventopic_official", sub: "Follow & DM us", link: "https://instagram.com/eventopic_official" },
-  { icon: <FaLinkedin />, title: "LinkedIn", detail: "Eventopic", sub: "Connect with us", link: "https://www.linkedin.com/company/eventopic" },
-  { icon: <FaEnvelope />, title: "Email", detail: "info@eventopic.com", sub: "We reply within a day", link: "mailto:info@eventopic.com" },
-  { icon: <FaMapMarkerAlt />, title: "Based in", detail: "Dubai, UAE", sub: "Across all 7 emirates" },
+  { icon: <FaMapMarkerAlt />, title: "Our Office", detail: "International City, CBD 05, Office No. 8, Dubai, UAE", sub: "Serving all 7 emirates" },
 ];
 
 const INPUT = "w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-muted)] transition-all";
@@ -32,7 +32,7 @@ export default function Contact() {
   const [confetti, setConfetti] = useState(false);
   const [win, setWin] = useState({ w: 0, h: 0 });
 
-  const [clientForm, setClientForm] = useState({ name: "", email: "", phone: "", company: "", eventType: "", date: "", message: "" });
+  const [clientForm, setClientForm] = useState({ name: "", company: "", email: "", phone: "", date: "", time: "", message: "" });
   const [staffForm, setStaffForm] = useState({ name: "", email: "", phone: "", role: "", experience: "", message: "" });
 
   useEffect(() => {
@@ -46,7 +46,8 @@ export default function Contact() {
     return () => window.removeEventListener("resize", set);
   }, []);
 
-  const validatePhone = (p: string) => /^05\d{8}$/.test(p.replace(/\s/g, ""));
+  // International numbers welcome — just needs to look like a phone number.
+  const validatePhone = (p: string) => /^\+?[\d\s\-()]{7,16}$/.test(p.trim());
 
   const celebrate = (which: "client" | "staff") => {
     setSubmitted(which);
@@ -57,12 +58,12 @@ export default function Contact() {
 
   const handleClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validatePhone(clientForm.phone)) { toast.error("Enter a valid UAE number (05xxxxxxxx)."); return; }
+    if (!validatePhone(clientForm.phone)) { toast.error("Please enter a valid phone number."); return; }
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/submit-client", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(clientForm) });
       const data = await res.json().catch(() => ({}));
-      if (res.ok) { setClientForm({ name: "", email: "", phone: "", company: "", eventType: "", date: "", message: "" }); celebrate("client"); }
+      if (res.ok) { setClientForm({ name: "", company: "", email: "", phone: "", date: "", time: "", message: "" }); celebrate("client"); }
       else throw new Error(data.error || "Failed");
     } catch (err) { toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again."); }
     finally { setIsSubmitting(false); }
@@ -70,7 +71,7 @@ export default function Contact() {
 
   const handleStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validatePhone(staffForm.phone)) { toast.error("Enter a valid UAE number (05xxxxxxxx)."); return; }
+    if (!validatePhone(staffForm.phone)) { toast.error("Please enter a valid phone number."); return; }
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/submit-staff", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(staffForm) });
@@ -83,7 +84,7 @@ export default function Contact() {
 
   return (
     <div className="bg-[var(--background)] min-h-screen">
-      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={300} gravity={0.25} colors={["#C9A84C", "#0B132B", "#00A896", "#E0C878", "#ffffff"]} className="!fixed !z-[400]" />}
+      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={300} gravity={0.25} colors={["#004643", "#B08D4A", "#2E7D74", "#D3B878", "#ffffff"]} className="!fixed !z-[400]" />}
       <CursorGlow />
       <Navbar />
 
@@ -98,8 +99,8 @@ export default function Contact() {
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-4xl sm:text-5xl md:text-6xl font-display font-black mb-4 leading-tight text-[var(--text-primary)]">
             Let&apos;s <span className="gradient-text">Talk</span>
           </motion.h1>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="text-[var(--text-secondary)] text-sm md:text-base max-w-lg mx-auto leading-relaxed">
-            Need staff for an event, promotion or activation? Looking for part-time event work? Send us a message — we usually reply within a day.
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="text-[var(--text-secondary)] text-sm md:text-base max-w-md mx-auto leading-relaxed">
+            Tell us what you have in mind — we&apos;ll build the team. We usually reply within a day.
           </motion.p>
         </div>
       </section>
@@ -112,13 +113,13 @@ export default function Contact() {
               <>
                 <div className="w-9 h-9 mx-auto rounded-xl bg-[var(--primary-muted)] flex items-center justify-center text-[var(--primary)] text-sm mb-3 group-hover:scale-110 transition-transform">{card.icon}</div>
                 <p className="font-bold text-xs text-[var(--text-primary)] mb-0.5">{card.title}</p>
-                <p className={`text-xs font-semibold ${card.link ? "text-[var(--primary)]" : "text-[var(--text-secondary)]"}`}>{card.detail}</p>
+                <p className={`text-xs font-semibold break-words ${card.link ? "text-[var(--primary)]" : "text-[var(--text-secondary)]"}`}>{card.detail}</p>
                 <p className="text-[10px] text-[var(--text-muted)]">{card.sub}</p>
               </>
             );
             return (
               <motion.div key={i} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                className="glass-card p-5 rounded-2xl text-center group">
+                className="glass-card p-5 rounded-sm text-center group">
                 {card.link ? <a href={card.link} target="_blank" rel="noopener noreferrer" className="block">{inner}</a> : inner}
               </motion.div>
             );
@@ -134,7 +135,7 @@ export default function Contact() {
               <motion.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.94, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
-                className="glass-card p-8 md:p-12 rounded-3xl text-center"
+                className="glass-card p-8 md:p-12 rounded-sm text-center"
               >
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 220, delay: 0.1 }}
                   className="w-20 h-20 mx-auto rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-4xl mb-5 shadow-[var(--shadow-glow)]">
@@ -160,7 +161,7 @@ export default function Contact() {
             ) : (
               <motion.div key="forms" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {/* Tabs */}
-                <div className="flex mb-7 p-1 rounded-2xl bg-[var(--surface)] border border-[var(--border)] gap-1">
+                <div className="flex mb-7 p-1 rounded-sm bg-[var(--surface)] border border-[var(--border)] gap-1">
                   {([["client", "📋 I need staff"], ["staff", "🙌 I want work"]] as const).map(([tab, label]) => (
                     <button key={tab} onClick={() => setActiveTab(tab)}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${activeTab === tab ? "bg-[image:var(--gradient-primary)] text-white shadow-md" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
@@ -172,19 +173,19 @@ export default function Contact() {
                 <AnimatePresence mode="wait">
                   {activeTab === "client" ? (
                     <motion.div key="client" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 16 }} transition={{ duration: 0.25 }}>
-                      <div className="glass-card p-6 md:p-8 rounded-2xl">
+                      <div className="glass-card p-6 md:p-8 rounded-sm">
                         <div className="mb-6">
-                          <h2 className="font-display font-bold text-xl text-[var(--text-primary)] mb-1">Tell us what you need</h2>
-                          <p className="text-xs text-[var(--text-secondary)]">Event, promotion or activation — share the basics and we&apos;ll take it from there.</p>
+                          <h2 className="font-display font-bold text-xl text-[var(--text-primary)] mb-1">Staff it like it matters</h2>
+                          <p className="text-xs text-[var(--text-secondary)]">Share the basics — we&apos;ll build the team.</p>
                         </div>
                         <form onSubmit={handleClientSubmit} className="space-y-4">
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
-                              <label className={LABEL}><FaUser className="text-[var(--primary)] text-[10px]" /> Name *</label>
+                              <label className={LABEL}><FaUser className="text-[var(--primary)] text-[10px]" /> Full name *</label>
                               <input type="text" required placeholder="Your full name" value={clientForm.name} onChange={e => setClientForm({ ...clientForm, name: e.target.value })} className={INPUT} />
                             </div>
                             <div>
-                              <label className={LABEL}><FaBuilding className="text-[var(--primary)] text-[10px]" /> Company</label>
+                              <label className={LABEL}><FaBuilding className="text-[var(--primary)] text-[10px]" /> Company name</label>
                               <input type="text" placeholder="Company (optional)" value={clientForm.company} onChange={e => setClientForm({ ...clientForm, company: e.target.value })} className={INPUT} />
                             </div>
                           </div>
@@ -195,28 +196,21 @@ export default function Contact() {
                             </div>
                             <div>
                               <label className={LABEL}><FaPhone className="text-[var(--primary)] text-[10px]" /> Phone *</label>
-                              <input type="tel" required placeholder="05xxxxxxxx" value={clientForm.phone} onChange={e => setClientForm({ ...clientForm, phone: e.target.value })} className={INPUT} />
+                              <input type="tel" required placeholder="+971 5x xxx xxxx" value={clientForm.phone} onChange={e => setClientForm({ ...clientForm, phone: e.target.value })} className={INPUT} />
                             </div>
                           </div>
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
-                              <label className={LABEL}><FaCalendarAlt className="text-[var(--primary)] text-[10px]" /> Date</label>
+                              <label className={LABEL}><FaCalendarAlt className="text-[var(--primary)] text-[10px]" /> Preferred date</label>
                               <input type="date" value={clientForm.date} onChange={e => setClientForm({ ...clientForm, date: e.target.value })} className={INPUT} />
                             </div>
                             <div>
-                              <label className={LABEL}><FaBriefcase className="text-[var(--primary)] text-[10px]" /> Type</label>
-                              <select value={clientForm.eventType} onChange={e => setClientForm({ ...clientForm, eventType: e.target.value })} className={INPUT}>
-                                <option value="">Select type</option>
-                                <option value="event">Event</option>
-                                <option value="promotion">Promotion / Activation</option>
-                                <option value="exhibition">Exhibition / Trade show</option>
-                                <option value="part-time">Ongoing / Part-time staff</option>
-                                <option value="other">Other</option>
-                              </select>
+                              <label className={LABEL}><FaClock className="text-[var(--primary)] text-[10px]" /> Preferred time</label>
+                              <input type="time" value={clientForm.time} onChange={e => setClientForm({ ...clientForm, time: e.target.value })} className={INPUT} />
                             </div>
                           </div>
                           <div>
-                            <label className={LABEL}><FaFileAlt className="text-[var(--primary)] text-[10px]" /> Details *</label>
+                            <label className={LABEL}><FaFileAlt className="text-[var(--primary)] text-[10px]" /> Message / details *</label>
                             <textarea required rows={4} placeholder="Roles needed, how many staff, location, dates…" value={clientForm.message} onChange={e => setClientForm({ ...clientForm, message: e.target.value })} className={`${INPUT} resize-none`} />
                           </div>
                           <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-60">
@@ -227,7 +221,7 @@ export default function Contact() {
                     </motion.div>
                   ) : (
                     <motion.div key="staff" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.25 }}>
-                      <div className="glass-card p-6 md:p-8 rounded-2xl">
+                      <div className="glass-card p-6 md:p-8 rounded-sm">
                         <div className="mb-6">
                           <h2 className="font-display font-bold text-xl text-[var(--text-primary)] mb-1">Join our talent pool</h2>
                           <p className="text-xs text-[var(--text-secondary)]">Tell us a little about you. We&apos;ll be in touch when a matching gig opens up.</p>
@@ -240,7 +234,7 @@ export default function Contact() {
                             </div>
                             <div>
                               <label className={LABEL}><FaPhone className="text-[var(--primary)] text-[10px]" /> Phone *</label>
-                              <input type="tel" required placeholder="05xxxxxxxx" value={staffForm.phone} onChange={e => setStaffForm({ ...staffForm, phone: e.target.value })} className={INPUT} />
+                              <input type="tel" required placeholder="+971 5x xxx xxxx" value={staffForm.phone} onChange={e => setStaffForm({ ...staffForm, phone: e.target.value })} className={INPUT} />
                             </div>
                           </div>
                           <div>
@@ -255,7 +249,7 @@ export default function Contact() {
                                 <option value="promoter">Promoter</option>
                                 <option value="hostess">Host / Hostess</option>
                                 <option value="model">Model</option>
-                                <option value="hospitality">Hospitality / Waitstaff</option>
+                                <option value="hospitality">Hospitality Staff</option>
                                 <option value="supervisor">Supervisor</option>
                                 <option value="photographer">Photographer</option>
                                 <option value="other">Other</option>
@@ -286,10 +280,10 @@ export default function Contact() {
 
                 {/* Shortcut to jobs */}
                 <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-                  className="mt-5 glass-card p-4 rounded-2xl flex items-center justify-between gap-4 flex-wrap">
+                  className="mt-5 glass-card p-4 rounded-sm flex items-center justify-between gap-4 flex-wrap">
                   <div>
                     <p className="font-bold text-sm text-[var(--text-primary)]">Prefer to browse first?</p>
-                    <p className="text-xs text-[var(--text-secondary)]">See live event &amp; promo jobs and apply directly.</p>
+                    <p className="text-xs text-[var(--text-secondary)]">See live jobs and apply directly.</p>
                   </div>
                   <Link href="/jobs" className="flex items-center gap-2 text-xs font-bold text-[var(--primary)] hover:gap-3 transition-all shrink-0">
                     Browse jobs <FaArrowRight className="text-[10px]" />

@@ -198,7 +198,7 @@ export default function Dashboard() {
 
   return (
     <div className="bg-[var(--background)] min-h-screen">
-      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={320} gravity={0.25} colors={["#C9A84C", "#0B132B", "#22C55E", "#E0C878", "#ffffff"]} className="!fixed !z-[400]" />}
+      {confetti && <Confetti width={win.w} height={win.h} recycle={false} numberOfPieces={320} gravity={0.25} colors={["#004643", "#B08D4A", "#2E7D74", "#D3B878", "#ffffff"]} className="!fixed !z-[400]" />}
       <CursorGlow />
       <Navbar />
 
@@ -212,11 +212,11 @@ export default function Dashboard() {
 
           {/* ── Hero / level card ── */}
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
-            className="relative rounded-3xl overflow-hidden p-6 md:p-8 mb-6 text-white">
+            className="relative rounded-sm overflow-hidden p-6 md:p-8 mb-6 text-white">
             <div className="absolute inset-0 gradient-animated" />
             <motion.div animate={{ y: [0, -16, 0] }} transition={{ duration: 9, repeat: Infinity }} className="absolute -top-10 -right-6 w-44 h-44 rounded-full bg-white/10 blur-2xl" />
             <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden shrink-0 border border-white/30">
+              <div className="w-16 h-16 rounded-sm bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden shrink-0 border border-white/30">
                 {profile?.profileImageUrl
                   // eslint-disable-next-line @next/next/no-img-element
                   ? <img src={profile.profileImageUrl} alt="" className="w-full h-full object-cover" />
@@ -231,7 +231,7 @@ export default function Dashboard() {
                 </div>
               </div>
               {/* Level + XP */}
-              <div className="w-full md:w-64 shrink-0 bg-white/15 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+              <div className="w-full md:w-64 shrink-0 bg-white/15 backdrop-blur-sm rounded-sm p-4 border border-white/20">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="flex items-center gap-1.5 text-sm font-black"><FaBolt className="text-yellow-300" /> Level {level}</span>
                   <span className="text-[11px] text-white/70">{xpToNext} XP to next</span>
@@ -258,11 +258,10 @@ export default function Dashboard() {
               { label: "Applications", value: total, icon: <FaPaperPlane />, color: "var(--primary)" },
               { label: "Pending", value: pendingApps, icon: <FaHourglassHalf />, color: "#F59E0B" },
               { label: "Accepted", value: acceptedApps, icon: <FaCheckCircle />, color: "#22C55E" },
-              { label: "Accept rate", value: acceptRate, suffix: "%", icon: <FaStar />, color: "#3B82F6" },
+              { label: "Accept rate", value: acceptRate, suffix: "%", icon: <FaStar />, color: "#B08D4A" },
             ].map((s, i) => (
               <motion.div key={s.label} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} whileHover={{ y: -5 }}
-                className="group relative glass-card p-5 rounded-2xl overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(90deg, ${s.color}, transparent)` }} />
+                className="group relative glass-card p-5 rounded-sm overflow-hidden">
                 <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `${s.color}33` }} />
                 <div className="relative w-11 h-11 rounded-xl flex items-center justify-center mb-3 text-white shadow-[var(--shadow-sm)] group-hover:scale-110 transition-transform" style={{ background: `linear-gradient(135deg, ${s.color}, ${s.color}bb)` }}>{s.icon}</div>
                 <div className="relative text-3xl md:text-4xl font-display font-black text-[var(--text-primary)] leading-none">
@@ -276,7 +275,7 @@ export default function Dashboard() {
           {/* ── Charts row: status + profile strength ── */}
           <div className="grid md:grid-cols-2 gap-4 mb-6">
             {/* Status doughnut */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 rounded-2xl">
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 rounded-sm">
               <h2 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2"><FaBriefcase className="text-[var(--primary)] text-sm" /> Application status</h2>
               {total === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
@@ -307,7 +306,7 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Profile strength */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="glass-card p-6 rounded-2xl">
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="glass-card p-6 rounded-sm">
               <h2 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2"><FaStar className="text-[var(--primary)] text-sm" /> Profile strength</h2>
               <div className="flex items-center gap-6">
                 <div className="relative w-36 h-36 shrink-0">
@@ -320,7 +319,7 @@ export default function Dashboard() {
                       transition={{ duration: 1.1, ease: "easeOut" }} />
                     <defs>
                       <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#2563EB" /><stop offset="100%" stopColor="#60A5FA" />
+                        <stop offset="0%" stopColor="#004643" /><stop offset="100%" stopColor="#2E7D74" />
                       </linearGradient>
                     </defs>
                   </svg>
@@ -355,7 +354,7 @@ export default function Dashboard() {
 
           {/* ── Smart Match ── */}
           {recommended.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 rounded-2xl mb-6">
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 rounded-sm mb-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-white shadow-[var(--shadow-glow)]"><FaBolt /></div>
@@ -369,7 +368,7 @@ export default function Dashboard() {
               <div className="grid sm:grid-cols-2 gap-3">
                 {recommended.map(({ job, match }, i) => (
                   <motion.div key={job.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06 }}>
-                    <Link href={`/jobs/${job.id}`} className="group flex items-center gap-3 p-4 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--border-hover)] hover:shadow-[var(--shadow-md)] transition-all">
+                    <Link href={`/jobs/${job.id}`} className="group flex items-center gap-3 p-4 rounded-sm bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--border-hover)] hover:shadow-[var(--shadow-md)] transition-all">
                       <div className="w-11 h-11 rounded-xl bg-[var(--primary-muted)] flex items-center justify-center text-[var(--primary)] shrink-0 group-hover:scale-110 transition-transform"><FaBriefcase /></div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm text-[var(--text-primary)] truncate group-hover:text-[var(--primary)] transition-colors">{job.title || "Event role"}</p>
@@ -390,11 +389,11 @@ export default function Dashboard() {
           )}
 
           {/* ── Achievements ── */}
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 rounded-2xl mb-6">
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 rounded-sm mb-6">
             <h2 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2"><FaMedal className="text-[var(--primary)] text-sm" /> Achievements</h2>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
               {achievements.map((a) => (
-                <div key={a.label} className={`flex flex-col items-center text-center gap-2 p-3 rounded-2xl border transition-all ${a.earned ? "bg-[var(--primary-muted)] border-[var(--border-hover)]" : "bg-[var(--surface-elevated)] border-[var(--border)] opacity-60"}`}>
+                <div key={a.label} className={`flex flex-col items-center text-center gap-2 p-3 rounded-sm border transition-all ${a.earned ? "bg-[var(--primary-muted)] border-[var(--border-hover)]" : "bg-[var(--surface-elevated)] border-[var(--border)] opacity-60"}`}>
                   <div className={`w-11 h-11 rounded-full flex items-center justify-center text-lg ${a.earned ? "bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-glow)]" : "bg-[var(--surface)] text-[var(--text-muted)]"}`}>
                     {a.earned ? a.icon : <FaLock className="text-xs" />}
                   </div>
@@ -405,7 +404,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* ── Applications ── */}
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl overflow-hidden">
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-sm overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-6 border-b border-[var(--border)]">
               <h2 className="font-bold text-[var(--text-primary)] flex items-center gap-2"><FaBriefcase className="text-[var(--primary)] text-sm" /> My applications</h2>
               <div className="flex gap-1.5 flex-wrap">
@@ -431,7 +430,7 @@ export default function Dashboard() {
                     const m = statusMeta[a.status] || statusMeta.pending;
                     return (
                       <motion.div key={a.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
-                        className="flex items-center gap-3 p-4 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--border-hover)] transition-all">
+                        className="flex items-center gap-3 p-4 rounded-sm bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--border-hover)] transition-all">
                         <div className="w-10 h-10 rounded-xl bg-[var(--primary-muted)] flex items-center justify-center text-[var(--primary)] shrink-0"><FaBriefcase /></div>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm text-[var(--text-primary)] truncate">{a.jobTitle}</p>

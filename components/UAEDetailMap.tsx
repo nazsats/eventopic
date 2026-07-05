@@ -60,12 +60,12 @@ export default function UAEDetailMap({ onJobsClick }: { onJobsClick: () => void 
       <svg viewBox="0 0 1000 720" className="w-full h-auto">
         <defs>
           <radialGradient id="dFill" cx="50%" cy="40%" r="70%">
-            <stop offset="0%" stopColor="#A855F7" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.05" />
+            <stop offset="0%" stopColor="#2E7D74" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#004643" stopOpacity="0.05" />
           </radialGradient>
           <linearGradient id="dStroke" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7C3AED" />
-            <stop offset="100%" stopColor="#E879F9" />
+            <stop offset="0%" stopColor="#004643" />
+            <stop offset="100%" stopColor="#B08D4A" />
           </linearGradient>
           <filter id="dGlow" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="7" result="b" />
@@ -74,12 +74,12 @@ export default function UAEDetailMap({ onJobsClick }: { onJobsClick: () => void 
         </defs>
 
         <path d={OUTLINE} fill="url(#dFill)" stroke="url(#dStroke)" strokeWidth="3" strokeLinejoin="round" filter="url(#dGlow)" className="transition-all group-hover:opacity-90" />
-        <path d={OUTLINE} fill="none" stroke="#F5D0FE" strokeWidth="3" strokeLinejoin="round" strokeDasharray="80 1600" opacity="0.9">
+        <path d={OUTLINE} fill="none" stroke="#D3B878" strokeWidth="3" strokeLinejoin="round" strokeDasharray="80 1600" opacity="0.9">
           <animate attributeName="stroke-dashoffset" from="0" to="-1680" dur="6s" repeatCount="indefinite" />
         </path>
 
         {AMBIENT.map((a, i) => (
-          <circle key={i} cx={a.x} cy={a.y} r={a.s} fill="#A855F7" opacity="0.3">
+          <circle key={i} cx={a.x} cy={a.y} r={a.s} fill="#2E7D74" opacity="0.3">
             <animate attributeName="cy" values={`${a.y};${a.y - 12};${a.y}`} dur={`${4 + a.d}s`} repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.12;0.45;0.12" dur={`${4 + a.d}s`} repeatCount="indefinite" />
           </circle>
@@ -92,20 +92,20 @@ export default function UAEDetailMap({ onJobsClick }: { onJobsClick: () => void 
           return (
             <g key={e.name}>
               {active && (
-                <circle cx={e.x} cy={e.y} r={6} fill="none" stroke="#7C3AED" strokeWidth="2" opacity="0.6">
+                <circle cx={e.x} cy={e.y} r={6} fill="none" stroke="#004643" strokeWidth="2" opacity="0.6">
                   <animate attributeName="r" from="6" to="26" dur="2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.6" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
               )}
-              <circle cx={e.x} cy={e.y} r={active ? 7 : 4} fill={active ? "url(#dStroke)" : "#C9B8EC"} stroke="#fff" strokeWidth="1.5" />
+              <circle cx={e.x} cy={e.y} r={active ? 7 : 4} fill={active ? "url(#dStroke)" : "#9DBBB5"} stroke="#fff" strokeWidth="1.5" />
               {active && <circle cx={e.x} cy={e.y} r={2.2} fill="#fff" />}
               {active && (
                 <g transform={`translate(${e.x + 9}, ${e.y - 9})`}>
-                  <circle r="11" fill="#7C3AED" />
+                  <circle r="11" fill="#004643" />
                   <text textAnchor="middle" dy="4" fontSize="13" fontWeight="800" fill="#fff">{n}</text>
                 </g>
               )}
-              <text x={e.lx} y={e.ly} textAnchor={e.anchor} fontSize="16" fontWeight="700" fill="#5B21B6" style={{ fontFamily: "Sora, sans-serif" }}>
+              <text x={e.lx} y={e.ly} textAnchor={e.anchor} fontSize="16" fontWeight="700" fill="#004643" style={{ fontFamily: "Sora, sans-serif" }}>
                 {e.name}
               </text>
             </g>
@@ -117,7 +117,7 @@ export default function UAEDetailMap({ onJobsClick }: { onJobsClick: () => void 
           <g key={m.name}>
             <title>{m.name}</title>
             <animateTransform attributeName="transform" type="translate" values="0 0; 0 -6; 0 0" dur={`${3 + (i % 3) * 0.6}s`} repeatCount="indefinite" />
-            <circle cx={m.x} cy={m.y} r="20" fill="#7C3AED" opacity="0.16" />
+            <circle cx={m.x} cy={m.y} r="20" fill="#004643" opacity="0.16" />
             <circle cx={m.x} cy={m.y} r="14" fill="#fff" stroke="url(#dStroke)" strokeWidth="2" />
             <text x={m.x} y={m.y} textAnchor="middle" dy="5" fontSize="15">{m.emoji}</text>
           </g>
@@ -125,7 +125,7 @@ export default function UAEDetailMap({ onJobsClick }: { onJobsClick: () => void 
       </svg>
 
       {/* live banner */}
-      <div className="absolute top-2 left-2 flex items-center gap-2 px-3 py-2 rounded-2xl bg-[var(--surface)]/90 backdrop-blur-md border border-[var(--border)] shadow-[var(--shadow-sm)]">
+      <div className="absolute top-2 left-2 flex items-center gap-2 px-3 py-2 rounded-sm bg-[var(--surface)]/90 backdrop-blur-md border border-[var(--border)] shadow-[var(--shadow-sm)]">
         <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
         <span className="text-xs font-bold text-[var(--text-primary)]">
           {Object.values(counts).reduce((a, b) => a + b, 0)} live gigs across the UAE

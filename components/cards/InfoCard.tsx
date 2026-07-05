@@ -35,7 +35,7 @@ export function InfoCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.4 }}
-      className={`rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 ${variants[variant]} ${className}`}
+      className={`rounded-xl sm:rounded-sm p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 ${variants[variant]} ${className}`}
     >
       {/* Header */}
       {(icon || title) && (

@@ -13,9 +13,9 @@ import {
   FaUser, FaPhone, FaGlobe, FaMapMarkerAlt, FaIdCard, FaVenusMars,
   FaFileAlt, FaGraduationCap, FaClock, FaCar, FaCalendar, FaStar,
   FaCheckCircle, FaEdit, FaCamera, FaDownload, FaArrowRight, FaArrowLeft,
-  FaMagic, FaTimes, FaBolt, FaHotel, FaBriefcase, FaUtensils, FaShoppingCart,
-  FaCut, FaMusic, FaConciergeBell, FaUserTie, FaCoffee, FaWineGlass,
-  FaGuitar, FaPalette, FaMicrophone, FaVideo, FaInstagram, FaLinkedin,
+  FaTimes, FaBolt, FaHotel, FaBriefcase, FaUtensils, FaShoppingCart,
+  FaCut, FaConciergeBell, FaUserTie,
+  FaPalette, FaMicrophone, FaVideo, FaInstagram, FaLinkedin,
   FaFacebook, FaTwitter, FaLanguage, FaPassport, FaRuler, FaWeight,
   FaTshirt, FaShoePrints, FaEye, FaPaintBrush, FaSun, FaCloudUploadAlt, FaSearch, FaFileDownload,
   FaChevronLeft, FaChevronRight, FaTrash,
@@ -45,7 +45,7 @@ const PROFESSION_CATEGORIES = [
     id: "event_staff",
     name: "Event Staff",
     icon: FaIdCard,
-    color: "from-blue-500 to-indigo-500",
+    color: "from-teal-800 to-teal-600",
     subcategories: [
       { id: "usher", name: "Usher", icon: FaUserTie },
       { id: "registration_staff", name: "Registration Staff", icon: FaIdCard },
@@ -57,19 +57,17 @@ const PROFESSION_CATEGORIES = [
       { id: "runner", name: "Runner", icon: FaRunning || FaUser }, // Fallback if FaRunning not imported, let's stick to FaUser for now or add import later if needed. Using FaUser for safety.
       { id: "booth_attendant", name: "Booth Attendant", icon: FaStore || FaBriefcase }, // Fallback
       { id: "mascot", name: "Mascot", icon: FaSmile || FaStar }, // Fallback
-      { id: "brand_ambassador", name: "Brand Ambassador", icon: FaStar }
+      { id: "brand_ambassador", name: "Brand Ambassador", icon: FaStar },
+      { id: "mc", name: "MC (Master of Ceremonies)", icon: FaMicrophone }
     ]
   },
   {
     id: "hospitality",
     name: "Hospitality",
     icon: FaHotel,
-    color: "from-blue-500 to-cyan-500",
+    color: "from-emerald-800 to-emerald-600",
     subcategories: [
       { id: "hostess", name: "Hostess/Host", icon: FaConciergeBell },
-      { id: "waiter", name: "Waiter/Waitress", icon: FaUtensils },
-      { id: "bartender", name: "Bartender", icon: FaWineGlass },
-      { id: "barista", name: "Barista", icon: FaCoffee },
       { id: "housekeeping", name: "Housekeeping", icon: FaBroom || FaHotel }, // Fallback
       { id: "concierge", name: "Concierge", icon: FaConciergeBell },
       { id: "hotel_receptionist", name: "Hotel Receptionist", icon: FaConciergeBell },
@@ -97,7 +95,7 @@ const PROFESSION_CATEGORIES = [
     id: "model_influencer",
     name: "Model or Influencer",
     icon: FaCamera,
-    color: "from-blue-500 to-sky-500",
+    color: "from-yellow-700 to-yellow-500",
     subcategories: [
       { id: "fashion_model", name: "Fashion Model", icon: FaCamera },
       { id: "commercial_model", name: "Commercial Model", icon: FaCamera },
@@ -108,23 +106,6 @@ const PROFESSION_CATEGORIES = [
       { id: "social_media_influencer", name: "Social Media Influencer", icon: FaInstagram },
       { id: "content_creator", name: "Content Creator", icon: FaVideo },
       { id: "brand_ambassador", name: "Brand Ambassador", icon: FaStar }
-    ]
-  },
-  {
-    id: "entertainer",
-    name: "Entertainer",
-    icon: FaMusic,
-    color: "from-yellow-500 to-amber-500",
-    subcategories: [
-      { id: "singer", name: "Singer", icon: FaMicrophone },
-      { id: "dancer", name: "Dancer", icon: FaMusic }, // Using FaMusic as generic dancer icon
-      { id: "musician", name: "Musician", icon: FaGuitar },
-      { id: "dj", name: "DJ", icon: FaMusic },
-      { id: "mc", name: "MC (Master of Ceremonies)", icon: FaMicrophone },
-      { id: "magician", name: "Magician", icon: FaMagic },
-      { id: "comedian", name: "Comedian", icon: FaSmile || FaStar }, // Fallback
-      { id: "clown", name: "Clown", icon: FaSmile || FaStar }, // Fallback
-      { id: "performer", name: "Performer", icon: FaStar }
     ]
   },
   {
@@ -160,7 +141,7 @@ const PROFESSION_CATEGORIES = [
     id: "beauty_service",
     name: "Beauty Service",
     icon: FaPalette,
-    color: "from-sky-400 to-blue-400",
+    color: "from-teal-600 to-emerald-500",
     subcategories: [
       { id: "makeup_artist", name: "Makeup Artist", icon: FaPalette },
       { id: "hair_stylist", name: "Hair Stylist", icon: FaCut },
@@ -499,9 +480,9 @@ function ProfileContent() {
 
             {/* ── Profile Hero Card (rotating gradient frame) ── */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              className="relative rounded-[26px] p-[1.5px] overflow-hidden mb-6">
-              <div className="absolute inset-[-150%] opacity-50 bg-[conic-gradient(from_0deg,#2563EB,#93C5FD,#60A5FA,#2563EB)] animate-spin-slow pointer-events-none" />
-              <div className="relative rounded-[24px] overflow-hidden bg-[var(--surface)]">
+              className="relative rounded-sm p-[1.5px] overflow-hidden mb-6">
+              <div className="absolute inset-[-150%] opacity-50 bg-[conic-gradient(from_0deg,#004643,#D3B878,#2E7D74,#004643)] animate-spin-slow pointer-events-none" />
+              <div className="relative rounded-sm overflow-hidden bg-[var(--surface)]">
 
               {/* Profile photo(s) */}
               {allPhotos.length > 0 ? (
@@ -680,7 +661,7 @@ function ProfileContent() {
                 </div>
 
                 {/* Contact card */}
-                <div className="glass-card p-5 rounded-2xl">
+                <div className="glass-card p-5 rounded-sm">
                   <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-[var(--text-primary)]"><FaUser className="text-[var(--primary)] text-xs" /> Contact</h3>
                   <div className="space-y-3 text-xs">
                     {profile.phoneNumber && (
@@ -699,7 +680,7 @@ function ProfileContent() {
                 </div>
 
                 {/* Documents */}
-                <div className="glass-card p-5 rounded-2xl">
+                <div className="glass-card p-5 rounded-sm">
                   <h3 className="font-bold text-sm mb-3 flex items-center gap-2"><FaIdCard className="text-[var(--primary)] text-xs" /> Documents</h3>
                   <div className="space-y-2 text-xs">
                     {[
@@ -727,7 +708,7 @@ function ProfileContent() {
                   profile.dressSize || profile.shirtSize || profile.trouserSize || profile.shoeSize ||
                   profile.eyeColor || profile.hairColor || profile.skinColor) && (
                     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                      className="glass-card p-5 rounded-2xl">
+                      className="glass-card p-5 rounded-sm">
                       <h3 className="font-bold text-sm mb-3 flex items-center gap-2"><FaRuler className="text-[var(--primary)] text-xs" /> Measurements</h3>
                       <div className="grid grid-cols-2 gap-2">
                         {[
@@ -760,7 +741,7 @@ function ProfileContent() {
 
                 {/* About Me */}
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-                  className="glass-card p-6 rounded-2xl">
+                  className="glass-card p-6 rounded-sm">
                   <h3 className="font-bold text-base mb-3 flex items-center gap-2"><FaFileAlt className="text-[var(--primary)] text-xs" /> About Me</h3>
                   <p className="text-[var(--text-secondary)] leading-relaxed text-sm whitespace-pre-wrap">
                     {profile.introduction || "No introduction added yet."}
@@ -769,7 +750,7 @@ function ProfileContent() {
 
                 {/* Work & Language */}
                 <div className="grid sm:grid-cols-2 gap-5">
-                  <div className="glass-card p-5 rounded-2xl">
+                  <div className="glass-card p-5 rounded-sm">
                     <h3 className="font-bold text-sm mb-3 flex items-center gap-2"><FaBriefcase className="text-[var(--primary)] text-xs" /> Work Preferences</h3>
                     <div className="space-y-3">
                       <div>
@@ -791,7 +772,7 @@ function ProfileContent() {
                     </div>
                   </div>
 
-                  <div className="glass-card p-5 rounded-2xl">
+                  <div className="glass-card p-5 rounded-sm">
                     <h3 className="font-bold text-sm mb-3 flex items-center gap-2"><FaCheckCircle className="text-[var(--primary)] text-xs" /> Assets &amp; Certs</h3>
                     <div className="space-y-2">
                       {[
@@ -816,7 +797,7 @@ function ProfileContent() {
 
                 {/* Experience */}
                 {(profile.previousExperience || profile.eventsAttended) && (
-                  <div className="glass-card p-6 rounded-2xl">
+                  <div className="glass-card p-6 rounded-sm">
                     <h3 className="font-bold text-sm mb-3 flex items-center gap-2"><FaStar className="text-[var(--primary)] text-xs" /> Experience</h3>
                     {profile.previousExperience && (
                       <div className="mb-4">
@@ -835,7 +816,7 @@ function ProfileContent() {
 
                 {/* Health note */}
                 {profile.healthIssues && (
-                  <div className="glass-card p-5 rounded-2xl border border-red-500/30 bg-red-500/5">
+                  <div className="glass-card p-5 rounded-sm border border-red-500/30 bg-red-500/5">
                     <h3 className="font-bold text-sm mb-2 flex items-center gap-2 text-red-400"><FaFileAlt className="text-[10px]" /> Health Notes</h3>
                     <p className="text-sm text-[var(--text-primary)]">{profile.healthIssues}</p>
                   </div>
@@ -964,7 +945,7 @@ function ProfileContent() {
                     { icon: "📏", label: "Measurements", desc: "Physical attributes" },
                     { icon: "📸", label: "Photos & Links", desc: "Show your portfolio" },
                   ].map((item, i) => (
-                    <div key={i} className="glass-card p-4 rounded-2xl text-center">
+                    <div key={i} className="glass-card p-4 rounded-sm text-center">
                       <div className="text-3xl mb-2">{item.icon}</div>
                       <p className="font-bold text-sm text-[var(--text-primary)]">{item.label}</p>
                       <p className="text-xs text-[var(--text-muted)] mt-0.5">{item.desc}</p>
@@ -1008,7 +989,7 @@ function ProfileContent() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search e.g. 'Model', 'Waiter', 'Photographer'..."
+                    placeholder="Search e.g. 'Model', 'Hostess', 'Promoter'..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-12 pr-4 py-4 rounded-full bg-[var(--surface)] border-2 border-[var(--border)] focus:border-[var(--primary)] outline-none shadow-lg shadow-[var(--primary)]/5 transition-all text-lg"
@@ -1036,7 +1017,7 @@ function ProfileContent() {
                                 setSelectedSubcategory(sub.id);
                                 setCurrentStep(2); // Jump to Personal Info
                               }}
-                              className="bg-[var(--surface)] border border-[var(--border)] px-6 py-4 rounded-2xl cursor-pointer flex items-center gap-3 hover:border-[var(--primary)] hover:shadow-lg hover:shadow-[var(--primary)]/10 transition-all"
+                              className="bg-[var(--surface)] border border-[var(--border)] px-6 py-4 rounded-sm cursor-pointer flex items-center gap-3 hover:border-[var(--primary)] hover:shadow-lg hover:shadow-[var(--primary)]/10 transition-all"
                             >
                               <Icon className={`text-2xl text-[var(--primary)]`} />
                               <div className="text-left">
@@ -1066,7 +1047,7 @@ function ProfileContent() {
                             whileHover={{ scale: 1.05, y: -5 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => selectCategory(category.id)}
-                            className="bg-[var(--surface-elevated)] p-6 rounded-3xl cursor-pointer group hover:bg-gradient-to-br hover:from-[var(--surface)] hover:to-[var(--surface-elevated)] border-2 border-transparent hover:border-[var(--primary)]/20 transition-all flex flex-col items-center min-w-[160px]"
+                            className="bg-[var(--surface-elevated)] p-6 rounded-sm cursor-pointer group hover:bg-gradient-to-br hover:from-[var(--surface)] hover:to-[var(--surface-elevated)] border-2 border-transparent hover:border-[var(--primary)]/20 transition-all flex flex-col items-center min-w-[160px]"
                           >
                             <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${category.color} flex items-center justify-center mb-4 text-white shadow-lg group-hover:scale-110 transition-transform`}>
                               <Icon className="text-3xl" />
@@ -1141,7 +1122,7 @@ function ProfileContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-3xl mx-auto"
               >
-                <div className="glass-card p-8 rounded-3xl">
+                <div className="glass-card p-8 rounded-sm">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold font-display gradient-text">Personal Information</h2>
                     <p className="text-[var(--text-secondary)] mt-2">Let's get to know you better</p>
@@ -1283,7 +1264,7 @@ function ProfileContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-3xl mx-auto"
               >
-                <div className="glass-card p-8 rounded-3xl">
+                <div className="glass-card p-8 rounded-sm">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold font-display gradient-text">Location & Preferences</h2>
                     <p className="text-[var(--text-secondary)] mt-2">Where are you based and where can you work?</p>
@@ -1393,7 +1374,7 @@ function ProfileContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-3xl mx-auto"
               >
-                <div className="glass-card p-8 rounded-3xl">
+                <div className="glass-card p-8 rounded-sm">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold font-display gradient-text">Languages, Documents & Resume</h2>
                     <p className="text-[var(--text-secondary)] mt-2">Your skills, certifications, and CV</p>
@@ -1429,7 +1410,7 @@ function ProfileContent() {
                     </div>
 
                     {/* Resume Upload Section */}
-                    <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center">
+                    <div className="p-6 rounded-sm bg-[var(--surface)] border border-[var(--border)] text-center">
                       <label className="block text-sm font-bold mb-3 flex items-center justify-center gap-2">
                         <FaFileAlt className="text-[var(--primary)]" /> Upload Resume / CV (Optional)
                       </label>
@@ -1590,7 +1571,7 @@ function ProfileContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-3xl mx-auto"
               >
-                <div className="glass-card p-8 rounded-3xl">
+                <div className="glass-card p-8 rounded-sm">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold font-display gradient-text">Professional Details</h2>
                     <p className="text-[var(--text-secondary)] mt-2">Tell us about your experience</p>
@@ -1661,7 +1642,7 @@ function ProfileContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-3xl mx-auto"
               >
-                <div className="glass-card p-8 rounded-3xl">
+                <div className="glass-card p-8 rounded-sm">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold font-display gradient-text">Measurements & Appearance</h2>
                     <p className="text-[var(--text-secondary)] mt-2">Helps match you with the right events. All fields are optional.</p>
@@ -1880,7 +1861,7 @@ function ProfileContent() {
                   exit={{ opacity: 0, x: -20 }}
                   className="max-w-3xl mx-auto"
                 >
-                  <div className="glass-card p-8 rounded-3xl">
+                  <div className="glass-card p-8 rounded-sm">
                     <div className="text-center mb-8">
                       <h2 className="text-3xl font-bold font-display gradient-text">Media & Social Links</h2>
                       <p className="text-[var(--text-secondary)] mt-2">Showcase your work and connect with employers</p>
@@ -1896,7 +1877,7 @@ function ProfileContent() {
                         <div className="flex justify-center gap-4 mb-2">
                           {[0, 1, 2].map((index) => (
                             <div key={index} className="relative">
-                              <div className={`w-28 h-28 rounded-2xl overflow-hidden border-2 transition-all relative group ${index === 0 ? 'border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20' : 'border-dashed border-[var(--border)] hover:border-[var(--primary)]'
+                              <div className={`w-28 h-28 rounded-sm overflow-hidden border-2 transition-all relative group ${index === 0 ? 'border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20' : 'border-dashed border-[var(--border)] hover:border-[var(--primary)]'
                                 }`}>
                                 {profile.profilePhotos[index] ? (
                                   <>

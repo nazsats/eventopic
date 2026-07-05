@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Eventopic — A Small Dubai Staffing Team",
+  title: "About Eventopic — A UAE Event Staffing Agency",
   description:
-    "Meet the three-person team behind Eventopic, a UAE platform for event, promotion and part-time staffing. Launched in 2025, working across all 7 emirates.",
+    "A young UAE network that has worked the floor — supplying professional, reliable staff for events, exhibitions and activations. Built with Newlink Business Group.",
   alternates: { canonical: "https://eventopic.com/about" },
   openGraph: {
-    title: "About Eventopic — Built by a Small Dubai Team",
-    description: "Three people connecting staff with event, promotion and part-time work across the UAE.",
+    title: "About Eventopic — A UAE Event Staffing Agency",
+    description: "Good staffing is not only about appearance. Attitude, accountability and representing brands the right way.",
     url: "https://eventopic.com/about",
   },
 };

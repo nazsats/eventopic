@@ -20,13 +20,13 @@ export function ServiceCard({ icon, title, description, gradient = "from-purple-
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.4 }}
       whileHover={{ y: -5 }}
-      className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700"
+      className="group relative bg-white dark:bg-gray-800 rounded-sm p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700"
     >
       {/* Gradient accent line */}
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient} rounded-t-2xl`} />
       
       {/* Icon */}
-      <div className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradient} text-white mb-4 sm:mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+      <div className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-sm bg-gradient-to-br ${gradient} text-white mb-4 sm:mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
         <span className="text-2xl sm:text-3xl">{icon}</span>
       </div>
 

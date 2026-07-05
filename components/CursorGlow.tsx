@@ -34,8 +34,8 @@ export default function CursorGlow() {
       const scale = down ? 1.35 : 1;
       el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(${scale})`;
       el.style.background = down
-        ? "radial-gradient(circle, rgba(37, 99, 235,0.22) 0%, rgba(59, 130, 246,0.10) 35%, transparent 70%)"
-        : "radial-gradient(circle, rgba(37, 99, 235,0.13) 0%, rgba(59, 130, 246,0.06) 40%, transparent 70%)";
+        ? "radial-gradient(circle, rgba(0,70,67,0.22) 0%, rgba(46,125,116,0.10) 35%, transparent 70%)"
+        : "radial-gradient(circle, rgba(0,70,67,0.13) 0%, rgba(46,125,116,0.06) 40%, transparent 70%)";
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);

@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       message: validatedData.message || '',
       eventType: body.eventType ? sanitizeText(String(body.eventType), 60) : '',
       eventDate: body.date ? sanitizeText(String(body.date), 40) : '',
+      preferredTime: body.time ? sanitizeText(String(body.time), 20) : '',
       createdAt: FieldValue.serverTimestamp(),
       status: 'new',
       source: 'contact_form',

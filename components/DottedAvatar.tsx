@@ -55,7 +55,7 @@ export default function DottedAvatar({
         ref={ref}
         onMouseMove={onMove}
         onMouseLeave={reset}
-        className={`relative w-24 h-24 rounded-3xl bg-gradient-to-br ${gradient} shadow-[var(--shadow-md)] transition-transform duration-200 will-change-transform overflow-hidden`}
+        className={`relative w-24 h-24 rounded-sm bg-gradient-to-br ${gradient} shadow-[var(--shadow-md)] transition-transform duration-200 will-change-transform overflow-hidden`}
       >
         {/* halftone dot texture */}
         <svg viewBox="0 0 120 120" className="absolute inset-0 w-full h-full opacity-50">
@@ -72,7 +72,7 @@ export default function DottedAvatar({
       </div>
       {/* role badge */}
       {emoji && (
-        <div className="absolute -bottom-1.5 -right-1.5 w-9 h-9 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-sm)] flex items-center justify-center text-lg">
+        <div className="absolute -bottom-1.5 -right-1.5 w-9 h-9 rounded-sm bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-sm)] flex items-center justify-center text-lg">
           {emoji}
         </div>
       )}

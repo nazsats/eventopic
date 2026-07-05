@@ -2,37 +2,29 @@
 
 import Navbar from "../../components/Navbar";
 import CursorGlow from "../../components/CursorGlow";
-import DottedAvatar from "../../components/DottedAvatar";
 import Footer from "../../components/Footer";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   FaRocket, FaUsers, FaHandshake, FaShieldAlt,
   FaLightbulb, FaHeart, FaArrowRight, FaMapMarkerAlt,
-  FaLinkedin, FaInstagram,
 } from "react-icons/fa";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const STATS = [
-  { value: "3", label: "People on the team" },
-  { value: "4 yrs", label: "In Dubai's event scene" },
-  { value: "7", label: "Emirates covered" },
-  { value: "2025", label: "Year we launched" },
+  { value: "07", label: "Emirates covered" },
+  { value: "30+", label: "Role types" },
+  { value: "2025", label: "Built in" },
+  { value: "15+ yrs", label: "Newlink Group backing" },
 ];
 
 const VALUES = [
-  { icon: <FaRocket />, title: "Speed & Efficiency", desc: "We build technology that removes hiring friction — what used to take days now takes minutes." },
-  { icon: <FaShieldAlt />, title: "Security First", desc: "All user data is protected behind Firebase Authentication. Your privacy is never an afterthought." },
-  { icon: <FaUsers />, title: "Community-Driven", desc: "We grow together. Staff feedback shapes our platform, and every voice counts." },
-  { icon: <FaLightbulb />, title: "AI-Powered", desc: "Our 24/7 AI assistant guides professionals to the right roles and answers questions instantly." },
-  { icon: <FaHandshake />, title: "Trust & Transparency", desc: "No hidden fees, no shadowy agencies. Clear pay rates, verified listings, honest terms." },
-  { icon: <FaHeart />, title: "People First", desc: "Behind every job posting is a person building their career. We take that seriously." },
-];
-
-const TEAM = [
-  { name: "Naz", role: "Co-founder · Tech & Product", initial: "N", emoji: "💻", bio: "The engineer behind Eventopic. He's been taking things apart and building them back better since he was a kid, and he keeps the platform fast, reliable and genuinely useful." },
-  { name: "San", role: "Co-founder · Growth & Partnerships", initial: "S", emoji: "🤝", bio: "Our connector. Confident and persistent, San is great with people and has a knack for finding a way through just about any problem." },
-  { name: "Dor", role: "Operations Lead", initial: "D", emoji: "🗂️", bio: "Keeps everything moving. From bookings to on-the-day logistics, Dor makes the whole process feel effortless for staff and clients alike." },
+  { icon: <FaRocket />, title: "Speed & Efficiency", desc: "Hiring that takes minutes, not days." },
+  { icon: <FaShieldAlt />, title: "Security First", desc: "Your data stays private, always." },
+  { icon: <FaUsers />, title: "Quality Talent", desc: "Every profile is verified before booking." },
+  { icon: <FaLightbulb />, title: "AI-Powered", desc: "Smart matching and 24/7 assistance." },
+  { icon: <FaHandshake />, title: "Trust & Transparency", desc: "Clear rates, honest terms, no hidden fees." },
+  { icon: <FaHeart />, title: "Client-Focused", desc: "Your deadline is our deadline." },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -56,11 +48,12 @@ export default function About() {
           </motion.p>
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="text-4xl sm:text-5xl md:text-6xl font-display font-black mb-4 leading-tight">
-A Small Team, <span className="gradient-text">Big on Reliability.</span>
+            A Young UAE Network That Has <span className="gradient-text">Worked the Floor.</span>
           </motion.h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-            className="text-[var(--text-secondary)] text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-8">
-            Eventopic started because hiring (and finding) good staff in Dubai was harder than it needed to be. We&apos;re three people connecting staff with event, promotion and part-time work across the UAE — and we keep it simple and honest.
+            className="text-[var(--text-secondary)] text-sm md:text-base max-w-lg mx-auto leading-relaxed mb-8">
+            An event staffing agency supplying professional, well-presented and reliable
+            staff for events, exhibitions, brand activations and private gatherings.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
@@ -68,7 +61,7 @@ A Small Team, <span className="gradient-text">Big on Reliability.</span>
               Explore Jobs <FaArrowRight />
             </Link>
             <Link href="/contact" className="btn-secondary px-7 py-3 text-sm text-center">
-              Work With Us
+              Hire Staff
             </Link>
           </motion.div>
         </div>
@@ -92,44 +85,48 @@ A Small Team, <span className="gradient-text">Big on Reliability.</span>
         </div>
       </div>
 
-      {/* ── Story ── */}
+      {/* ── About Eventopic ── */}
       <section className="py-16 md:py-24 bg-[var(--background)]">
-        <div className="container mx-auto px-5 max-w-5xl">
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-            <motion.div initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Our Story</p>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-4 leading-snug">
-                Built by Event People, <br className="hidden md:block" /><span className="gradient-text">for Event People</span>
-              </h2>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">
-                After four years working in Dubai&apos;s event scene, the three of us kept hitting the same wall: hiring and finding reliable staff meant endless WhatsApp groups, middlemen, and last-minute scrambles. We knew it could be simpler.
-              </p>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-6">
-                So in 2025 we built Eventopic — a straightforward platform that connects staff with events, promotions and part-time work directly, tracks applications in real time, and skips the middleman.
-              </p>
-              <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                <FaMapMarkerAlt className="text-[var(--accent)] shrink-0" />
-                Business Bay, Dubai, UAE
-              </div>
-            </motion.div>
+        <div className="container mx-auto px-5 max-w-2xl text-center">
+          <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">The honest part first</p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-4 leading-snug">
+              Good Staffing Is Not Only <span className="gradient-text">About Appearance</span>
+            </h2>
+            <p className="text-[var(--text-secondary)] text-sm md:text-base leading-relaxed mb-6">
+              Every event has its own atmosphere, audience and expectations. We focus on
+              attitude, accountability and knowing how to stand for a brand the right way.
+            </p>
+            <div className="inline-flex items-center gap-2 text-xs text-[var(--text-muted)]">
+              <FaMapMarkerAlt className="text-[var(--accent)] shrink-0" />
+              International City, CBD 05, Office No. 8, Dubai, UAE
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Card visual */}
-            <motion.div initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-              className="space-y-3">
-              {[
-                { title: "4 yrs", desc: "Between us, working Dubai's events, promotions and part-time staffing." },
-                { title: "2025", desc: "Launched Eventopic — a live job board and talent platform for the UAE." },
-                { title: "Now", desc: "Growing the talent pool and adding jobs across all 7 emirates." },
-                { title: "Next", desc: "Smarter matching, faster bookings, and more roles beyond events." },
-              ].map((item, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                  className="flex gap-4 glass-card p-4 rounded-xl border border-transparent hover:border-[var(--primary)]/20 transition-all">
-                  <div className="shrink-0 font-display font-black text-sm text-[var(--primary)] w-10">{item.title}</div>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
-                </motion.div>
+      {/* ── Newlink Business Group ── */}
+      <section className="py-16 md:py-20 bg-[var(--surface-elevated)] border-y border-[var(--border)]">
+        <div className="container mx-auto px-5 max-w-2xl text-center">
+          <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Built with Newlink Business Group</p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-4 leading-snug">
+              A Structured, Reliable Foundation <span className="gradient-text">Behind the Scenes</span>
+            </h2>
+            <p className="text-[var(--text-secondary)] text-sm md:text-base leading-relaxed mb-8">
+              Eventopic is building its journey with Newlink Business Group — our sister company
+              and trusted UAE partner — with the right paperwork, legal guidance and a responsible
+              approach to the market.
+            </p>
+            <div className="inline-flex rounded-sm overflow-hidden shadow-[var(--shadow-md)]">
+              {[["2010", "Established"], ["15+", "Years in the UAE"]].map(([v, l], i) => (
+                <div key={l} className={`px-10 py-5 bg-[image:var(--gradient-primary)] text-center ${i === 1 ? "border-l border-white/20" : ""}`}>
+                  <p className="font-display font-black text-2xl md:text-3xl text-white leading-none mb-1">{v}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-white/70 font-bold">{l}</p>
+                </div>
               ))}
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -154,7 +151,7 @@ A Small Team, <span className="gradient-text">Big on Reliability.</span>
               <motion.div
                 key={i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.07 }}
-                className="glass-card p-6 rounded-2xl group hover:border-[var(--primary)]/25 border border-transparent transition-all hover:-translate-y-1"
+                className="glass-card p-6 rounded-sm group hover:border-[var(--primary)]/25 border border-transparent transition-all hover:-translate-y-1"
               >
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)]/20 to-[var(--secondary)]/10 flex items-center justify-center text-[var(--primary)] text-sm mb-4 group-hover:scale-110 transition-transform">
                   {v.icon}
@@ -167,40 +164,32 @@ A Small Team, <span className="gradient-text">Big on Reliability.</span>
         </div>
       </section>
 
-      {/* ── Team ── */}
+      {/* ── What we do ── */}
       <section className="py-16 md:py-24 bg-[var(--background)]">
         <div className="container mx-auto px-5 max-w-5xl">
           <div className="text-center mb-9">
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">
-              The Team
+              What We Do
             </motion.p>
             <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
-              People Behind <span className="gradient-text">Eventopic</span>
+              Staffing & Consultancy, <span className="gradient-text">End to End</span>
             </motion.h2>
           </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {TEAM.map((member, i) => (
+            {[
+              { title: "Professional Staffing", desc: "Verified hostesses, promoters, models and hospitality staff — briefed before day one." },
+              { title: "Workforce Solutions", desc: "Flexible teams for exhibitions, activations, kiosks and private gatherings." },
+              { title: "Staffing Consultancy", desc: "We advise on roles, headcount and budget — then deliver the team." },
+            ].map((item, i) => (
               <motion.div
                 key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                className="glass-card p-6 rounded-2xl text-center group hover:border-[var(--primary)]/25 border border-transparent transition-all hover:-translate-y-1"
+                className="glass-card p-6 rounded-sm group hover:border-[var(--primary)]/25 border border-transparent transition-all hover:-translate-y-1"
               >
-                <div className="mb-5">
-                  <DottedAvatar initial={member.initial} emoji={member.emoji} />
-                </div>
-                <h3 className="font-bold text-[var(--text-primary)] mb-0.5">{member.name}</h3>
-                <p className="text-[10px] font-bold text-[var(--primary)] uppercase tracking-wider mb-3">{member.role}</p>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{member.bio}</p>
-                <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-[var(--border)]">
-                  <button className="w-7 h-7 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-muted)] transition-all text-xs">
-                    <FaLinkedin />
-                  </button>
-                  <button className="w-7 h-7 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-muted)] transition-all text-xs">
-                    <FaInstagram />
-                  </button>
-                </div>
+                <h3 className="font-bold text-[var(--text-primary)] mb-2">{item.title}</h3>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -217,14 +206,14 @@ A Small Team, <span className="gradient-text">Big on Reliability.</span>
               Join a Growing UAE <span className="gradient-text">Talent Community</span>
             </h2>
             <p className="text-[var(--text-secondary)] text-sm mb-8 max-w-sm mx-auto">
-              Free to join. No hidden fees. Event, promotion and part-time work — real pay, on time.
+              Free to join. No hidden fees. Part-time and short-term work with trusted brands — real pay, on time.
             </p>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
               <Link href="/jobs" className="btn-primary px-8 py-3.5 text-sm font-bold inline-flex items-center justify-center gap-2">
                 Browse Jobs <FaArrowRight />
               </Link>
               <Link href="/contact" className="btn-secondary px-8 py-3.5 text-sm text-center">
-                Contact the Team
+                Get in Touch
               </Link>
             </div>
           </motion.div>

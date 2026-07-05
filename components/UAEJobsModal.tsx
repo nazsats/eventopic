@@ -30,13 +30,13 @@ export default function UAEJobsModal({ open, onClose }: { open: boolean; onClose
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#1E1233]/55 backdrop-blur-sm"
+          className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#00302E]/55 backdrop-blur-sm"
         >
           <motion.div
             initial={{ y: 40, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 40, opacity: 0 }}
             transition={{ type: "spring", damping: 26, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--surface)] w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden flex flex-col"
+            className="bg-[var(--surface)] w-full sm:max-w-2xl rounded-t-sm sm:rounded-sm border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden flex flex-col"
             style={{ maxHeight: "92dvh" }}
           >
             {/* header */}

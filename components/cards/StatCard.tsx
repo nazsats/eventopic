@@ -19,10 +19,10 @@ export function StatCard({ icon, number, label, gradient = "from-purple-500 to-p
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.4 }}
-      className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 text-center"
+      className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-sm p-6 sm:p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 text-center"
     >
       {/* Icon */}
-      <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradient} text-white mb-3 sm:mb-4 shadow-md`}>
+      <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-sm bg-gradient-to-br ${gradient} text-white mb-3 sm:mb-4 shadow-md`}>
         <span className="text-xl sm:text-2xl">{icon}</span>
       </div>
 

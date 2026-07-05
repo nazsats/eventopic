@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type ThemeId = "dubai-luxury" | "hospitality" | "expo" | "executive" | "desert";
+export type ThemeId = "cyprus";
 
 export interface Theme {
   id: ThemeId;
@@ -11,16 +11,12 @@ export interface Theme {
   swatches: { primary: string; accent: string; secondary: string; bg: string };
 }
 
-// Order matches the 5 luxury palettes. The first is the default (= :root in CSS).
+// Single brand palette (= :root in CSS): Cyprus + Sand Dune.
 export const themes: Theme[] = [
-  { id: "dubai-luxury", name: "Dubai Luxury", desc: "Navy · Gold · Teal", swatches: { primary: "#0B132B", accent: "#C9A84C", secondary: "#00A896", bg: "#FAF8F4" } },
-  { id: "hospitality", name: "Hospitality Premium", desc: "Navy · Gold", swatches: { primary: "#112D4E", accent: "#D4AF37", secondary: "#5B7BA3", bg: "#F8F6F2" } },
-  { id: "expo", name: "Modern Expo", desc: "Blue · Teal · Gold", swatches: { primary: "#003566", accent: "#E9C46A", secondary: "#2A9D8F", bg: "#F7F9FC" } },
-  { id: "executive", name: "Black & Gold", desc: "Black · Gold", swatches: { primary: "#111827", accent: "#C8A14D", secondary: "#6B7280", bg: "#F9F7F3" } },
-  { id: "desert", name: "Desert Luxury", desc: "Brown · Sand · Emerald", swatches: { primary: "#3E2723", accent: "#D6B36A", secondary: "#2E8B57", bg: "#FCFAF5" } },
+  { id: "cyprus", name: "Cyprus", desc: "Cyprus · Sand Dune · Brass", swatches: { primary: "#004643", accent: "#B08D4A", secondary: "#2E7D74", bg: "#F0EDE5" } },
 ];
 
-const DEFAULT: ThemeId = "dubai-luxury";
+const DEFAULT: ThemeId = "cyprus";
 
 interface ThemeContextType {
   currentTheme: ThemeId;

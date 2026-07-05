@@ -584,7 +584,7 @@ export default function LeadsPage() {
                             onDragLeave={() => setIsDragging(false)}
                             onDrop={handleDrop}
                             onClick={() => fileInputRef.current?.click()}
-                            className={`glass-card p-8 border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all duration-300 ${isDragging ? "border-[var(--primary)] bg-[var(--primary)]/10 scale-[1.01]" : "border-[var(--border)] hover:border-[var(--primary)]/50 hover:bg-[var(--surface)]"}`}
+                            className={`glass-card p-8 border-2 border-dashed rounded-sm text-center cursor-pointer transition-all duration-300 ${isDragging ? "border-[var(--primary)] bg-[var(--primary)]/10 scale-[1.01]" : "border-[var(--border)] hover:border-[var(--primary)]/50 hover:bg-[var(--surface)]"}`}
                         >
                             <input ref={fileInputRef} type="file" accept=".csv" multiple className="hidden" onChange={(e) => e.target.files && e.target.files.length > 0 && handleFiles(e.target.files)} />
                             {isUploading ? (
@@ -594,7 +594,7 @@ export default function LeadsPage() {
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-3">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-2xl shadow-lg">
+                                    <div className="w-16 h-16 rounded-sm bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-2xl shadow-lg">
                                         <FaFileUpload />
                                     </div>
                                     <div>
@@ -944,7 +944,7 @@ export default function LeadsPage() {
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: 40, opacity: 0 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="glass-card w-full sm:max-w-2xl flex flex-col rounded-t-2xl sm:rounded-2xl border border-[var(--border)] overflow-hidden"
+                            className="glass-card w-full sm:max-w-2xl flex flex-col rounded-t-2xl sm:rounded-sm border border-[var(--border)] overflow-hidden"
                             style={{ maxHeight: "90dvh" }}
                         >
                             {/* Header — fixed */}

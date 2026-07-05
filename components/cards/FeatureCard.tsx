@@ -23,12 +23,12 @@ export function FeatureCard({ icon, title, description, gradient = "from-purple-
     >
       {/* Icon Container */}
       <div className="relative inline-block mb-4 sm:mb-6">
-        <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-xl group-hover:shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+        <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-sm sm:rounded-sm bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-xl group-hover:shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
           <span className="text-2xl sm:text-3xl">{icon}</span>
         </div>
         
         {/* Decorative circle */}
-        <div className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${gradient} opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300`} />
+        <div className={`absolute inset-0 rounded-sm sm:rounded-sm bg-gradient-to-br ${gradient} opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300`} />
       </div>
 
       {/* Content */}

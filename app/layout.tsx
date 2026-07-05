@@ -27,23 +27,23 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://eventopic.com"),
-  title: "Eventopic — Event Staff, Promotions & Part-Time Jobs in the UAE",
+  title: "Eventopic — Event Staffing Agency in the UAE",
   description:
-    "Eventopic is a UAE staffing platform connecting hostesses, promoters, models and hospitality staff with events, promotions and part-time work across Dubai and the Emirates. Browse jobs or hire reliable staff.",
+    "Eventopic is a UAE event staffing agency supplying professional, well-presented and reliable staff for events, exhibitions, brand activations and private gatherings — with part-time work for talent across all 7 emirates.",
   keywords:
-    "event staff UAE, part time jobs Dubai, promotion staff Dubai, hire promoters Dubai, hostesses Dubai, event jobs Dubai, hospitality staff, brand ambassadors, models Dubai, staffing UAE",
+    "event staffing agency UAE, event staff Dubai, hire hostesses Dubai, promoters Dubai, brand activation staff, exhibition staff UAE, hospitality staff Dubai, models Dubai, part time event jobs UAE, private gathering staff",
   openGraph: {
-    title: "Eventopic — Staffing for Events, Promotions & Part-Time Work in the UAE",
+    title: "Eventopic — An Event Staffing Agency in the UAE",
     description:
-      "Browse event, promotion and part-time jobs across the UAE, or hire reliable staff. A simple platform built by a small Dubai team.",
+      "Professional, well-presented and reliable staff for events, exhibitions, brand activations and private gatherings.",
     images: ["/og-image.png"],
     type: "website",
     url: "https://eventopic.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Eventopic — UAE Event, Promo & Part-Time Staffing",
-    description: "Find event, promotion and part-time work in the UAE — or hire vetted staff.",
+    title: "Eventopic — UAE Event Staffing Agency",
+    description: "Reliable staff for events, exhibitions and activations — or find part-time event work in the UAE.",
     images: ["/og-image.png"],
   },
   robots: "index, follow",
@@ -81,9 +81,10 @@ export default function RootLayout({
             name: "Eventopic",
             url: "https://eventopic.com",
             logo: "https://eventopic.com/logo.png",
-            description: "A UAE staffing platform connecting people with event, promotion and part-time work across Dubai and the Emirates.",
+            description: "A UAE event staffing agency supplying professional, well-presented and reliable staff for events, exhibitions, brand activations and private gatherings.",
             address: {
               "@type": "PostalAddress",
+              streetAddress: "International City, CBD 05, Office No. 8",
               addressLocality: "Dubai",
               addressRegion: "Dubai",
               addressCountry: "AE",

@@ -238,7 +238,7 @@ export default function JobDetailPage() {
                         "@context": "https://schema.org",
                         "@type": "JobPosting",
                         title: job.title,
-                        description: job.summary || job.description || `${job.title} — event staffing role in ${job.location}, UAE.`,
+                        description: job.summary || job.description || `${job.title} — staffing role in ${job.location}, UAE.`,
                         datePosted: new Date().toISOString().split("T")[0],
                         validThrough: new Date(Date.now() + 30 * 864e5).toISOString().split("T")[0],
                         employmentType: ({ "Full-time": "FULL_TIME", "Part-time": "PART_TIME", "Freelance": "CONTRACTOR", "Contract": "CONTRACTOR", "Temporary": "TEMPORARY", "One-time Event": "TEMPORARY" } as Record<string, string>)[job.type] || "OTHER",
@@ -313,7 +313,7 @@ export default function JobDetailPage() {
                                     <FaBriefcase className="text-[var(--primary)]" /> About This Role
                                 </h2>
                                 <p className="text-[var(--text-secondary)] leading-relaxed">
-                                    {job.summary || job.description || "Join our professional team for exciting event opportunities in Dubai."}
+                                    {job.summary || job.description || "Join our professional team for part-time and short-term opportunities in the UAE."}
                                 </p>
                             </motion.div>
 

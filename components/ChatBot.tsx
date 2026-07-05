@@ -113,7 +113,7 @@ const QUICK_REPLIES = [
   "How many model jobs are available?",
   "Show me promoter jobs",
   "What jobs are in Dubai?",
-  "I need staff for my event",
+  "I need staff for my business",
   "How do I apply for a job?",
 ];
 
@@ -136,7 +136,7 @@ const MessageBubble = React.memo(function MessageBubble({ msg }: { msg: Message 
       )}
 
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-md ${isBot
+        className={`max-w-[80%] rounded-sm px-4 py-3 text-sm leading-relaxed shadow-md ${isBot
           ? "bg-[var(--surface-elevated)] text-[var(--text-secondary)] rounded-tl-sm"
           : "bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white rounded-tr-sm"
           }`}
@@ -173,7 +173,7 @@ function TypingIndicator() {
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-xs shadow-md">
         <FaRobot />
       </div>
-      <div className="bg-[var(--surface-elevated)] rounded-2xl rounded-tl-sm px-4 py-3 shadow-md flex items-center gap-1.5">
+      <div className="bg-[var(--surface-elevated)] rounded-sm rounded-tl-sm px-4 py-3 shadow-md flex items-center gap-1.5">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
@@ -196,7 +196,7 @@ export default function ChatBot() {
       id: "welcome",
       role: "assistant",
       content:
-        "👋 Hi! I'm **Eventopic AI Assistant**.\n\nI can help you with:\n- Finding & applying for jobs\n- Event staffing solutions\n- Payment & experience questions\n- Contacting our team\n\nWhat can I help you with today?",
+        "👋 Hi! I'm **Eventopic AI Assistant**.\n\nI can help you with:\n- Finding & applying for part-time jobs\n- Professional staffing solutions for your business\n- Payment & experience questions\n- Contacting us\n\nWhat can I help you with today?",
       timestamp: new Date(),
     },
   ]);
@@ -293,7 +293,7 @@ export default function ChatBot() {
         id: "welcome",
         role: "assistant",
         content:
-          "👋 Hi! I'm **Eventopic AI Assistant**.\n\nI can help you with:\n- Finding & applying for jobs\n- Event staffing solutions\n- Payment & experience questions\n- Contacting our team\n\nWhat can I help you with today?",
+          "👋 Hi! I'm **Eventopic AI Assistant**.\n\nI can help you with:\n- Finding & applying for part-time jobs\n- Professional staffing solutions for your business\n- Payment & experience questions\n- Contacting us\n\nWhat can I help you with today?",
         timestamp: new Date(),
       },
     ]);
@@ -320,7 +320,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(37, 99, 235,0.4)] hover:shadow-[0_0_40px_rgba(37, 99, 235,0.6)] transition-shadow"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(0,70,67,0.4)] hover:shadow-[0_0_40px_rgba(0,70,67,0.6)] transition-shadow"
             aria-label="Open AI Chat"
           >
             {/* Pulse ring */}
@@ -339,7 +339,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 20 }}
             transition={{ type: "spring", stiffness: 260, damping: 24 }}
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] h-[560px] max-h-[calc(100vh-100px)] flex flex-col rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-[var(--border)]"
+            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] h-[560px] max-h-[calc(100vh-100px)] flex flex-col rounded-sm overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-[var(--border)]"
             style={{ background: "var(--background)" }}
             ref={chatWindowRef}
           >
@@ -429,7 +429,7 @@ export default function ChatBot() {
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   whileTap={{ scale: 0.9 }}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-[0_0_16px_rgba(37, 99, 235,0.4)] transition-shadow flex-shrink-0"
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-[0_0_16px_rgba(0,70,67,0.4)] transition-shadow flex-shrink-0"
                 >
                   {isLoading ? (
                     <FaSpinner className="animate-spin" size={14} />

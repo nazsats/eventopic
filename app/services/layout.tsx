@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Staffing Services — Events, Promotions & Part-Time | Eventopic",
+  title: "Event Staffing Services in the UAE | Eventopic",
   description:
-    "Hostesses, promoters, models, hospitality crew and more. See how Eventopic staffs events, promotions and part-time roles across the UAE — and how talent gets hired.",
+    "Hostesses, promoters, models, hospitality and event support staff for exhibitions, brand activations, private gatherings and more — across all 7 emirates.",
   alternates: { canonical: "https://eventopic.com/services" },
   openGraph: {
-    title: "Eventopic Staffing Services — Events, Promotions & Part-Time",
-    description: "Reliable event, promotion and part-time staff across Dubai and the UAE.",
+    title: "Eventopic — Event Staffing Services in the UAE",
+    description: "Professional, well-presented and reliable staff for events, exhibitions and activations.",
     url: "https://eventopic.com/services",
   },
 };

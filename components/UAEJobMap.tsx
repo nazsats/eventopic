@@ -103,12 +103,12 @@ export default function UAEJobMap({
       >
         <defs>
           <linearGradient id="mapFill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#C084FC" stopOpacity="0.06" />
+            <stop offset="0%" stopColor="#004643" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#2E7D74" stopOpacity="0.06" />
           </linearGradient>
           <linearGradient id="mapStroke" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7C3AED" />
-            <stop offset="100%" stopColor="#C084FC" />
+            <stop offset="0%" stopColor="#004643" />
+            <stop offset="100%" stopColor="#2E7D74" />
           </linearGradient>
           <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="6" result="b" />
@@ -119,13 +119,13 @@ export default function UAEJobMap({
         {/* filled landmass */}
         <path d={OUTLINE} fill="url(#mapFill)" stroke="url(#mapStroke)" strokeWidth="2.5" strokeLinejoin="round" filter="url(#glow)" />
         {/* travelling light along border */}
-        <path d={OUTLINE} fill="none" stroke="#E9D5FF" strokeWidth="2.5" strokeLinejoin="round" strokeDasharray="60 1600" opacity="0.9">
+        <path d={OUTLINE} fill="none" stroke="#D3B878" strokeWidth="2.5" strokeLinejoin="round" strokeDasharray="60 1600" opacity="0.9">
           <animate attributeName="stroke-dashoffset" from="0" to="-1660" dur="6s" repeatCount="indefinite" />
         </path>
 
         {/* ambient drifting dots */}
         {AMBIENT.map((a, i) => (
-          <circle key={i} cx={a.x} cy={a.y} r={a.s} fill="#A855F7" opacity="0.35">
+          <circle key={i} cx={a.x} cy={a.y} r={a.s} fill="#2E7D74" opacity="0.35">
             <animate attributeName="cy" values={`${a.y};${a.y - 14};${a.y}`} dur={`${4 + a.d}s`} repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.15;0.5;0.15" dur={`${4 + a.d}s`} repeatCount="indefinite" />
           </circle>
@@ -151,21 +151,21 @@ export default function UAEJobMap({
             >
               {/* pulse ring for active emirates */}
               {active && (
-                <circle cx={c.x} cy={c.y} r={baseR} fill="none" stroke="#7C3AED" strokeWidth="2" opacity="0.6">
+                <circle cx={c.x} cy={c.y} r={baseR} fill="none" stroke="#004643" strokeWidth="2" opacity="0.6">
                   <animate attributeName="r" from={baseR} to={baseR + 22} dur="2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.6" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
               )}
               {/* halo when lit */}
-              {lit && <circle cx={c.x} cy={c.y} r={r + 12} fill="#7C3AED" opacity="0.18" />}
+              {lit && <circle cx={c.x} cy={c.y} r={r + 12} fill="#004643" opacity="0.18" />}
               {/* dot */}
-              <circle cx={c.x} cy={c.y} r={r} fill={active ? "url(#mapStroke)" : "#C4B5E8"} stroke="#fff" strokeWidth="1.5"
+              <circle cx={c.x} cy={c.y} r={r} fill={active ? "url(#mapStroke)" : "#9DBBB5"} stroke="#fff" strokeWidth="1.5"
                 style={{ transition: "r 0.2s" }} />
               {active && <circle cx={c.x} cy={c.y} r={2} fill="#fff" />}
               {/* count badge */}
               {active && (
                 <g transform={`translate(${c.x + 8}, ${c.y - 8})`}>
-                  <circle r="11" fill="#7C3AED" />
+                  <circle r="11" fill="#004643" />
                   <text textAnchor="middle" dy="4" fontSize="13" fontWeight="800" fill="#fff">{n}</text>
                 </g>
               )}
@@ -173,7 +173,7 @@ export default function UAEJobMap({
               <text
                 x={c.lx} y={c.ly} textAnchor={c.anchor || "start"}
                 fontSize="17" fontWeight={lit ? 800 : 600}
-                fill={lit ? "#5B21B6" : "#6B6480"}
+                fill={lit ? "#004643" : "#6B7A76"}
                 style={{ transition: "fill 0.2s", fontFamily: "Sora, sans-serif" }}
               >
                 {c.name}
@@ -184,7 +184,7 @@ export default function UAEJobMap({
       </svg>
 
       {/* live banner */}
-      <div className="absolute top-2 left-2 md:top-3 md:left-3 flex items-center gap-2 px-3 py-2 rounded-2xl bg-[var(--surface)]/90 backdrop-blur-md border border-[var(--border)] shadow-[var(--shadow-sm)]">
+      <div className="absolute top-2 left-2 md:top-3 md:left-3 flex items-center gap-2 px-3 py-2 rounded-sm bg-[var(--surface)]/90 backdrop-blur-md border border-[var(--border)] shadow-[var(--shadow-sm)]">
         <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
         <span className="text-xs font-bold text-[var(--text-primary)]">
           {total > 0 ? `${total} live ${total === 1 ? "gig" : "gigs"} across the UAE` : "Live UAE job map"}

@@ -43,6 +43,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
@@ -58,12 +59,16 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
       toast.error("Please fill in all fields.");
       return;
     }
+    if (mode === "signup" && !acceptedTerms) {
+      toast.error("Please accept the Privacy Policy and Terms & Conditions to create an account.");
+      return;
+    }
 
     setIsProcessing(true);
     try {
       if (mode === "signup") {
         const { user } = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", user.uid), { email, createdAt: new Date().toISOString() });
+        await setDoc(doc(db, "users", user.uid), { email, createdAt: new Date().toISOString(), acceptedTermsAt: new Date().toISOString() });
         toast.success("Account created! Welcome!");
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -105,6 +110,10 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
     signInFn: () => Promise<void>,
     provider: keyof typeof socialLoading
   ) => {
+    if (mode === "signup" && !acceptedTerms) {
+      toast.error("Please accept the Privacy Policy and Terms & Conditions to create an account.");
+      return;
+    }
     setSocialLoading((prev) => ({ ...prev, [provider]: true }));
     try {
       await signInFn();
@@ -204,6 +213,24 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
                           Forgot Password?
                         </button>
                       </div>
+                    )}
+
+                    {mode === "signup" && (
+                      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={acceptedTerms}
+                          onChange={(e) => setAcceptedTerms(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 shrink-0 accent-[var(--primary)] cursor-pointer"
+                        />
+                        <span className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                          I have read and accept the{" "}
+                          <Link href="/privacy" target="_blank" className="text-[var(--primary)] font-semibold hover:underline">Privacy Policy</Link>{" "}
+                          and{" "}
+                          <Link href="/terms" target="_blank" className="text-[var(--primary)] font-semibold hover:underline">Terms &amp; Conditions</Link>,
+                          including the media usage policy for work assignments.
+                        </span>
+                      </label>
                     )}
 
                     <button
