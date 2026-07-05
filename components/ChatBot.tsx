@@ -189,7 +189,7 @@ function TypingIndicator() {
 
 // ─── Main ChatBot Component ───────────────────────────────────────────────────
 
-export default function ChatBot() {
+export default function ChatBot({ raised = false }: { raised?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -320,7 +320,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(0,70,67,0.4)] hover:shadow-[0_0_40px_rgba(0,70,67,0.6)] transition-shadow"
+            className={`fixed ${raised ? "bottom-24" : "bottom-6"} right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center shadow-[0_0_30px_rgba(0,70,67,0.4)] hover:shadow-[0_0_40px_rgba(0,70,67,0.6)] transition-shadow`}
             aria-label="Open AI Chat"
           >
             {/* Pulse ring */}
@@ -339,7 +339,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 20 }}
             transition={{ type: "spring", stiffness: 260, damping: 24 }}
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] h-[560px] max-h-[calc(100vh-100px)] flex flex-col rounded-sm overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-[var(--border)]"
+            className="fixed inset-x-3 bottom-3 md:inset-x-auto md:bottom-6 md:right-6 z-50 md:w-[360px] h-[72vh] md:h-[560px] max-h-[calc(100vh-90px)] flex flex-col rounded-sm overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-[var(--border)]"
             style={{ background: "var(--background)" }}
             ref={chatWindowRef}
           >

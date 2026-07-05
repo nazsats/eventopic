@@ -257,7 +257,7 @@ export default function JobDetailPage() {
                     <div className="absolute bottom-0 left-10 w-[300px] h-[300px] bg-[var(--secondary)]/5 rounded-full blur-[80px]" />
                 </div>
 
-                <div className="container mx-auto px-4 max-w-6xl relative z-10">
+                <div className="container mx-auto px-5 max-w-6xl relative z-10">
 
                     {/* Breadcrumb */}
                     <div className="mb-8">

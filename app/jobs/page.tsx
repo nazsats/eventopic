@@ -150,7 +150,7 @@ export default function JobsPage() {
                     <div className="absolute bottom-0 left-0 w-[350px] h-[350px] bg-[var(--secondary)]/6 rounded-full blur-[100px]" />
                 </div>
 
-                <div className="container mx-auto px-4 max-w-5xl relative z-10 text-center">
+                <div className="container mx-auto px-5 max-w-5xl relative z-10 text-center">
                     <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
                         {/* Live pill */}
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-[var(--border)] mb-5 text-sm font-bold text-[var(--primary)]">
@@ -182,7 +182,7 @@ export default function JobsPage() {
 
             {/* ── Sticky category filter ── */}
             <div className="sticky top-[64px] z-40 bg-[var(--background)]/90 backdrop-blur-xl border-b border-[var(--border)] py-2.5">
-                <div className="container mx-auto px-4 max-w-5xl flex items-center gap-2.5 overflow-x-auto scrollbar-none">
+                <div className="container mx-auto px-5 max-w-5xl flex items-center gap-2.5 overflow-x-auto scrollbar-none">
                     <FaFilter className="text-[var(--text-muted)] shrink-0 text-xs" />
                     {CATEGORIES.map(cat => (
                         <button
@@ -205,7 +205,7 @@ export default function JobsPage() {
 
             {/* ── Jobs grid ── */}
             <section className="py-10 bg-[var(--background)]">
-                <div className="container mx-auto px-4 max-w-5xl">
+                <div className="container mx-auto px-5 max-w-5xl">
 
                     {/* Results count */}
                     {!isLoading && (

@@ -178,17 +178,17 @@ export default function Navbar() {
             {/* ── Mobile right side ── */}
             <div className="flex lg:hidden items-center gap-2">
               {user ? (
-                <button onClick={() => setIsMenuOpen(true)} className="w-9 h-9 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white font-bold text-sm shadow-[var(--shadow-sm)]">
+                <button onClick={() => setIsMenuOpen(true)} className="w-10 h-10 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white font-bold text-sm shadow-[var(--shadow-sm)]">
                   {avatarChar}
                 </button>
               ) : (
-                <button onClick={() => setIsModalOpen(true)} className="text-xs font-bold text-[var(--primary)] border border-[var(--border-hover)] px-3.5 py-1.5 rounded-full hover:bg-[var(--primary-muted)] transition-all">
+                <button onClick={() => setIsModalOpen(true)} className="text-xs font-bold text-[var(--primary)] border border-[var(--border-hover)] px-4 py-2 rounded-full hover:bg-[var(--primary-muted)] transition-all">
                   Sign In
                 </button>
               )}
               <button
                 onClick={() => setIsMenuOpen(v => !v)}
-                className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-all"
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-all"
                 aria-label="Toggle menu"
               >
                 {isMenuOpen ? <FaTimes size={15} /> : <FaBars size={15} />}
@@ -254,7 +254,7 @@ export default function Navbar() {
                           key={item.href}
                           href={item.href}
                           onClick={() => setIsMenuOpen(false)}
-                          className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${active
+                          className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all ${active
                             ? "bg-[var(--primary-muted)] text-[var(--primary)] border border-[var(--border-hover)]"
                             : "text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text-primary)]"
                             }`}
@@ -293,7 +293,7 @@ export default function Navbar() {
                 )}
               </div>
 
-              <div className="px-4 py-4 border-t border-[var(--border)]">
+              <div className="px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-[var(--border)]">
                 {user ? (
                   <button
                     onClick={handleSignOut}

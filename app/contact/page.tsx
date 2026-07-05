@@ -119,7 +119,7 @@ export default function Contact() {
             );
             return (
               <motion.div key={i} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                className="glass-card p-5 rounded-sm text-center group">
+                className={`glass-card p-5 rounded-sm text-center group ${!card.link ? "col-span-2 md:col-span-1" : ""}`}>
                 {card.link ? <a href={card.link} target="_blank" rel="noopener noreferrer" className="block">{inner}</a> : inner}
               </motion.div>
             );

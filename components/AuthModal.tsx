@@ -142,12 +142,12 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md relative"
+            className="w-full max-w-md relative max-h-[92vh] overflow-y-auto rounded-sm"
           >
             {/* Ambient Glow */}
             <div className="absolute bg-[var(--primary)]/20 inset-4 blur-3xl rounded-full -z-10 animate-pulse" />
 
-            <div className="glass-card p-8 border border-[var(--border)] relative overflow-hidden">
+            <div className="glass-card p-6 sm:p-8 border border-[var(--border)] relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)] via-[var(--accent)] to-[var(--secondary)]" />
 
               <button

@@ -1,11 +1,12 @@
 // app/layout.tsx (Updated for better SEO with more meta tags and structured data)
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Sora } from "next/font/google";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { AuthProvider } from "../contexts/AuthContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
+import WhatsAppButton from "../components/WhatsAppButton";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -24,6 +25,13 @@ const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#004643",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://eventopic.com"),
@@ -101,6 +109,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             {children}
+            <WhatsAppButton />
             <Toaster
               position="top-right"
               richColors

@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Navbar from "../components/Navbar";
-import ChatBot from "../components/ChatBot";
 import Footer from "../components/Footer";
-import UAEGlobe from "../components/UAEGlobe";
 import CursorGlow from "../components/CursorGlow";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -19,6 +18,13 @@ import { collection, getDocs, query, limit } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import AuthModal from "../components/AuthModal";
+
+// Code-split the heavy, non-critical pieces so the first mobile paint is light.
+const UAEGlobe = dynamic(() => import("../components/UAEGlobe"), {
+  ssr: false,
+  loading: () => <div className="w-full max-w-[520px] aspect-square" aria-hidden />,
+});
+const ChatBot = dynamic(() => import("../components/ChatBot"), { ssr: false });
 
 interface Job {
   id: string;
@@ -103,13 +109,13 @@ function FeatureCard({ icon, title, desc, delay }: {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay, duration: 0.35 }}
-      className="group glass-card p-6 rounded-sm"
+      className="group glass-card p-4 md:p-6 rounded-sm"
     >
-      <div className="w-12 h-12 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
+      <div className="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-sm md:text-lg text-white mb-3 md:mb-4 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
         {icon}
       </div>
-      <h3 className="font-bold text-base text-[var(--text-primary)] mb-1.5">{title}</h3>
-      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{desc}</p>
+      <h3 className="font-bold text-xs md:text-base text-[var(--text-primary)] mb-1 md:mb-1.5 leading-snug">{title}</h3>
+      <p className="text-[11px] md:text-sm text-[var(--text-secondary)] leading-relaxed">{desc}</p>
     </motion.div>
   );
 }
@@ -122,8 +128,14 @@ export default function Home() {
   const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
+  const [promiseTab, setPromiseTab] = useState(0);
 
   useEffect(() => {
+    // Featured jobs only render on md+ — skip the Firestore roundtrip on phones.
+    if (!window.matchMedia("(min-width: 768px)").matches) {
+      setIsLoadingJobs(false);
+      return;
+    }
     const fetchData = async () => {
       try {
         const jSnap = await getDocs(query(collection(db, "jobs"), limit(6)));
@@ -173,8 +185,8 @@ export default function Home() {
         {/* Soft luxe background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[var(--background)]" />
-          <div className="absolute -top-40 -left-32 w-[600px] h-[600px] rounded-full bg-[var(--primary)]/10 blur-[120px]" />
-          <div className="absolute -bottom-48 -right-32 w-[700px] h-[700px] rounded-full bg-[var(--secondary)]/10 blur-[140px]" />
+          <div className="hidden md:block absolute -top-40 -left-32 w-[600px] h-[600px] rounded-full bg-[var(--primary)]/10 blur-[120px]" />
+          <div className="hidden md:block absolute -bottom-48 -right-32 w-[700px] h-[700px] rounded-full bg-[var(--secondary)]/10 blur-[140px]" />
           <div className="absolute inset-0 opacity-[0.5] [background-image:var(--gradient-mesh)]" />
         </div>
 
@@ -245,25 +257,25 @@ export default function Home() {
       <div className="border-y border-[var(--border)] bg-[var(--surface)] relative z-30 overflow-hidden">
         {/* faint brand glow behind the strip */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-[var(--primary)]/5 rounded-full blur-[90px] pointer-events-none" />
-        <div className="relative py-12">
+        <div className="relative py-6 md:py-10">
           <motion.p
             initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="text-center text-[10px] uppercase tracking-[0.3em] text-[var(--text-muted)] font-bold mb-8"
+            className="text-center text-[10px] uppercase tracking-[0.3em] text-[var(--text-muted)] font-bold mb-4 md:mb-6"
           >
             Trusted by brands across the UAE
           </motion.p>
 
           {/* auto-scrolling logo marquee — pauses on hover */}
           <div className="marquee-mask overflow-hidden group">
-            <div className="flex gap-5 w-max animate-marquee group-hover:[animation-play-state:paused]">
+            <div className="flex gap-3 md:gap-5 w-max animate-marquee group-hover:[animation-play-state:paused]">
               {[...CLIENTS, ...CLIENTS, ...CLIENTS, ...CLIENTS].map((name, i) => (
                 <div
                   key={i}
                   className="relative shrink-0 rounded-sm p-[1px] bg-gradient-to-br from-[var(--border)] via-transparent to-[var(--border)] hover:from-[var(--accent)]/60 hover:to-[var(--primary)]/40 transition-all duration-500"
                 >
-                  <div className="flex items-center gap-3 px-10 py-5 rounded-sm bg-[var(--surface)] hover:bg-[var(--surface-elevated)]/70 transition-colors duration-500">
+                  <div className="flex items-center gap-2.5 px-6 py-2.5 md:px-9 md:py-4 rounded-sm bg-[var(--surface)] hover:bg-[var(--surface-elevated)]/70 transition-colors duration-500">
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                    <span className="font-display font-bold text-xl text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors tracking-tight whitespace-nowrap">
+                    <span className="font-display font-bold text-sm md:text-lg text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors tracking-tight whitespace-nowrap">
                       {name}
                     </span>
                   </div>
@@ -274,8 +286,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ════════════════ ROLES WE STAFF ════════════════ */}
-      <section className="py-16 md:py-24 bg-[var(--background)] relative overflow-hidden">
+      {/* ════════════════ ROLES WE STAFF (desktop only — trimmed from mobile) ════════════════ */}
+      <section className="hidden md:block py-16 md:py-24 bg-[var(--background)] relative overflow-hidden">
         {/* aurora blobs */}
         <div className="absolute inset-0 -z-10 pointer-events-none">
           <div className="absolute top-10 -left-20 w-[420px] h-[420px] rounded-full bg-[var(--primary)]/8 blur-[120px] animate-drift" />
@@ -359,9 +371,9 @@ export default function Home() {
       </section>
 
       {/* ════════════════ 5-STEP FLOW ════════════════ */}
-      <section className="py-16 md:py-24 bg-[var(--surface-elevated)] border-y border-[var(--border)] relative overflow-hidden">
+      <section className="py-10 md:py-24 bg-[var(--surface-elevated)] border-y border-[var(--border)] relative overflow-hidden">
         <div className="container mx-auto px-5 max-w-5xl relative z-10">
-          <div className="text-center mb-12">
+          <div className="text-center mb-7 md:mb-12">
             <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">For Talent</p>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
               From Sign-Up to <span className="gradient-text">Hired</span>
@@ -371,7 +383,8 @@ export default function Home() {
           <div className="relative">
             {/* connector line (desktop) */}
             <div className="hidden md:block absolute top-8 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-[var(--border-hover)] to-transparent" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 md:gap-4">
+            {/* phones: swipeable snap row · md+: 5-column grid */}
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-3 -mx-5 px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-5 md:gap-4 md:overflow-visible md:mx-0 md:px-0 md:pb-0">
               {STEPS.map((s, i) => (
                 <motion.div
                   key={s.title}
@@ -379,22 +392,22 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="relative flex flex-col items-center text-center group"
+                  className="relative flex flex-col items-center text-center group snap-center shrink-0 w-[104px] md:w-auto"
                 >
-                  <div className="relative w-16 h-16 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-xl shadow-[var(--shadow-md)] mb-3 group-hover:scale-110 transition-transform">
+                  <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-base md:text-xl shadow-[var(--shadow-md)] mb-2.5 md:mb-3 group-hover:scale-110 transition-transform">
                     {s.icon}
-                    <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[10px] font-black text-[var(--primary)]">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[9px] md:text-[10px] font-black text-[var(--primary)]">
                       {i + 1}
                     </span>
                   </div>
-                  <p className="text-sm font-bold text-[var(--text-primary)] leading-snug">{s.title}</p>
+                  <p className="text-xs md:text-sm font-bold text-[var(--text-primary)] leading-snug">{s.title}</p>
                 </motion.div>
               ))}
             </div>
           </div>
 
           {!user && (
-            <div className="text-center mt-12">
+            <div className="text-center mt-6 md:mt-12">
               <button onClick={openSignUp} className="btn-primary px-8 py-3 text-sm">
                 Get Started Free <FaArrowRight />
               </button>
@@ -403,8 +416,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════ FEATURED JOBS ════════════════ */}
-      <section className="py-16 md:py-20 bg-[var(--background)]">
+      {/* ════════════════ JOBS: mobile CTA · desktop featured grid ════════════════ */}
+      {/* Mobile — one prominent call-to-action instead of job listings */}
+      <section className="md:hidden py-10 bg-[var(--background)]">
+        <div className="container mx-auto px-5">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="glass-card rounded-sm p-7 text-center"
+          >
+            <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Live roles, updated daily</p>
+            <h2 className="text-2xl font-display font-bold text-[var(--text-primary)] mb-2">
+              Your Next Job Is <span className="gradient-text">Waiting</span>
+            </h2>
+            <p className="text-sm text-[var(--text-secondary)] mb-5">Hostessing, promotions, modelling and more.</p>
+            <Link href="/jobs" className="btn-primary w-full py-3.5 text-base rounded-full">
+              Join Free <FaArrowRight />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Desktop — featured jobs grid */}
+      <section className="hidden md:block py-16 md:py-20 bg-[var(--background)]">
         <div className="container mx-auto px-5 max-w-5xl">
           <div className="flex flex-col sm:flex-row justify-between sm:items-end mb-8 gap-3">
             <div>
@@ -450,39 +483,40 @@ export default function Home() {
       </section>
 
       {/* ════════════════ WHERE THE DIFFERENCE SHOWS ════════════════ */}
-      <section className="py-16 md:py-24 bg-[var(--surface-elevated)] border-y border-[var(--border)] relative overflow-hidden">
+      <section className="py-10 md:py-24 bg-[var(--surface-elevated)] border-y border-[var(--border)] relative overflow-hidden">
         <div className="container mx-auto px-5 max-w-5xl relative z-10">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6 md:mb-10">
             <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Why us</p>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-3">
               Where the <span className="gradient-text">Difference Shows</span>
             </h2>
-            <p className="text-[var(--text-secondary)] text-sm max-w-md mx-auto">
+            <p className="hidden md:block text-[var(--text-secondary)] text-sm max-w-md mx-auto">
               Good staffing is not only about appearance — it&apos;s attitude, accountability
               and representing your brand the right way.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {DIFFERENCE.map((f, i) => <FeatureCard key={i} {...f} />)}
           </div>
         </div>
       </section>
 
       {/* ════════════════ AI ASSISTANT ════════════════ */}
-      <section className="py-16 md:py-24 bg-[var(--background)]">
+      <section className="py-10 md:py-24 bg-[var(--background)]">
         <div className="container mx-auto px-5 max-w-5xl">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <motion.div initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--primary-muted)] border border-[var(--border)] text-[var(--primary)] text-xs font-bold mb-4">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-center">
+            <motion.div initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--primary-muted)] border border-[var(--border)] text-[var(--primary)] text-xs font-bold mb-3 md:mb-4">
                 <FaRobot /> Eventopic AI
               </div>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-3 leading-snug">
-                Your Personal <span className="gradient-text">Career Assistant</span>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-2 md:mb-3 leading-snug">
+                Meet Your <span className="gradient-text">Career Assistant</span>
               </h2>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-6">
-                It recommends the right jobs, helps you discover better opportunities, and answers your questions — any time.
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4 md:mb-6">
+                It finds the right roles for you and answers your questions — 24/7.
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-center md:justify-start gap-2">
                 {["Job recommendations", "Career guidance", "Instant answers"].map(t => (
                   <span key={t} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)] bg-[var(--primary-muted)] border border-[var(--border)] px-3 py-1.5 rounded-full">
                     <FaCheckCircle className="text-[10px]" /> {t}
@@ -492,7 +526,7 @@ export default function Home() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-              className="glass-card p-5 rounded-sm">
+              className="hidden md:block glass-card p-5 rounded-sm">
               <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[var(--border)]">
                 <div className="w-9 h-9 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-sm">
                   <FaRobot />
@@ -526,15 +560,48 @@ export default function Home() {
       </section>
 
       {/* ════════════════ OUR PROMISE ════════════════ */}
-      <section className="py-16 md:py-24 bg-[var(--surface-elevated)] border-y border-[var(--border)]">
+      <section className="py-10 md:py-24 bg-[var(--surface-elevated)] border-y border-[var(--border)]">
         <div className="container mx-auto px-5 max-w-4xl">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6 md:mb-10">
             <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">What you can expect</p>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
               Our <span className="gradient-text">Promise</span>
             </h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
+
+          {/* Mobile — tab switcher keeps the section short */}
+          <div className="md:hidden">
+            <div className="flex p-1 rounded-full bg-[var(--surface)] border border-[var(--border)] gap-1 mb-4 max-w-xs mx-auto">
+              {PROMISE.map((m, i) => (
+                <button
+                  key={m.title}
+                  onClick={() => setPromiseTab(i)}
+                  className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${promiseTab === i
+                    ? "bg-[image:var(--gradient-primary)] text-white shadow-md"
+                    : "text-[var(--text-secondary)]"}`}
+                >
+                  {m.title}
+                </button>
+              ))}
+            </div>
+            <motion.div
+              key={promiseTab}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
+              className="glass-card p-5 rounded-sm"
+            >
+              <p className="text-[10px] text-[var(--primary)] font-bold uppercase tracking-widest mb-3 text-center">{PROMISE[promiseTab].tagline}</p>
+              <ul className="space-y-2.5">
+                {PROMISE[promiseTab].points.map(p => (
+                  <li key={p} className="flex items-start gap-2.5 text-sm text-[var(--text-secondary)] leading-snug">
+                    <FaCheckCircle className="text-[var(--primary)] shrink-0 text-xs mt-0.5" /> {p}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+
+          {/* Desktop — both cards side by side */}
+          <div className="hidden md:grid md:grid-cols-2 gap-4">
             {PROMISE.map((m, i) => (
               <motion.div
                 key={i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
@@ -566,9 +633,9 @@ export default function Home() {
             <div className="absolute inset-0 gradient-animated" />
             {/* decorative floating orbs */}
             <motion.div animate={{ y: [0, -18, 0], x: [0, 10, 0] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-10 -left-6 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
+              className="hidden md:block absolute -top-10 -left-6 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
             <motion.div animate={{ y: [0, 16, 0], x: [0, -12, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-12 right-0 w-52 h-52 rounded-full bg-white/10 blur-2xl" />
+              className="hidden md:block absolute -bottom-12 right-0 w-52 h-52 rounded-full bg-white/10 blur-2xl" />
             <div className="absolute inset-0 bg-[#00302E]/30" />
             <div className="relative z-10 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-3 leading-snug">
@@ -602,22 +669,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* Mobile sticky CTA — only for guests */}
-      {!user && (
-        <motion.div
-          initial={{ y: 80 }} animate={{ y: 0 }} transition={{ delay: 1.2, type: "spring" }}
-          className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[var(--surface)]/95 backdrop-blur-xl border-t border-[var(--border)] px-4 py-3 flex items-center gap-3"
-        >
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-[var(--text-primary)] truncate">Find part-time work today</p>
-            <p className="text-[10px] text-[var(--text-muted)]">Free · Takes 2 minutes</p>
-          </div>
-          <button onClick={openSignUp} className="btn-primary px-5 py-2.5 text-sm shrink-0">
-            Join Free
-          </button>
-        </motion.div>
-      )}
 
       <ChatBot />
       <Footer />
