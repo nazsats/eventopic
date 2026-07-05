@@ -34,6 +34,31 @@ yarn-error.log*
 .env*
 !.env.example
 
+# ── Confidential / internal — never upload to GitHub ──
+# Business documents (decks, applications, profiles) at repo root
+/*.pdf
+/*.pptx
+/*.ppt
+/*.docx
+/*.doc
+/*.xlsx
+# Internal planning & security docs
+EVENTOPIC_OVERVIEW.md
+HUB71_APPLICATION.md
+SECURITY_DEPLOY_RUNBOOK.md
+SECURITY_IMPLEMENTATION.md
+PROJECT_REVIEW_2026.md
+ROADMAP_2026.md
+FIXES_APPLIED.md
+IMAGE_BRIEF.md
+IMAGE_PROMPTS.md
+FIREBASE_DEPLOYMENT.md
+# Credentials that must never be committed
+serviceAccount*.json
+*-service-account*.json
+firebase-adminsdk*.json
+*.key
+
 # vercel
 .vercel
 
