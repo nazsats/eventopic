@@ -91,7 +91,7 @@ export default function Home() {
       <Navbar />
 
       {/* ════════════════ HERO ════════════════ */}
-      <section className="relative overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24">
+      <section className="relative overflow-hidden pt-28 pb-12 md:pt-32 md:pb-16">
         {/* Soft luxe background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[var(--background)]" />
@@ -163,10 +163,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════ BRAND STATEMENT ════════════════ */}
-      <section className="border-y border-[var(--border)] bg-[var(--surface)] relative z-30 overflow-hidden">
+      {/* ════════════════ BRAND STATEMENT (flows from hero) ════════════════ */}
+      <section className="bg-[var(--background)] relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[260px] bg-[var(--primary)]/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="container mx-auto px-5 max-w-3xl relative py-16 md:py-24 text-center">
+        <div className="container mx-auto px-5 max-w-2xl relative pb-14 md:pb-20 text-center">
           <motion.p
             initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
             className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-3"
@@ -175,7 +175,7 @@ export default function Home() {
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}
-            className="text-2xl md:text-4xl font-display font-bold text-[var(--text-primary)] leading-[1.15]"
+            className="text-2xl md:text-4xl font-display font-bold text-[var(--text-primary)] leading-[1.2]"
           >
             The right people, ready for <span className="gradient-text">every event.</span>
           </motion.h2>
@@ -183,7 +183,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.4 }}
             className="text-base md:text-lg text-[var(--text-secondary)] max-w-xl mx-auto mt-4 leading-relaxed"
           >
-            We take the time to match, brief and prepare each person — so your event runs
+            We match, brief and prepare each person with care — so your event runs
             smoothly and your brand looks its best.
           </motion.p>
           <motion.div
@@ -246,7 +246,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════ JOBS CTA ════════════════ */}
-      <section className="py-10 md:py-14 bg-[var(--background)]">
+      <section className="py-12 md:py-16 bg-[var(--background)]">
         <div className="container mx-auto px-5 max-w-2xl">
           <motion.div
             initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -265,7 +265,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════ WHERE THE DIFFERENCE SHOWS ════════════════ */}
-      <section className="py-10 md:py-16 bg-[var(--surface-elevated)] border-y border-[var(--border)] relative overflow-hidden">
+      <section className="py-14 md:py-20 bg-[var(--surface-elevated)] border-y border-[var(--border)] relative overflow-hidden">
         <div className="container mx-auto px-5 max-w-5xl relative z-10">
           <div className="text-center mb-6 md:mb-8">
             <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Why us</p>
@@ -284,7 +284,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════ AI ASSISTANT ════════════════ */}
-      <section className="py-10 md:py-16 bg-[var(--background)]">
+      <section className="py-14 md:py-20 bg-[var(--background)]">
         <div className="container mx-auto px-5 max-w-5xl">
           <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-center">
             <motion.div initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
@@ -342,7 +342,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════ OUR PROMISE ════════════════ */}
-      <section className="py-10 md:py-16 bg-[var(--surface-elevated)] border-y border-[var(--border)]">
+      <section className="py-14 md:py-20 bg-[var(--surface-elevated)] border-y border-[var(--border)]">
         <div className="container mx-auto px-5 max-w-4xl">
           <div className="text-center mb-6 md:mb-8">
             <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">What you can expect</p>

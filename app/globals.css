@@ -142,6 +142,9 @@ h1, h2, h3 {
   -webkit-text-fill-color: transparent;
   color: transparent;
   animation: gradient-pan 9s ease infinite;
+  /* stop background-clip:text from clipping descenders (g, y, p) on
+     tight-leading headings */
+  padding-bottom: 0.12em;
 }
 
 .gradient-text-accent {
