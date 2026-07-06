@@ -116,7 +116,9 @@ h1, h2, h3 {
 .font-display {
   font-family: var(--font-display);
   font-weight: 700;
-  line-height: 1.05;
+  /* 1.05 was too tight — it crammed wrapping headings and clipped
+     gradient-text descenders (this class overrides Tailwind leading-*). */
+  line-height: 1.15;
   letter-spacing: -0.03em;
 }
 

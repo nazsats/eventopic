@@ -114,7 +114,7 @@ export default function Home() {
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-                className="font-display font-extrabold leading-[1.03] tracking-tight mb-5 text-[var(--text-primary)] text-4xl sm:text-5xl md:text-6xl"
+                className="font-display font-extrabold tracking-tight mb-5 text-[var(--text-primary)] text-4xl sm:text-5xl md:text-6xl"
               >
                 An Event <span className="gradient-text">Staffing Agency.</span>
               </motion.h1>
@@ -175,7 +175,7 @@ export default function Home() {
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}
-            className="text-2xl md:text-4xl font-display font-bold text-[var(--text-primary)] leading-[1.2]"
+            className="text-2xl md:text-4xl font-display font-bold text-[var(--text-primary)]"
           >
             The right people, ready for <span className="gradient-text">every event.</span>
           </motion.h2>
