@@ -96,7 +96,7 @@ export default function Home() {
       <Navbar />
 
       {/* ════════════════ HERO ════════════════ */}
-      <section className="relative overflow-hidden pt-28 pb-12 md:pt-32 md:pb-16">
+      <section className="relative overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24">
         {/* Soft luxe background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[var(--background)]" />
@@ -171,8 +171,8 @@ export default function Home() {
       {/* ════════════════ WHY BUSINESSES CHOOSE US ════════════════ */}
       <section className="border-y border-[var(--border)] bg-[var(--surface)] relative z-30 overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-[var(--primary)]/5 rounded-full blur-[90px] pointer-events-none" />
-        <div className="container mx-auto px-5 max-w-5xl relative py-10 md:py-14">
-          <div className="text-center mb-7 md:mb-9">
+        <div className="container mx-auto px-5 max-w-5xl relative py-14 md:py-20">
+          <div className="text-center mb-8 md:mb-11">
             <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Why businesses choose us</p>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
               Staffing You Can <span className="gradient-text">Rely On</span>
@@ -200,7 +200,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════ 5-STEP FLOW ════════════════ */}
-      <section className="py-10 md:py-16 bg-[var(--surface-elevated)] border-b border-[var(--border)] relative overflow-hidden">
+      <section className="py-14 md:py-20 bg-[var(--surface-elevated)] border-b border-[var(--border)] relative overflow-hidden">
         <div className="container mx-auto px-5 max-w-5xl relative z-10">
           <div className="text-center mb-7 md:mb-9">
             <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">For Talent</p>
