@@ -11,7 +11,7 @@ import {
   FaArrowRight, FaBriefcase,
   FaCheckCircle, FaRocket, FaShieldAlt, FaUserCircle,
   FaChartBar, FaRobot, FaBolt, FaCrown,
-  FaUserPlus, FaIdBadge, FaSearch,
+  FaUserPlus, FaIdBadge, FaSearch, FaUserCheck, FaClock, FaHeadset,
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import AuthModal from "../components/AuthModal";
@@ -23,8 +23,13 @@ const UAEGlobe = dynamic(() => import("../components/UAEGlobe"), {
 });
 const ChatBot = dynamic(() => import("../components/ChatBot"), { ssr: false });
 
-// ─── Clients we've worked with ───
-const CLIENTS = ["Newlink", "Go & Grab", "Nazsats"];
+// ─── Why businesses choose Eventopic (value over logos) ───
+const WHY_BUSINESSES = [
+  { icon: <FaUserCheck />, title: "Verified Professionals", desc: "Every profile is reviewed before booking." },
+  { icon: <FaBolt />, title: "Fast Hiring", desc: "Briefed, ready teams — often within days." },
+  { icon: <FaClock />, title: "Flexible & Short-Term", desc: "From one-day events to full campaigns." },
+  { icon: <FaHeadset />, title: "UAE-Based Support", desc: "A local team, one point of contact." },
+];
 
 // ─── 5-step visual flow ───
 const STEPS = [
@@ -163,38 +168,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════ TRUSTED BY ════════════════ */}
-      <div className="border-y border-[var(--border)] bg-[var(--surface)] relative z-30 overflow-hidden">
-        {/* faint brand glow behind the strip */}
+      {/* ════════════════ WHY BUSINESSES CHOOSE US ════════════════ */}
+      <section className="border-y border-[var(--border)] bg-[var(--surface)] relative z-30 overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-[var(--primary)]/5 rounded-full blur-[90px] pointer-events-none" />
-        <div className="relative py-6 md:py-8">
-          <motion.p
-            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="text-center text-[10px] uppercase tracking-[0.3em] text-[var(--text-muted)] font-bold mb-4 md:mb-5"
-          >
-            Trusted by brands across the UAE
-          </motion.p>
-
-          {/* auto-scrolling logo marquee — pauses on hover */}
-          <div className="marquee-mask overflow-hidden group">
-            <div className="flex gap-3 md:gap-4 w-max animate-marquee group-hover:[animation-play-state:paused]">
-              {[...CLIENTS, ...CLIENTS, ...CLIENTS, ...CLIENTS].map((name, i) => (
-                <div
-                  key={i}
-                  className="relative shrink-0 rounded-sm p-[1px] bg-gradient-to-br from-[var(--border)] via-transparent to-[var(--border)] hover:from-[var(--accent)]/60 hover:to-[var(--primary)]/40 transition-all duration-500"
-                >
-                  <div className="flex items-center gap-2.5 px-6 py-2.5 md:px-8 md:py-3 rounded-sm bg-[var(--surface)] hover:bg-[var(--surface-elevated)]/70 transition-colors duration-500">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                    <span className="font-display font-bold text-sm md:text-base text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors tracking-tight whitespace-nowrap">
-                      {name}
-                    </span>
-                  </div>
+        <div className="container mx-auto px-5 max-w-5xl relative py-10 md:py-14">
+          <div className="text-center mb-7 md:mb-9">
+            <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Why businesses choose us</p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
+              Staffing You Can <span className="gradient-text">Rely On</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {WHY_BUSINESSES.map((w, i) => (
+              <motion.div
+                key={w.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07, duration: 0.35 }}
+                className="group glass-card p-4 md:p-6 rounded-sm text-center"
+              >
+                <div className="w-10 h-10 md:w-12 md:h-12 mx-auto rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-base md:text-lg mb-3 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
+                  {w.icon}
                 </div>
-              ))}
-            </div>
+                <h3 className="font-bold text-xs md:text-sm text-[var(--text-primary)] mb-1 leading-snug">{w.title}</h3>
+                <p className="text-[11px] md:text-xs text-[var(--text-secondary)] leading-relaxed">{w.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* ════════════════ 5-STEP FLOW ════════════════ */}
       <section className="py-10 md:py-16 bg-[var(--surface-elevated)] border-b border-[var(--border)] relative overflow-hidden">
