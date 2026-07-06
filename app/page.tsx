@@ -23,9 +23,6 @@ const UAEGlobe = dynamic(() => import("../components/UAEGlobe"), {
 });
 const ChatBot = dynamic(() => import("../components/ChatBot"), { ssr: false });
 
-// ─── Brand values, woven in subtly ───
-const BRAND_TAGS = ["Human-first", "Reliable", "Transparent", "Diverse talent"];
-
 // ─── 5-step visual flow ───
 const STEPS = [
   { icon: <FaUserPlus />, title: "Create Your Account" },
@@ -160,42 +157,6 @@ export default function Home() {
               <p className="mt-1 text-xs font-medium text-[var(--text-muted)]">Drag to explore · UAE highlighted</p>
             </motion.div>
           </div>
-        </div>
-      </section>
-
-      {/* ════════════════ BRAND STATEMENT (flows from hero) ════════════════ */}
-      <section className="bg-[var(--background)] relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[260px] bg-[var(--primary)]/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="container mx-auto px-5 max-w-2xl relative pb-14 md:pb-20 text-center">
-          <motion.p
-            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-3"
-          >
-            Staffing, made human
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}
-            className="text-2xl md:text-4xl font-display font-bold text-[var(--text-primary)]"
-          >
-            The right people, ready for <span className="gradient-text">every event.</span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.4 }}
-            className="text-base md:text-lg text-[var(--text-secondary)] max-w-xl mx-auto mt-4 leading-relaxed"
-          >
-            We match, brief and prepare each person with care — so your event runs
-            smoothly and your brand looks its best.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-2.5 mt-7"
-          >
-            {BRAND_TAGS.map((t) => (
-              <span key={t} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)] bg-[var(--primary-muted)] border border-[var(--border)] px-3.5 py-1.5 rounded-full">
-                <FaCheckCircle className="text-[10px]" /> {t}
-              </span>
-            ))}
-          </motion.div>
         </div>
       </section>
 
