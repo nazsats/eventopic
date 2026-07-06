@@ -11,7 +11,7 @@ import {
   FaArrowRight, FaBriefcase,
   FaCheckCircle, FaRocket, FaShieldAlt, FaUserCircle,
   FaChartBar, FaRobot, FaBolt, FaCrown,
-  FaUserPlus, FaIdBadge, FaSearch, FaUserCheck, FaClock, FaHeadset,
+  FaUserPlus, FaIdBadge, FaSearch,
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import AuthModal from "../components/AuthModal";
@@ -23,13 +23,8 @@ const UAEGlobe = dynamic(() => import("../components/UAEGlobe"), {
 });
 const ChatBot = dynamic(() => import("../components/ChatBot"), { ssr: false });
 
-// ─── Why businesses choose Eventopic (value over logos) ───
-const WHY_BUSINESSES = [
-  { icon: <FaUserCheck />, title: "Verified Professionals", desc: "Every profile is reviewed before booking." },
-  { icon: <FaBolt />, title: "Fast Hiring", desc: "Briefed, ready teams — often within days." },
-  { icon: <FaClock />, title: "Flexible & Short-Term", desc: "From one-day events to full campaigns." },
-  { icon: <FaHeadset />, title: "UAE-Based Support", desc: "A local team, one point of contact." },
-];
+// ─── Brand values, woven in subtly ───
+const BRAND_TAGS = ["Human-first", "Reliable", "Transparent", "Diverse talent"];
 
 // ─── 5-step visual flow ───
 const STEPS = [
@@ -168,34 +163,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════ WHY BUSINESSES CHOOSE US ════════════════ */}
+      {/* ════════════════ BRAND STATEMENT ════════════════ */}
       <section className="border-y border-[var(--border)] bg-[var(--surface)] relative z-30 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-[var(--primary)]/5 rounded-full blur-[90px] pointer-events-none" />
-        <div className="container mx-auto px-5 max-w-5xl relative py-14 md:py-20">
-          <div className="text-center mb-8 md:mb-11">
-            <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Why businesses choose us</p>
-            <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)]">
-              Staffing You Can <span className="gradient-text">Rely On</span>
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
-            {WHY_BUSINESSES.map((w, i) => (
-              <motion.div
-                key={w.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07, duration: 0.35 }}
-                className="group glass-card p-5 md:p-6 rounded-sm text-center h-full flex flex-col items-center"
-              >
-                <div className="w-10 h-10 md:w-12 md:h-12 mx-auto rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-base md:text-lg mb-3 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
-                  {w.icon}
-                </div>
-                <h3 className="font-bold text-xs md:text-sm text-[var(--text-primary)] mb-1 leading-snug">{w.title}</h3>
-                <p className="text-[11px] md:text-xs text-[var(--text-secondary)] leading-relaxed">{w.desc}</p>
-              </motion.div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[260px] bg-[var(--primary)]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="container mx-auto px-5 max-w-3xl relative py-16 md:py-24 text-center">
+          <motion.p
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-3"
+          >
+            Staffing, made human
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}
+            className="text-2xl md:text-4xl font-display font-bold text-[var(--text-primary)] leading-[1.15]"
+          >
+            The right people, ready for <span className="gradient-text">every event.</span>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.4 }}
+            className="text-base md:text-lg text-[var(--text-secondary)] max-w-xl mx-auto mt-4 leading-relaxed"
+          >
+            We take the time to match, brief and prepare each person — so your event runs
+            smoothly and your brand looks its best.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-2.5 mt-7"
+          >
+            {BRAND_TAGS.map((t) => (
+              <span key={t} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)] bg-[var(--primary-muted)] border border-[var(--border)] px-3.5 py-1.5 rounded-full">
+                <FaCheckCircle className="text-[10px]" /> {t}
+              </span>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -252,11 +252,11 @@ export default function Home() {
             initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="glass-card rounded-sm p-7 md:p-10 text-center"
           >
-            <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">Live roles, updated daily</p>
+            <p className="text-[var(--primary)] text-xs font-bold uppercase tracking-widest mb-2">New roles, every week</p>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-[var(--text-primary)] mb-2">
-              Your Next Job Is <span className="gradient-text">Waiting</span>
+              Find Work You&apos;ll <span className="gradient-text">Enjoy</span>
             </h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-5 md:mb-6">Hostessing, promotions, modelling and more.</p>
+            <p className="text-sm text-[var(--text-secondary)] mb-5 md:mb-6">Hostessing, promotions, modelling and more — apply in minutes.</p>
             <Link href="/jobs" className="btn-primary w-full sm:w-auto sm:px-12 py-3.5 text-base rounded-full">
               Join Free <FaArrowRight />
             </Link>
@@ -426,7 +426,7 @@ export default function Home() {
                 Ready to Work with the UAE&apos;s Trusted Brands?
               </h2>
               <p className="text-white/80 text-sm md:text-base mb-8 max-w-md mx-auto">
-                Join the professionals finding part-time and short-term work through Eventopic. Free forever.
+                Join the people getting booked through Eventopic. Free to join, always.
               </p>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
                 {!user ? (
