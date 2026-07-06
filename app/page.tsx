@@ -178,7 +178,7 @@ export default function Home() {
               Staffing You Can <span className="gradient-text">Rely On</span>
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
             {WHY_BUSINESSES.map((w, i) => (
               <motion.div
                 key={w.title}
@@ -186,7 +186,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07, duration: 0.35 }}
-                className="group glass-card p-4 md:p-6 rounded-sm text-center h-full flex flex-col items-center"
+                className="group glass-card p-5 md:p-6 rounded-sm text-center h-full flex flex-col items-center"
               >
                 <div className="w-10 h-10 md:w-12 md:h-12 mx-auto rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-base md:text-lg mb-3 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
                   {w.icon}
