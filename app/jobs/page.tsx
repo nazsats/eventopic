@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import AuthModal from "../../components/AuthModal";
 import Link from "next/link";
 import {
-    FaBriefcase, FaClock, FaMapMarkerAlt, FaMoneyBillWave,
+    FaBriefcase, FaClock, FaMapMarkerAlt,
     FaSearch, FaArrowRight, FaUsers, FaFilter,
     FaCheckCircle, FaChevronLeft, FaChevronRight,
 } from "react-icons/fa";
@@ -124,17 +124,22 @@ export default function JobsPage() {
         else setIsAuthModalOpen(true);
     };
 
-    // Skeleton cards
+    // Skeleton cards (mirrors the real card layout)
     const Skeleton = () => (
-        <div className="glass-card p-6 animate-pulse h-52">
+        <div className="glass-card p-5 animate-pulse h-48">
             <div className="flex justify-between mb-4">
                 <div className="w-11 h-11 rounded-xl bg-[var(--surface-elevated)]" />
-                <div className="w-24 h-6 rounded-full bg-[var(--surface-elevated)]" />
+                <div className="w-20 h-6 rounded-full bg-[var(--surface-elevated)]" />
             </div>
-            <div className="w-3/4 h-5 bg-[var(--surface-elevated)] rounded mb-3" />
-            <div className="w-1/2 h-3 bg-[var(--surface-elevated)] rounded mb-2" />
-            <div className="w-full h-3 bg-[var(--surface-elevated)] rounded mb-2" />
-            <div className="w-2/3 h-3 bg-[var(--surface-elevated)] rounded" />
+            <div className="w-3/4 h-4 bg-[var(--surface-elevated)] rounded mb-3" />
+            <div className="flex gap-1.5 mb-5">
+                <div className="w-20 h-6 rounded-full bg-[var(--surface-elevated)]" />
+                <div className="w-16 h-6 rounded-full bg-[var(--surface-elevated)]" />
+            </div>
+            <div className="flex justify-between pt-3 border-t border-[var(--border)]">
+                <div className="w-16 h-4 bg-[var(--surface-elevated)] rounded" />
+                <div className="w-16 h-7 rounded-full bg-[var(--surface-elevated)]" />
+            </div>
         </div>
     );
 
@@ -144,25 +149,25 @@ export default function JobsPage() {
             <Navbar />
 
             {/* ── Hero ── */}
-            <section className="pt-32 pb-10 bg-[var(--background)] relative overflow-hidden">
+            <section className="pt-28 md:pt-32 pb-8 bg-[var(--background)] relative overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div className="absolute -top-10 right-1/3 w-[500px] h-[500px] bg-[var(--primary)]/6 rounded-full blur-[120px]" />
-                    <div className="absolute bottom-0 left-0 w-[350px] h-[350px] bg-[var(--secondary)]/6 rounded-full blur-[100px]" />
+                    <div className="hidden md:block absolute -top-10 right-1/3 w-[500px] h-[500px] bg-[var(--primary)]/6 rounded-full blur-[120px]" />
+                    <div className="hidden md:block absolute bottom-0 left-0 w-[350px] h-[350px] bg-[var(--secondary)]/6 rounded-full blur-[100px]" />
                 </div>
 
                 <div className="container mx-auto px-5 max-w-5xl relative z-10 text-center">
                     <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
                         {/* Live pill */}
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-[var(--border)] mb-5 text-sm font-bold text-[var(--primary)]">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-[var(--border)] mb-4 text-xs md:text-sm font-bold text-[var(--primary)]">
                             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                             {jobs.length} Live Opportunities
                         </div>
 
-                        <h1 className="text-4xl md:text-6xl font-bold font-display gradient-text mb-3 leading-tight">
-                            Part-Time Jobs in the UAE
+                        <h1 className="text-3xl md:text-5xl font-bold font-display gradient-text mb-2 leading-tight">
+                            Find Your Next Role
                         </h1>
-                        <p className="text-base text-[var(--text-secondary)] mb-8 max-w-xl mx-auto">
-                            Professional staffing, modelling and promotion roles with the UAE's top brands and venues. Apply in minutes.
+                        <p className="text-sm md:text-base text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+                            Part-time and event roles with the UAE&apos;s top brands. Apply in minutes.
                         </p>
 
                         {/* Search bar */}
@@ -170,11 +175,20 @@ export default function JobsPage() {
                             <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--primary)] transition-colors text-base z-10" />
                             <input
                                 type="text"
-                                placeholder="Search by role, location, or keywords…"
+                                placeholder="Search role, location or keyword…"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="modern-input pl-12 pr-5 py-3.5 text-sm shadow-xl w-full"
+                                className="modern-input pl-12 pr-12 py-3.5 text-sm shadow-xl w-full"
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery("")}
+                                    aria-label="Clear search"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-muted)] transition-all z-10"
+                                >
+                                    ✕
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 </div>
@@ -215,7 +229,7 @@ export default function JobsPage() {
                     )}
 
                     {isLoading ? (
-                        <div className="grid md:grid-cols-2 gap-5">
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {[1, 2, 3, 4].map(i => <Skeleton key={i} />)}
                         </div>
                     ) : pagedJobs.length === 0 ? (
@@ -238,7 +252,7 @@ export default function JobsPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.25 }}
-                                className="grid md:grid-cols-2 gap-5"
+                                className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
                             >
                                 {pagedJobs.map((job, i) => {
                                     const applied = appliedJobIds.has(job.id);
@@ -252,68 +266,64 @@ export default function JobsPage() {
                                             className="group cursor-pointer"
                                             onClick={() => handleJobClick(job.id)}
                                         >
-                                            <div className={`glass-card p-6 h-full flex flex-col relative overflow-hidden transition-all border ${applied
+                                            <div className={`glass-card p-5 h-full flex flex-col relative overflow-hidden transition-all border ${applied
                                                     ? "border-green-500/30 bg-green-500/3"
                                                     : "border-transparent group-hover:border-[var(--primary)]/30 group-hover:shadow-lg group-hover:shadow-[var(--primary)]/5"
                                                 }`}>
 
-                                                {/* Applied ribbon */}
-                                                {applied && (
-                                                    <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-green-500/15 border border-green-500/30 text-green-400 text-xs font-bold px-2.5 py-1 rounded-full">
-                                                        <FaCheckCircle className="text-[10px]" />
-                                                        Applied
-                                                    </div>
-                                                )}
-
                                                 {/* Top row */}
-                                                <div className={`flex items-start gap-3 mb-3 ${applied ? "pr-20" : ""}`}>
-                                                    <div className="w-11 h-11 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] text-lg shrink-0 group-hover:scale-110 transition-transform">
+                                                <div className="flex items-start justify-between gap-3 mb-3">
+                                                    <div className="w-11 h-11 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-base shrink-0 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
                                                         <FaBriefcase />
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h3 className="font-bold text-[var(--text-primary)] leading-snug group-hover:text-[var(--primary)] transition-colors truncate">
-                                                            {job.title}
-                                                        </h3>
+                                                    {applied ? (
+                                                        <span className="flex items-center gap-1.5 bg-green-500/15 border border-green-500/30 text-green-500 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                                                            <FaCheckCircle className="text-[9px]" /> Applied
+                                                        </span>
+                                                    ) : (
                                                         <CategoryBadge category={job.category} />
-                                                    </div>
+                                                    )}
                                                 </div>
 
-                                                {/* Meta */}
-                                                <div className="flex flex-wrap gap-3 text-xs text-[var(--text-secondary)] mb-3">
-                                                    <span className="flex items-center gap-1.5">
-                                                        <FaMapMarkerAlt className="text-[var(--accent)] shrink-0" />
+                                                <h3 className="font-bold text-[var(--text-primary)] leading-snug group-hover:text-[var(--primary)] transition-colors line-clamp-1 mb-3">
+                                                    {job.title}
+                                                </h3>
+
+                                                {/* Meta chips */}
+                                                <div className="flex flex-wrap gap-1.5 mb-4 flex-1 content-start">
+                                                    <span className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-secondary)] bg-[var(--surface-elevated)] border border-[var(--border)] px-2.5 py-1 rounded-full">
+                                                        <FaMapMarkerAlt className="text-[var(--accent)] text-[9px] shrink-0" />
                                                         {job.location}
                                                     </span>
-                                                    <span className="flex items-center gap-1.5">
-                                                        <FaClock className="shrink-0" />
-                                                        {job.type} · {job.duration}
+                                                    <span className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-secondary)] bg-[var(--surface-elevated)] border border-[var(--border)] px-2.5 py-1 rounded-full">
+                                                        <FaClock className="text-[9px] shrink-0" />
+                                                        {job.type}
                                                     </span>
+                                                    {job.duration && (
+                                                        <span className="text-[11px] font-medium text-[var(--text-secondary)] bg-[var(--surface-elevated)] border border-[var(--border)] px-2.5 py-1 rounded-full">
+                                                            {job.duration}
+                                                        </span>
+                                                    )}
                                                 </div>
 
-                                                {/* Description */}
-                                                <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4 flex-1 leading-relaxed">
-                                                    {job.description}
-                                                </p>
-
                                                 {/* Footer */}
-                                                <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
-                                                    <div className="flex items-center gap-1 text-[var(--accent)] font-black text-base">
-                                                        <FaMoneyBillWave className="text-sm" />
+                                                <div className="flex items-center justify-between pt-3.5 border-t border-[var(--border)]">
+                                                    <div className="font-black text-[var(--primary)] text-base leading-none">
                                                         AED {job.rate}
-                                                        <span className="text-xs font-normal text-[var(--text-secondary)] ml-0.5">
+                                                        <span className="text-[10px] font-medium text-[var(--text-muted)] ml-1">
                                                             /{job.paymentFrequency
                                                                 ? job.paymentFrequency.charAt(0).toUpperCase() + job.paymentFrequency.slice(1)
                                                                 : "Day"}
                                                         </span>
                                                     </div>
-                                                    <span className={`flex items-center gap-1 text-xs font-bold transition-all ${applied
-                                                            ? "text-green-400"
-                                                            : "text-[var(--primary)] group-hover:gap-2"
+                                                    <span className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full transition-all ${applied
+                                                            ? "text-green-500 bg-green-500/10"
+                                                            : "text-white bg-[image:var(--gradient-primary)] shadow-[var(--shadow-sm)] group-hover:shadow-[var(--shadow-md)] group-hover:gap-2.5"
                                                         }`}>
                                                         {applied ? (
-                                                            <><FaCheckCircle /> View Application</>
+                                                            <><FaCheckCircle className="text-[10px]" /> View</>
                                                         ) : (
-                                                            <>Apply <FaArrowRight className="text-[10px]" /></>
+                                                            <>Apply <FaArrowRight className="text-[9px]" /></>
                                                         )}
                                                     </span>
                                                 </div>

@@ -8,7 +8,7 @@ import { auth, db } from "../lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
-import { FaGoogle, FaFacebookF, FaApple, FaEnvelope, FaLock, FaSpinner, FaTimes, FaRocket } from "react-icons/fa";
+import { FaGoogle, FaFacebookF, FaApple, FaEnvelope, FaLock, FaSpinner, FaTimes, FaArrowRight, FaShieldAlt } from "react-icons/fa";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -26,15 +26,15 @@ interface SocialButtonProps {
 
 const SocialButton: React.FC<SocialButtonProps> = ({ icon, label, onClick, disabled, colorClass }) => (
   <motion.button
-    whileHover={{ scale: 1.02, y: -2 }}
+    type="button"
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
     disabled={disabled}
-    className={`relative w-full flex items-center justify-center gap-3 p-3 rounded-xl font-bold text-sm transition-all duration-300 disabled:opacity-50 overflow-hidden group ${colorClass}`}
+    aria-label={label}
+    className={`relative w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl font-bold text-sm transition-colors duration-200 disabled:opacity-50 ${colorClass}`}
   >
-    {disabled ? <FaSpinner className="animate-spin text-lg" /> : <span className="text-lg">{icon}</span>}
-    <span>{label}</span>
-    <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+    {disabled ? <FaSpinner className="animate-spin text-base" /> : <span className="text-base">{icon}</span>}
+    {label && <span>{label}</span>}
   </motion.button>
 );
 
@@ -138,69 +138,101 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md relative max-h-[92vh] overflow-y-auto rounded-sm"
+            className="w-full max-w-[400px] relative max-h-[94vh] overflow-y-auto rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-lg)]"
           >
-            {/* Ambient Glow */}
-            <div className="absolute bg-[var(--primary)]/20 inset-4 blur-3xl rounded-full -z-10 animate-pulse" />
+            {/* Top brand strip */}
+            <div className="h-1 w-full bg-[image:var(--gradient-primary)]" />
 
-            <div className="glass-card p-6 sm:p-8 border border-[var(--border)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)] via-[var(--accent)] to-[var(--secondary)]" />
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="absolute top-3.5 right-3.5 z-10 w-8 h-8 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] rounded-full transition-colors"
+            >
+              <FaTimes className="text-sm" />
+            </button>
 
-              <button
-                onClick={onClose}
-                className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2 hover:bg-[var(--surface-elevated)] rounded-full"
-              >
-                <FaTimes />
-              </button>
-
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] p-[1px]">
-                  <div className="w-full h-full rounded-full bg-[var(--surface)] flex items-center justify-center">
-                    <FaRocket className="text-2xl text-[var(--primary)]" />
-                  </div>
+            <div className="p-6 sm:p-7">
+              {/* Header */}
+              <div className="mb-5">
+                <div className="w-11 h-11 mb-3 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center shadow-[var(--shadow-sm)]">
+                  <span className="text-white font-display font-black text-lg">E</span>
                 </div>
-                <h2 className="font-display text-3xl font-bold text-[var(--text-primary)] mb-2">
-                  {mode === "signin" ? "Welcome Back" : "Join Eventopic"}
+                <h2 className="font-display text-xl font-bold text-[var(--text-primary)] leading-tight">
+                  {showResetForm ? "Reset your password" : mode === "signin" ? "Welcome back" : "Create your free account"}
                 </h2>
-                <p className="text-[var(--text-secondary)]">
-                  {mode === "signin"
-                    ? "Sign in to access your dashboard"
-                    : "Create an account to get started"}
+                <p className="text-sm text-[var(--text-secondary)] mt-1">
+                  {showResetForm
+                    ? "We'll email you a reset link."
+                    : mode === "signin"
+                      ? "Sign in to track your applications."
+                      : "Get booked with the UAE's top brands."}
                 </p>
               </div>
 
               {!showResetForm ? (
                 <>
-                  <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-                    <div>
-                      <div className="relative">
-                        <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="modern-input pl-12"
-                          placeholder="Email Address"
-                          required
-                        />
-                      </div>
+                  {/* Social — quick icon row */}
+                  <div className="grid grid-cols-3 gap-2.5 mb-4">
+                    <SocialButton
+                      icon={<FaGoogle />}
+                      label=""
+                      onClick={() => handleSocialSignIn(signInWithGoogle, "google")}
+                      disabled={socialLoading.google}
+                      colorClass="bg-[var(--surface-elevated)] text-[var(--text-primary)] hover:bg-[var(--surface-light)] border border-[var(--border)]"
+                    />
+                    <SocialButton
+                      icon={<FaFacebookF />}
+                      label=""
+                      onClick={() => handleSocialSignIn(signInWithFacebook, "facebook")}
+                      disabled={socialLoading.facebook}
+                      colorClass="bg-[var(--surface-elevated)] text-[#1877F2] hover:bg-[var(--surface-light)] border border-[var(--border)]"
+                    />
+                    <SocialButton
+                      icon={<FaApple />}
+                      label=""
+                      onClick={() => handleSocialSignIn(signInWithApple, "apple")}
+                      disabled={socialLoading.apple}
+                      colorClass="bg-[var(--surface-elevated)] text-[var(--text-primary)] hover:bg-[var(--surface-light)] border border-[var(--border)]"
+                    />
+                  </div>
+
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-[var(--border)]"></div>
                     </div>
-                    <div>
-                      <div className="relative">
-                        <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="modern-input pl-12"
-                          placeholder="Password"
-                          required
-                        />
-                      </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="px-3 bg-[var(--surface)] text-[var(--text-muted)]">or use email</span>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-3">
+                    <div className="relative">
+                      <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="modern-input pl-11"
+                        placeholder="Email address"
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
+                    <div className="relative">
+                      <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm" />
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="modern-input pl-11"
+                        placeholder={mode === "signup" ? "Create a password" : "Password"}
+                        autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                        required
+                      />
                     </div>
 
                     {mode === "signin" && (
@@ -208,9 +240,9 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
                         <button
                           type="button"
                           onClick={() => setShowResetForm(true)}
-                          className="text-sm text-[var(--primary)] hover:underline"
+                          className="text-xs font-semibold text-[var(--primary)] hover:underline"
                         >
-                          Forgot Password?
+                          Forgot password?
                         </button>
                       </div>
                     )}
@@ -223,12 +255,11 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
                           onChange={(e) => setAcceptedTerms(e.target.checked)}
                           className="mt-0.5 w-4 h-4 shrink-0 accent-[var(--primary)] cursor-pointer"
                         />
-                        <span className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                          I have read and accept the{" "}
+                        <span className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+                          I accept the{" "}
                           <Link href="/privacy" target="_blank" className="text-[var(--primary)] font-semibold hover:underline">Privacy Policy</Link>{" "}
                           and{" "}
-                          <Link href="/terms" target="_blank" className="text-[var(--primary)] font-semibold hover:underline">Terms &amp; Conditions</Link>,
-                          including the media usage policy for work assignments.
+                          <Link href="/terms" target="_blank" className="text-[var(--primary)] font-semibold hover:underline">Terms</Link>.
                         </span>
                       </label>
                     )}
@@ -236,62 +267,43 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
                     <button
                       type="submit"
                       disabled={isProcessing}
-                      className="btn-primary w-full py-3 flex items-center justify-center gap-2"
+                      className="btn-primary w-full py-3.5 text-base flex items-center justify-center gap-2 disabled:opacity-60 mt-1"
                     >
-                      {isProcessing ? <FaSpinner className="animate-spin" /> : null}
-                      {mode === "signin" ? "Sign In" : "Create Account"}
+                      {isProcessing ? (
+                        <FaSpinner className="animate-spin" />
+                      ) : (
+                        <>{mode === "signin" ? "Sign In" : "Create Account"} <FaArrowRight className="text-xs" /></>
+                      )}
                     </button>
                   </form>
 
-                  <div className="relative mb-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[var(--border)]"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-[var(--surface)] text-[var(--text-secondary)]">Or continue with</span>
-                    </div>
-                  </div>
+                  <p className="flex items-center justify-center gap-1.5 text-[11px] text-[var(--text-muted)] mt-3">
+                    <FaShieldAlt className="text-[9px]" /> Secure &amp; free — takes under a minute.
+                  </p>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <SocialButton
-                      icon={<FaGoogle />}
-                      label=""
-                      onClick={() => handleSocialSignIn(signInWithGoogle, "google")}
-                      disabled={socialLoading.google}
-                      colorClass="bg-white text-black hover:bg-gray-100"
-                    />
-                    <SocialButton
-                      icon={<FaFacebookF />}
-                      label=""
-                      onClick={() => handleSocialSignIn(signInWithFacebook, "facebook")}
-                      disabled={socialLoading.facebook}
-                      colorClass="bg-[#1877F2] text-white hover:bg-[#166fe5]"
-                    />
-                    <SocialButton
-                      icon={<FaApple />}
-                      label=""
-                      onClick={() => handleSocialSignIn(signInWithApple, "apple")}
-                      disabled={socialLoading.apple}
-                      colorClass="bg-black text-white hover:bg-gray-900 border border-[var(--border)]"
-                    />
+                  <div className="mt-4 pt-4 border-t border-[var(--border)] text-center">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {mode === "signin" ? "New to Eventopic?" : "Already have an account?"}
+                      <button
+                        onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                        className="ml-1.5 font-bold text-[var(--primary)] hover:underline"
+                      >
+                        {mode === "signin" ? "Create an account" : "Sign in"}
+                      </button>
+                    </p>
                   </div>
                 </>
               ) : (
-                <form onSubmit={handleResetSubmit} className="space-y-4">
-                  <div className="text-center mb-6 p-4 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border)]">
-                    <p className="text-sm text-[var(--text-secondary)]">
-                      Enter your email address and we'll send you a link to reset your password.
-                    </p>
-                  </div>
-
+                <form onSubmit={handleResetSubmit} className="space-y-3">
                   <div className="relative">
-                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm" />
                     <input
                       type="email"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
-                      className="modern-input pl-12"
-                      placeholder="Email Address"
+                      className="modern-input pl-11"
+                      placeholder="Email address"
+                      autoComplete="email"
                       required
                     />
                   </div>
@@ -299,7 +311,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
                   <button
                     type="submit"
                     disabled={isProcessing}
-                    className="btn-primary w-full py-3 flex items-center justify-center gap-2"
+                    className="btn-primary w-full py-3.5 text-base flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     {isProcessing ? <FaSpinner className="animate-spin" /> : null}
                     Send Reset Link
@@ -308,24 +320,12 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
                   <button
                     type="button"
                     onClick={() => setShowResetForm(false)}
-                    className="w-full py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    className="w-full py-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"
                   >
-                    Back to Sign In
+                    ← Back to Sign In
                   </button>
                 </form>
               )}
-            </div>
-
-            <div className="mt-4 text-center">
-              <p className="text-[var(--text-secondary)]">
-                {mode === "signin" ? "Don't have an account?" : "Already have an account?"}
-                <button
-                  onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                  className="ml-2 font-bold text-[var(--primary)] hover:underline"
-                >
-                  {mode === "signin" ? "Sign Up" : "Sign In"}
-                </button>
-              </p>
             </div>
           </motion.div>
         </motion.div>

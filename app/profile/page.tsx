@@ -469,19 +469,18 @@ function ProfileContent() {
     return (
       <>
         <Navbar />
-        <section className="pt-20 pb-16 min-h-screen bg-[var(--background)] relative overflow-hidden">
-          {/* Background orbs */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <section className="pt-24 pb-16 min-h-screen bg-[var(--background)] relative overflow-hidden">
+          {/* Background orbs (desktop only) */}
+          <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[var(--primary)]/6 rounded-full blur-[120px] animate-drift" />
             <div className="absolute bottom-0 left-10 w-[400px] h-[400px] bg-[var(--secondary)]/6 rounded-full blur-[100px] animate-drift" style={{ animationDelay: "5s" }} />
           </div>
 
-          <div className="container mx-auto px-4 max-w-5xl relative z-10">
+          <div className="container mx-auto px-5 max-w-5xl relative z-10">
 
-            {/* ── Profile Hero Card (rotating gradient frame) ── */}
+            {/* ── Profile Hero Card ── */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              className="relative rounded-sm p-[1.5px] overflow-hidden mb-6">
-              <div className="absolute inset-[-150%] opacity-50 bg-[conic-gradient(from_0deg,#004643,#D3B878,#2E7D74,#004643)] animate-spin-slow pointer-events-none" />
+              className="relative rounded-sm overflow-hidden mb-5 border border-[var(--border)] shadow-[var(--shadow-sm)]">
               <div className="relative rounded-sm overflow-hidden bg-[var(--surface)]">
 
               {/* Profile photo(s) */}

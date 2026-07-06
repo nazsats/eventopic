@@ -17,7 +17,7 @@ import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import Link from "next/link";
 import {
-    FaBriefcase, FaMapMarkerAlt, FaClock, FaMoneyBillWave,
+    FaBriefcase, FaMapMarkerAlt, FaClock,
     FaCheckCircle, FaUser, FaPaperPlane, FaArrowLeft,
     FaShieldAlt, FaTrophy, FaStar, FaLock, FaPhone,
     FaEnvelope, FaCalendarAlt, FaCommentAlt,
@@ -77,9 +77,7 @@ export default function JobDetailPage() {
         name: "",
         email: "",
         mobile: "",
-        whatsapp: "",
         availability: "",
-        experience: "",
         whyYou: "",
     });
 
@@ -118,7 +116,6 @@ export default function JobDetailPage() {
                             name: `${p.firstName || ""} ${p.lastName || ""}`.trim() || user.displayName || "",
                             email: user.email || "",
                             mobile: p.phoneNumber || "",
-                            whatsapp: p.whatsappNumber || p.phoneNumber || "",
                         }));
                     } else {
                         setForm(prev => ({ ...prev, name: user.displayName || "", email: user.email || "" }));
@@ -266,36 +263,39 @@ export default function JobDetailPage() {
                         </Link>
                     </div>
 
-                    {/* Page header */}
-                    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
-                                <span className="text-xs font-bold uppercase tracking-widest text-[var(--primary)] mb-2 block">
-                                    {job.category === "staffing" ? "Staffing" :
-                                        job.category === "models_entertainment" ? "Entertainment" :
-                                            job.category === "promotions" ? "Promotions" : "Other"}
-                                </span>
-                                <h1 className="text-3xl md:text-4xl font-bold font-display text-[var(--text-primary)] leading-tight">
-                                    {job.title}
-                                </h1>
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                                <div className="glass-card px-4 py-2 text-sm flex items-center gap-2">
-                                    <FaMapMarkerAlt className="text-[var(--accent)] text-xs" />
-                                    {job.location}
-                                </div>
-                                <div className="glass-card px-4 py-2 text-sm flex items-center gap-2">
-                                    <FaClock className="text-xs" />
-                                    {job.type} · {job.duration}
-                                </div>
-                                <div className="glass-card px-4 py-2 font-black text-[var(--accent)] flex items-center gap-2">
-                                    <FaMoneyBillWave className="text-sm" />
-                                    AED {job.rate}
-                                    <span className="text-xs font-normal text-[var(--text-secondary)]">
-                                        / {job.paymentFrequency
-                                            ? job.paymentFrequency.charAt(0).toUpperCase() + job.paymentFrequency.slice(1)
-                                            : "Day"}
+                    {/* Page header — banner card */}
+                    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6 md:mb-8">
+                        <div className="relative rounded-sm overflow-hidden p-6 md:p-8 bg-[image:var(--gradient-royal)]">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(255,255,255,0.25),transparent_55%)] pointer-events-none" />
+                            <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-5">
+                                <div className="min-w-0">
+                                    <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-white/80 bg-white/15 border border-white/20 px-2.5 py-1 rounded-full mb-3">
+                                        {job.category === "staffing" ? "Staffing" :
+                                            job.category === "models_entertainment" ? "Models" :
+                                                job.category === "promotions" ? "Promotions" : "Other"}
                                     </span>
+                                    <h1 className="text-2xl md:text-4xl font-bold font-display text-white leading-tight mb-3">
+                                        {job.title}
+                                    </h1>
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="flex items-center gap-1.5 text-xs text-white/90 bg-white/10 border border-white/20 px-3 py-1.5 rounded-full">
+                                            <FaMapMarkerAlt className="text-[10px]" /> {job.location}
+                                        </span>
+                                        <span className="flex items-center gap-1.5 text-xs text-white/90 bg-white/10 border border-white/20 px-3 py-1.5 rounded-full">
+                                            <FaClock className="text-[10px]" /> {job.type}{job.duration ? ` · ${job.duration}` : ""}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="shrink-0 text-left md:text-right">
+                                    <p className="text-[10px] uppercase tracking-widest text-white/60 font-bold mb-1">Pay rate</p>
+                                    <p className="font-display font-black text-3xl md:text-4xl text-white leading-none">
+                                        AED {job.rate}
+                                        <span className="text-sm font-medium text-white/70 ml-1.5">
+                                            /{job.paymentFrequency
+                                                ? job.paymentFrequency.charAt(0).toUpperCase() + job.paymentFrequency.slice(1)
+                                                : "Day"}
+                                        </span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -365,8 +365,8 @@ export default function JobDetailPage() {
                         </div>
 
                         {/* RIGHT: Apply form (sticky) */}
-                        <div className="lg:col-span-2">
-                            <div className="lg:sticky lg:top-28">
+                        <div className="lg:col-span-2" id="apply">
+                            <div className="lg:sticky lg:top-28 scroll-mt-24">
                                 <AnimatePresence mode="wait">
                                     {submitted || alreadyApplied ? (
                                         <motion.div
@@ -440,7 +440,7 @@ export default function JobDetailPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Mobile + WhatsApp side by side */}
+                                                {/* Mobile + Availability side by side */}
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
                                                         <label className="block text-xs font-bold mb-1.5 text-[var(--text-primary)]">
@@ -448,40 +448,20 @@ export default function JobDetailPage() {
                                                         </label>
                                                         <div className="relative">
                                                             <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-xs" />
-                                                            <input name="mobile" value={form.mobile} onChange={handleChange}
-                                                                className="modern-input pl-10 py-2.5 text-sm" placeholder="05xxxxxxxx" required />
+                                                            <input name="mobile" type="tel" value={form.mobile} onChange={handleChange}
+                                                                className="modern-input pl-10 py-2.5 text-sm" placeholder="+971 5x xxx xxxx" required />
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-bold mb-1.5 text-[var(--text-primary)]">WhatsApp</label>
+                                                        <label className="block text-xs font-bold mb-1.5 text-[var(--text-primary)]">
+                                                            Available from <span className="text-red-400">*</span>
+                                                        </label>
                                                         <div className="relative">
-                                                            <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-xs" />
-                                                            <input name="whatsapp" value={form.whatsapp} onChange={handleChange}
-                                                                className="modern-input pl-10 py-2.5 text-sm" placeholder="Same as mobile?" />
+                                                            <FaCalendarAlt className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-xs" />
+                                                            <input name="availability" type="date" value={form.availability} onChange={handleChange}
+                                                                className="modern-input pl-10 py-2.5 text-sm" required />
                                                         </div>
                                                     </div>
-                                                </div>
-
-                                                {/* Availability */}
-                                                <div>
-                                                    <label className="block text-xs font-bold mb-1.5 text-[var(--text-primary)]">
-                                                        Available From <span className="text-red-400">*</span>
-                                                    </label>
-                                                    <div className="relative">
-                                                        <FaCalendarAlt className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm" />
-                                                        <input name="availability" type="date" value={form.availability} onChange={handleChange}
-                                                            className="modern-input pl-10 py-2.5 text-sm" required />
-                                                    </div>
-                                                </div>
-
-                                                {/* Experience */}
-                                                <div>
-                                                    <label className="block text-xs font-bold mb-1.5 text-[var(--text-primary)]">
-                                                        Relevant Experience
-                                                    </label>
-                                                    <input name="experience" value={form.experience} onChange={handleChange}
-                                                        className="modern-input py-2.5 text-sm"
-                                                        placeholder="e.g. 2 years event hosting" />
                                                 </div>
 
                                                 {/* Why you */}
@@ -492,10 +472,12 @@ export default function JobDetailPage() {
                                                     <div className="relative">
                                                         <FaCommentAlt className="absolute left-3.5 top-3.5 text-[var(--text-muted)] text-sm" />
                                                         <textarea name="whyYou" value={form.whyYou} onChange={handleChange}
-                                                            rows={4} className="modern-input pl-10 py-2.5 text-sm resize-none"
-                                                            placeholder="Tell us what makes you the right person for this role…" required />
+                                                            rows={3} className="modern-input pl-10 py-2.5 text-sm resize-none"
+                                                            placeholder="A couple of lines about your experience and energy…" required />
                                                     </div>
-                                                    <p className="text-xs text-[var(--text-muted)] mt-1">{form.whyYou.length} / 30 min chars</p>
+                                                    <p className={`text-xs mt-1 ${form.whyYou.length >= 30 ? "text-green-500" : "text-[var(--text-muted)]"}`}>
+                                                        {form.whyYou.length >= 30 ? "✓ Looks good" : `${form.whyYou.length}/30 characters minimum`}
+                                                    </p>
                                                 </div>
 
                                                 <button
@@ -525,6 +507,24 @@ export default function JobDetailPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Mobile sticky apply bar */}
+            {!submitted && !alreadyApplied && (
+                <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[var(--surface)]/95 backdrop-blur-xl border-t border-[var(--border)] px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                        <p className="font-black text-[var(--primary)] text-base leading-none">
+                            AED {job.rate}
+                            <span className="text-[10px] font-medium text-[var(--text-muted)] ml-1">
+                                /{job.paymentFrequency ? job.paymentFrequency.charAt(0).toUpperCase() + job.paymentFrequency.slice(1) : "Day"}
+                            </span>
+                        </p>
+                        <p className="text-[10px] text-[var(--text-muted)] truncate">{job.location} · {job.type}</p>
+                    </div>
+                    <a href="#apply" className="btn-primary px-6 py-2.5 text-sm shrink-0 rounded-full">
+                        Apply Now
+                    </a>
+                </div>
+            )}
 
             <Footer />
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode="signin" />
