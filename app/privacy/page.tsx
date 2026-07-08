@@ -39,9 +39,10 @@ const SECTIONS = [
   {
     title: "5. Media Consent",
     body: [
-      "By registering on the platform and accepting these terms, staff members acknowledge and agree that photographs and videos captured during work assignments may be used by Eventopic for legitimate promotional, marketing, branding, portfolio, website and social media purposes.",
-      "Such content will only be used for professional promotional purposes. Your personal and sensitive information (contact details, identification documents, application history) always remains confidential and is never included in promotional material.",
-      "Registration on the platform implies acceptance of this media usage policy. If you have concerns about specific content, contact us at info@eventopic.com and we will review it.",
+      "When you apply for modelling roles, the photographs you upload may be shared with the relevant Eventopic client for recruitment and selection purposes only.",
+      "By registering on the platform and accepting these terms, staff members also acknowledge and agree that photographs and videos captured during work assignments — or approved portfolio images — may be used by Eventopic for legitimate promotional, marketing, branding, portfolio, website and social media purposes.",
+      "Such content will only be used for professional recruitment and promotional purposes. Your personal and sensitive information (contact details, identification documents, application history) always remains confidential, is never included in promotional material, and is never shared beyond these agreed purposes without your authorization.",
+      "Consent for modelling applications is captured explicitly at the point of applying and stored with a timestamp. If you have concerns about specific content, contact us at info@eventopic.com and we will review it.",
     ],
   },
   {

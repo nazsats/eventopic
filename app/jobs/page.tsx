@@ -29,12 +29,14 @@ interface Job {
     paymentFrequency?: string;
     description: string;
     category: string;
+    createdAt?: string;
+    expiryDate?: string;
 }
 
 const CATEGORIES = [
     { value: "all", label: "All Jobs", emoji: "🎯" },
     { value: "staffing", label: "Staffing", emoji: "👥" },
-    { value: "models_entertainment", label: "Entertainment", emoji: "🎭" },
+    { value: "models_entertainment", label: "Models", emoji: "🎭" },
     { value: "promotions", label: "Promotions", emoji: "📢" },
     { value: "other", label: "Other", emoji: "✨" },
 ];
@@ -72,6 +74,15 @@ export default function JobsPage() {
                     ...doc.data(),
                     description: doc.data().description || "Join our professional team for part-time and short-term opportunities in the UAE.",
                 } as Job));
+                // Newest first: active jobs (not expired) on top, then by post date.
+                const now = Date.now();
+                const ts = (j: Job) => (j.createdAt ? new Date(j.createdAt).getTime() : 0);
+                const isExpired = (j: Job) => !!j.expiryDate && new Date(j.expiryDate).getTime() < now;
+                jobList.sort((a, b) => {
+                    const ea = isExpired(a) ? 1 : 0, eb = isExpired(b) ? 1 : 0;
+                    if (ea !== eb) return ea - eb;          // active before expired
+                    return ts(b) - ts(a);                    // newest first
+                });
                 setJobs(jobList);
 
                 // If logged in, fetch which jobs they've already applied to
@@ -256,6 +267,9 @@ export default function JobsPage() {
                             >
                                 {pagedJobs.map((job, i) => {
                                     const applied = appliedJobIds.has(job.id);
+                                    const isNew = job.createdAt
+                                        ? (Date.now() - new Date(job.createdAt).getTime()) < 7 * 864e5
+                                        : false;
                                     return (
                                         <motion.div
                                             key={job.id}
@@ -273,8 +287,11 @@ export default function JobsPage() {
 
                                                 {/* Top row */}
                                                 <div className="flex items-start justify-between gap-3 mb-3">
-                                                    <div className="w-11 h-11 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-base shrink-0 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
+                                                    <div className="relative w-11 h-11 rounded-xl bg-[image:var(--gradient-primary)] flex items-center justify-center text-white text-base shrink-0 group-hover:scale-110 transition-transform shadow-[var(--shadow-sm)]">
                                                         <FaBriefcase />
+                                                        {isNew && !applied && (
+                                                            <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[8px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded-full shadow-sm">New</span>
+                                                        )}
                                                     </div>
                                                     {applied ? (
                                                         <span className="flex items-center gap-1.5 bg-green-500/15 border border-green-500/30 text-green-500 text-[10px] font-bold px-2.5 py-1 rounded-full">

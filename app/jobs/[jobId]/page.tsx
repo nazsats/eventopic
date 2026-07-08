@@ -12,6 +12,7 @@ import { db } from "../../../lib/firebase";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti";
+import axios from "axios";
 import AuthModal from "../../../components/AuthModal";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
@@ -20,8 +21,20 @@ import {
     FaBriefcase, FaMapMarkerAlt, FaClock,
     FaCheckCircle, FaUser, FaPaperPlane, FaArrowLeft,
     FaShieldAlt, FaTrophy, FaStar, FaLock, FaPhone,
-    FaEnvelope, FaCalendarAlt, FaCommentAlt,
+    FaEnvelope, FaCalendarAlt, FaCommentAlt, FaCamera, FaTrash, FaSpinner,
 } from "react-icons/fa";
+
+// Modelling roles require a small photo set for client selection.
+const PHOTO_SLOTS = [
+    { key: "headshot", label: "Headshot", required: true },
+    { key: "fullBody", label: "Full Body", required: true },
+    { key: "sideProfile", label: "Side Profile", required: true },
+    { key: "portfolio", label: "Portfolio Photo", required: true },
+    { key: "additional", label: "Additional", required: false },
+] as const;
+
+const MEDIA_CONSENT_TEXT =
+    "I understand and agree that the photographs I upload may be shared with Eventopic's clients for recruitment and selection purposes. If I am successfully hired or participate in assignments through Eventopic, I also consent to Eventopic using photographs taken during assignments or approved portfolio images for its website, social media, promotional materials, and marketing purposes. My personal information will remain confidential and handled in accordance with the Privacy Policy.";
 
 interface Job {
     id: string;
@@ -80,6 +93,15 @@ export default function JobDetailPage() {
         availability: "",
         whyYou: "",
     });
+
+    // Modelling-only: photo set + media consent
+    const [photos, setPhotos] = useState<Record<string, string>>({});
+    const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
+    const [mediaConsent, setMediaConsent] = useState(false);
+
+    // A job is "modelling" by category or by title mentioning model.
+    const isModellingJob =
+        job?.category === "models_entertainment" || /\bmodel\b/i.test(job?.title || "");
 
     // Progress: count non-empty required fields
     const requiredFields: (keyof typeof form)[] = ["name", "email", "mobile", "availability", "whyYou"];
@@ -144,6 +166,53 @@ export default function JobDetailPage() {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
+    // Compress in-browser before upload (saves Cloudinary quota, faster on mobile)
+    const compressImage = (file: File, maxWidth = 900, quality = 0.8): Promise<Blob> =>
+        new Promise((resolve, reject) => {
+            const img = new window.Image();
+            const objectUrl = URL.createObjectURL(file);
+            img.onload = () => {
+                const scale = Math.min(1, maxWidth / img.width);
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+                URL.revokeObjectURL(objectUrl);
+                canvas.toBlob(b => (b ? resolve(b) : reject(new Error("Compression failed"))), "image/jpeg", quality);
+            };
+            img.onerror = reject;
+            img.src = objectUrl;
+        });
+
+    const handlePhotoUpload = async (slot: string, file?: File) => {
+        if (!file) return;
+        if (!/\.(jpe?g|png)$/i.test(file.name) && !/image\/(jpe?g|png)/i.test(file.type)) {
+            toast.error("Please upload a JPG, JPEG or PNG image.");
+            return;
+        }
+        setUploadingSlot(slot);
+        try {
+            const compressed = await compressImage(file);
+            const formData = new FormData();
+            formData.append("file", compressed, "photo.jpg");
+            const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+            if (uploadPreset) formData.append("upload_preset", uploadPreset);
+            formData.append("folder", "eventopic/applications");
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+            if (!cloudName) throw new Error("Cloudinary not configured");
+            const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, formData);
+            setPhotos(prev => ({ ...prev, [slot]: res.data.secure_url }));
+        } catch (err) {
+            console.error("Photo upload error:", err);
+            toast.error("Upload failed. Please try again.");
+        } finally {
+            setUploadingSlot(null);
+        }
+    };
+
+    const removePhoto = (slot: string) =>
+        setPhotos(prev => { const n = { ...prev }; delete n[slot]; return n; });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) { setIsAuthModalOpen(true); return; }
@@ -155,6 +224,12 @@ export default function JobDetailPage() {
         if (!form.availability) errors.push("Availability is required");
         if (!form.whyYou.trim() || form.whyYou.length < 30)
             errors.push("Please write at least 30 characters about why you're a good fit");
+
+        if (isModellingJob) {
+            const missing = PHOTO_SLOTS.filter(s => s.required && !photos[s.key]);
+            if (missing.length) errors.push("Please upload all 4 required photos (headshot, full body, side profile, portfolio)");
+            if (!mediaConsent) errors.push("Please accept the media consent to apply for a modelling role");
+        }
 
         if (errors.length) {
             toast.error(errors[0]);
@@ -169,6 +244,12 @@ export default function JobDetailPage() {
                 jobId,
                 jobTitle: job?.title,
                 ...form,
+                ...(isModellingJob ? {
+                    modelPhotos: photos,
+                    mediaConsent: true,
+                    mediaConsentText: MEDIA_CONSENT_TEXT,
+                    mediaConsentAt: new Date().toISOString(),
+                } : {}),
                 timestamp: new Date().toISOString(),
                 status: "pending",
             });
@@ -399,7 +480,11 @@ export default function JobDetailPage() {
                                             {/* Header + progress */}
                                             <div className="mb-6">
                                                 <h2 className="font-bold text-xl">Apply Now</h2>
-                                                <p className="text-[var(--text-secondary)] text-sm mt-1">Fill in the form below and submit — takes under 2 minutes.</p>
+                                                <p className="text-[var(--text-secondary)] text-sm mt-1">
+                                                    {isModellingJob
+                                                        ? "Add your details and photos — we'll share your profile with the client."
+                                                        : "Fill in the form below and submit — takes under 2 minutes."}
+                                                </p>
                                                 <div className="mt-4">
                                                     <div className="flex justify-between text-xs font-bold mb-1">
                                                         <span className="text-[var(--text-muted)]">Form completion</span>
@@ -479,6 +564,69 @@ export default function JobDetailPage() {
                                                         {form.whyYou.length >= 30 ? "✓ Looks good" : `${form.whyYou.length}/30 characters minimum`}
                                                     </p>
                                                 </div>
+
+                                                {/* ── Modelling-only: photos + media consent ── */}
+                                                {isModellingJob && (
+                                                    <div className="pt-2 border-t border-[var(--border)] space-y-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-[var(--text-primary)]">
+                                                                Your photos <span className="text-red-400">*</span>
+                                                            </label>
+                                                            <p className="text-[11px] text-[var(--text-secondary)] mt-1 mb-3">
+                                                                Upload 4 recent photos (+1 optional). JPG or PNG, clear and well-lit.
+                                                            </p>
+                                                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+                                                                {PHOTO_SLOTS.map(slot => {
+                                                                    const url = photos[slot.key];
+                                                                    const busy = uploadingSlot === slot.key;
+                                                                    return (
+                                                                        <div key={slot.key} className="flex flex-col items-center gap-1">
+                                                                            <label className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden cursor-pointer border-2 border-dashed flex items-center justify-center transition-all ${url ? "border-transparent" : "border-[var(--border)] hover:border-[var(--primary)]/50 bg-[var(--surface-elevated)]"}`}>
+                                                                                {url ? (
+                                                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                                                    <img src={url} alt={slot.label} className="w-full h-full object-cover" />
+                                                                                ) : busy ? (
+                                                                                    <FaSpinner className="animate-spin text-[var(--primary)]" />
+                                                                                ) : (
+                                                                                    <FaCamera className="text-[var(--text-muted)]" />
+                                                                                )}
+                                                                                <input
+                                                                                    type="file"
+                                                                                    accept="image/jpeg,image/jpg,image/png"
+                                                                                    className="hidden"
+                                                                                    disabled={busy}
+                                                                                    onChange={e => handlePhotoUpload(slot.key, e.target.files?.[0])}
+                                                                                />
+                                                                                {url && (
+                                                                                    <button type="button" onClick={e => { e.preventDefault(); removePhoto(slot.key); }}
+                                                                                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80">
+                                                                                        <FaTrash className="text-[8px]" />
+                                                                                    </button>
+                                                                                )}
+                                                                            </label>
+                                                                            <span className="text-[9px] font-semibold text-center leading-tight text-[var(--text-secondary)]">
+                                                                                {slot.label}{slot.required ? "" : " (optional)"}
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+
+                                                        <label className="flex items-start gap-2.5 cursor-pointer select-none rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] p-3">
+                                                            <input type="checkbox" checked={mediaConsent} onChange={e => setMediaConsent(e.target.checked)}
+                                                                className="mt-0.5 w-4 h-4 shrink-0 accent-[var(--primary)] cursor-pointer" />
+                                                            <span className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+                                                                {MEDIA_CONSENT_TEXT}
+                                                            </span>
+                                                        </label>
+
+                                                        <p className="flex items-start gap-1.5 text-[10px] text-[var(--text-muted)] leading-relaxed">
+                                                            <FaShieldAlt className="text-[9px] mt-0.5 shrink-0 text-[var(--primary)]" />
+                                                            Your photos are used only for recruitment, client selection and the marketing described above. Personal data stays confidential and is never shared beyond these purposes.
+                                                        </p>
+                                                    </div>
+                                                )}
 
                                                 <button
                                                     type="submit"
