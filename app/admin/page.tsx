@@ -28,9 +28,14 @@ interface Job {
   requirements: string[]; benefits: string[]; postedBy: string;
 }
 interface Application {
-  id: string; userEmail: string; jobId: string; name: string; email: string;
-  mobile: string; whatsapp?: string; coverLetter: string; timestamp: string;
+  id: string; userEmail: string; userId?: string; jobId: string; jobTitle?: string;
+  name: string; email: string; mobile: string; whatsapp?: string;
+  coverLetter?: string; whyYou?: string; availability?: string; experience?: string;
+  timestamp: string;
   status: "pending" | "accepted" | "rejected";
+  // modelling-role extras
+  modelPhotos?: Record<string, string>;
+  mediaConsent?: boolean; mediaConsentAt?: string;
 }
 interface JobFormData {
   title: string; location: string; type: string; duration: string;
@@ -51,6 +56,9 @@ interface UserRecord {
   isProfileComplete?: boolean; createdAt?: string; phoneNumber?: string;
   membershipStatus?: "incomplete" | "pending" | "approved" | "rejected";
   resumeUrl?: string; skills?: string[]; appliedAt?: string;
+  nationality?: string; gender?: string; dateOfBirth?: string;
+  languagesSpoken?: string[]; introduction?: string; visaType?: string;
+  whatsappNumber?: string;
 }
 
 // ─── Tabs ───────────────────────────────────────────────────
@@ -93,6 +101,7 @@ export default function Admin() {
   const [userSearch, setUserSearch] = useState("");
   const [userProfileFilter, setUserProfileFilter] = useState("all");
   const [userProfessionFilter, setUserProfessionFilter] = useState("all");
+  const [memberFilter, setMemberFilter] = useState("all");
   const [activityCategoryFilter, setActivityCategoryFilter] = useState("all");
   const [activityActorFilter, setActivityActorFilter] = useState("all");
   const [jobsPage, setJobsPage] = useState(1);
@@ -350,8 +359,10 @@ export default function Admin() {
     const matchSearch = !s || (u.firstName || "").toLowerCase().includes(s) || (u.lastName || "").toLowerCase().includes(s) || (u.email || "").toLowerCase().includes(s);
     const matchProfile = userProfileFilter === "all" || (userProfileFilter === "complete" ? u.isProfileComplete : !u.isProfileComplete);
     const matchProfession = userProfessionFilter === "all" || u.professionCategory === userProfessionFilter;
-    return matchSearch && matchProfile && matchProfession;
+    const matchMembership = memberFilter === "all" || (u.membershipStatus || "incomplete") === memberFilter;
+    return matchSearch && matchProfile && matchProfession && matchMembership;
   });
+  const pendingCount = allUsers.filter(u => u.membershipStatus === "pending").length;
 
   const filteredLogs = activityLogs.filter(l => {
     const mc = activityCategoryFilter === "all" || l.category === activityCategoryFilter;
@@ -1058,18 +1069,96 @@ export default function Admin() {
                               </div>
                             </div>
 
-                            {app.coverLetter && (
-                              <details className="mt-4 group">
-                                <summary className="text-[10px] font-bold uppercase text-[var(--text-muted)] cursor-pointer hover:text-[var(--primary)] transition-colors list-none flex items-center gap-1">
-                                  <FaUserTie className="opacity-50" />
-                                  <span>Cover Letter</span>
-                                  <span className="group-open:rotate-180 transition-transform">▼</span>
-                                </summary>
-                                <div className="mt-3 p-4 rounded-xl bg-[var(--surface)] text-sm text-[var(--text-secondary)] leading-relaxed border border-[var(--border)] whitespace-pre-wrap">
-                                  {app.coverLetter}
-                                </div>
-                              </details>
-                            )}
+                            {/* ── Full application details ── */}
+                            {(() => {
+                              const applicant = allUsers.find(u => (u.email || "").toLowerCase() === (app.userEmail || app.email || "").toLowerCase());
+                              const why = app.whyYou || app.coverLetter;
+                              const photos = app.modelPhotos ? Object.entries(app.modelPhotos).filter(([, v]) => v) : [];
+                              return (
+                                <details className="mt-4 group" open>
+                                  <summary className="text-[10px] font-bold uppercase text-[var(--text-muted)] cursor-pointer hover:text-[var(--primary)] transition-colors list-none flex items-center gap-1.5">
+                                    <FaUserTie className="opacity-50" />
+                                    <span>Full details</span>
+                                    <span className="group-open:rotate-180 transition-transform">▼</span>
+                                  </summary>
+                                  <div className="mt-3 grid md:grid-cols-2 gap-3">
+                                    {/* Left: application answers */}
+                                    <div className="space-y-3">
+                                      {app.availability && (
+                                        <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+                                          <p className="text-[10px] font-bold uppercase text-[var(--text-muted)] mb-1">Available from</p>
+                                          <p className="text-sm text-[var(--text-primary)]">{app.availability}</p>
+                                        </div>
+                                      )}
+                                      {app.experience && (
+                                        <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+                                          <p className="text-[10px] font-bold uppercase text-[var(--text-muted)] mb-1">Experience</p>
+                                          <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">{app.experience}</p>
+                                        </div>
+                                      )}
+                                      {why && (
+                                        <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+                                          <p className="text-[10px] font-bold uppercase text-[var(--text-muted)] mb-1">Why they&apos;re a good fit</p>
+                                          <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{why}</p>
+                                        </div>
+                                      )}
+                                      {app.whatsapp && (
+                                        <p className="text-xs text-[var(--text-secondary)] flex items-center gap-1.5"><FaPhone className="text-[var(--accent)]" /> WhatsApp: {app.whatsapp}</p>
+                                      )}
+                                    </div>
+
+                                    {/* Right: applicant profile pulled from their account */}
+                                    <div className="space-y-3">
+                                      {applicant ? (
+                                        <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
+                                          <div className="flex items-center justify-between">
+                                            <p className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Applicant profile</p>
+                                            {applicant.membershipStatus && (
+                                              <span className={`px-2 py-0.5 text-[9px] rounded-full font-bold uppercase ${applicant.membershipStatus === "approved" ? "bg-green-500/20 text-green-500" : applicant.membershipStatus === "pending" ? "bg-amber-500/20 text-amber-500" : applicant.membershipStatus === "rejected" ? "bg-red-500/20 text-red-500" : "bg-[var(--surface-elevated)] text-[var(--text-muted)]"}`}>
+                                                {applicant.membershipStatus === "incomplete" ? "Not applied" : applicant.membershipStatus}
+                                              </span>
+                                            )}
+                                          </div>
+                                          {Array.isArray(applicant.skills) && applicant.skills.length > 0 && (
+                                            <p className="text-xs text-[var(--text-secondary)]"><span className="text-[var(--text-muted)]">Skills:</span> {applicant.skills.join(", ")}</p>
+                                          )}
+                                          {(applicant.city || applicant.country) && (
+                                            <p className="text-xs text-[var(--text-secondary)]"><span className="text-[var(--text-muted)]">Location:</span> {[applicant.city, applicant.country].filter(Boolean).join(", ")}</p>
+                                          )}
+                                          {applicant.professionCategory && (
+                                            <p className="text-xs text-[var(--text-secondary)]"><span className="text-[var(--text-muted)]">Profession:</span> {applicant.professionCategory}</p>
+                                          )}
+                                          <div className="flex gap-2 pt-1">
+                                            {applicant.resumeUrl && <a href={applicant.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-[var(--primary)] hover:underline">📄 View CV</a>}
+                                            {applicant.profileImageUrl && <a href={applicant.profileImageUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-[var(--primary)] hover:underline">🖼️ Photo</a>}
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text-muted)]">No linked profile found for this applicant.</div>
+                                      )}
+
+                                      {/* Modelling photos + consent */}
+                                      {photos.length > 0 && (
+                                        <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+                                          <div className="flex items-center justify-between mb-2">
+                                            <p className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Submitted photos</p>
+                                            {app.mediaConsent && <span className="text-[9px] font-bold text-green-500 flex items-center gap-1"><FaCheckCircle /> Consent given</span>}
+                                          </div>
+                                          <div className="flex flex-wrap gap-2">
+                                            {photos.map(([label, url]) => (
+                                              <a key={label} href={url} target="_blank" rel="noopener noreferrer" title={label} className="w-14 h-16 rounded-lg overflow-hidden border border-[var(--border)] hover:border-[var(--primary)] transition-all">
+                                                <Image src={url} alt={label} width={56} height={64} className="w-full h-full object-cover" />
+                                              </a>
+                                            ))}
+                                          </div>
+                                          {app.mediaConsentAt && <p className="text-[9px] text-[var(--text-muted)] mt-1.5">Consent recorded {new Date(app.mediaConsentAt).toLocaleString()}</p>}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </details>
+                              );
+                            })()}
                           </motion.div>
                         ))}
 
@@ -1101,7 +1190,20 @@ export default function Admin() {
                         <input value={userSearch} onChange={(e) => { setUserSearch(e.target.value); setUsersPage(1); }} placeholder="Search by name or email..." className="modern-input pl-10 w-full" />
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-3 items-center">
+                      <select value={memberFilter} onChange={(e) => { setMemberFilter(e.target.value); setUsersPage(1); }} className="modern-input py-2 text-sm appearance-none w-48">
+                        <option value="all">All Members</option>
+                        <option value="pending">⏳ Pending review{pendingCount ? ` (${pendingCount})` : ""}</option>
+                        <option value="approved">✅ Approved</option>
+                        <option value="rejected">❌ Rejected</option>
+                        <option value="incomplete">• Not applied</option>
+                      </select>
+                      {pendingCount > 0 && (
+                        <button onClick={() => { setMemberFilter("pending"); setUsersPage(1); }}
+                          className="text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
+                          {pendingCount} awaiting review →
+                        </button>
+                      )}
                       <select value={userProfileFilter} onChange={(e) => { setUserProfileFilter(e.target.value); setUsersPage(1); }} className="modern-input py-2 text-sm appearance-none w-40">
                         <option value="all">All Profiles</option>
                         <option value="complete">✅ Complete</option>
@@ -1126,8 +1228,10 @@ export default function Admin() {
                         rejected: "bg-red-500/20 text-red-500",
                         incomplete: "bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]",
                       };
+                      const fullName = `${u.firstName || ""} ${u.lastName || ""}`.trim() || "—";
                       return (
-                      <div key={u.id} className="flex items-start sm:items-center gap-4 p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex-wrap sm:flex-nowrap">
+                      <div key={u.id} className="rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--primary)] transition-all overflow-hidden">
+                       <div className="flex items-start sm:items-center gap-4 p-4 flex-wrap sm:flex-nowrap">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white font-bold text-lg overflow-hidden flex-shrink-0">
                           {u.profileImageUrl ? <Image src={u.profileImageUrl} alt="" width={48} height={48} className="w-full h-full object-cover" /> : (u.firstName?.[0] || u.email?.[0] || "U").toUpperCase()}
                         </div>
@@ -1155,6 +1259,54 @@ export default function Admin() {
                             <button onClick={() => handleMembership(u.id, "pending")} className="px-3 py-1.5 rounded-lg glass-card text-[var(--text-secondary)] text-xs font-bold hover:text-[var(--primary)] transition-colors">Revoke</button>
                           )}
                         </div>
+                       </div>
+
+                       {/* Full profile — expandable */}
+                       <details className="group border-t border-[var(--border)]">
+                         <summary className="px-4 py-2.5 text-[10px] font-bold uppercase text-[var(--text-muted)] cursor-pointer hover:text-[var(--primary)] transition-colors list-none flex items-center gap-1.5">
+                           <span>Full profile</span>
+                           <span className="group-open:rotate-180 transition-transform">▼</span>
+                         </summary>
+                         <div className="px-4 pb-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 text-xs">
+                           {[
+                             ["Full name", fullName],
+                             ["Email", u.email],
+                             ["Phone", u.phoneNumber],
+                             ["WhatsApp", u.whatsappNumber],
+                             ["Nationality", u.nationality],
+                             ["Gender", u.gender],
+                             ["Date of birth", u.dateOfBirth],
+                             ["Location", [u.city, u.country].filter(Boolean).join(", ")],
+                             ["Profession", [u.professionCategory, u.professionSubcategory].filter(Boolean).join(" · ")],
+                             ["Languages", Array.isArray(u.languagesSpoken) ? u.languagesSpoken.join(", ") : ""],
+                             ["Visa", u.visaType],
+                             ["Profile complete", u.isProfileComplete ? "Yes" : "No"],
+                             ["Applied", u.appliedAt ? new Date(u.appliedAt).toLocaleDateString() : ""],
+                             ["Joined", u.createdAt ? new Date(u.createdAt).toLocaleDateString() : ""],
+                           ].filter(([, v]) => v).map(([label, value]) => (
+                             <div key={label as string} className="flex flex-col">
+                               <span className="text-[9px] font-bold uppercase text-[var(--text-muted)]">{label}</span>
+                               <span className="text-[var(--text-primary)] break-words">{value}</span>
+                             </div>
+                           ))}
+                           {Array.isArray(u.skills) && u.skills.length > 0 && (
+                             <div className="flex flex-col sm:col-span-2 lg:col-span-3">
+                               <span className="text-[9px] font-bold uppercase text-[var(--text-muted)]">Skills</span>
+                               <span className="text-[var(--text-primary)]">{u.skills.join(", ")}</span>
+                             </div>
+                           )}
+                           {u.introduction && (
+                             <div className="flex flex-col sm:col-span-2 lg:col-span-3">
+                               <span className="text-[9px] font-bold uppercase text-[var(--text-muted)]">About</span>
+                               <span className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{u.introduction}</span>
+                             </div>
+                           )}
+                           <div className="flex gap-3 sm:col-span-2 lg:col-span-3 pt-1">
+                             {u.resumeUrl && <a href={u.resumeUrl} target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--primary)] hover:underline">📄 View CV</a>}
+                             {u.profileImageUrl && <a href={u.profileImageUrl} target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--primary)] hover:underline">🖼️ View photo</a>}
+                           </div>
+                         </div>
+                       </details>
                       </div>
                       );
                     })}
