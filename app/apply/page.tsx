@@ -74,7 +74,10 @@ export default function ApplyPage() {
       fd.append("folder", "eventopic/applications");
       const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
       if (!cloud) throw new Error("Cloudinary not configured");
-      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloud}/auto/upload`, fd);
+      // CVs/PDFs go to the `raw` resource type — image-type PDF delivery is
+      // blocked by Cloudinary's default "PDF & ZIP delivery" security setting.
+      const resType = kind === "cv" ? "raw" : "image";
+      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloud}/${resType}/upload`, fd);
       if (kind === "photo") setPhotoUrl(res.data.secure_url); else setResumeUrl(res.data.secure_url);
       toast.success(`${kind === "cv" ? "CV" : "Photo"} uploaded`);
     } catch (e) {

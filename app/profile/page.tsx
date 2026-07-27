@@ -336,7 +336,10 @@ function ProfileContent() {
       formData.append("folder", "eventopic/profiles");
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
       if (!cloudName) throw new Error("Cloudinary not configured");
-      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, formData);
+      // Resumes/PDFs upload as `raw` so they stay downloadable regardless of
+      // Cloudinary's PDF-delivery security setting; images stay as `image`.
+      const resType = type === "resume" ? "raw" : "image";
+      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/${resType}/upload`, formData);
       const url = res.data.secure_url;
       if (type === "image") {
         const newPhotos = [...profile.profilePhotos];
