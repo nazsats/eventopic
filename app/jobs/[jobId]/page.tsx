@@ -14,13 +14,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti";
 import axios from "axios";
 import AuthModal from "../../../components/AuthModal";
+import MembershipGate from "../../../components/MembershipGate";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import Link from "next/link";
 import {
     FaBriefcase, FaMapMarkerAlt, FaClock,
     FaCheckCircle, FaUser, FaPaperPlane, FaArrowLeft,
-    FaShieldAlt, FaTrophy, FaStar, FaLock, FaPhone,
+    FaShieldAlt, FaTrophy, FaStar, FaPhone,
     FaEnvelope, FaCalendarAlt, FaCommentAlt, FaCamera, FaTrash, FaSpinner,
 } from "react-icons/fa";
 
@@ -74,7 +75,7 @@ const DEFAULT_BENEFITS = [
 ];
 
 export default function JobDetailPage() {
-    const { user, loading } = useAuth();
+    const { user, loading, memberStatus, isAdmin } = useAuth();
     const router = useRouter();
     const { jobId } = useParams();
 
@@ -275,24 +276,14 @@ export default function JobDetailPage() {
         );
     }
 
-    if (!user) {
+    // Private jobs: only approved (verified) members or admins can view/apply.
+    if (!isAdmin && memberStatus !== "approved") {
         return (
             <>
                 <Navbar />
-                <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
-                    <div className="glass-card p-10 max-w-sm w-full text-center">
-                        <div className="w-16 h-16 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] text-2xl mx-auto mb-5">
-                            <FaLock />
-                        </div>
-                        <h2 className="text-2xl font-bold mb-2">Sign in to Apply</h2>
-                        <p className="text-[var(--text-secondary)] mb-6 text-sm">Create a free account to view and apply for this job.</p>
-                        <button onClick={() => setIsAuthModalOpen(true)} className="btn-primary w-full py-3">
-                            Sign In / Register
-                        </button>
-                    </div>
-                </div>
+                <MembershipGate status={user ? memberStatus : null} onRegister={() => setIsAuthModalOpen(true)} />
                 <Footer />
-                <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode="signin" />
+                <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode="signup" />
             </>
         );
     }

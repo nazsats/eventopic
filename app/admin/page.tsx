@@ -49,6 +49,8 @@ interface UserRecord {
   profileImageUrl?: string; city?: string; country?: string;
   professionCategory?: string; professionSubcategory?: string;
   isProfileComplete?: boolean; createdAt?: string; phoneNumber?: string;
+  membershipStatus?: "incomplete" | "pending" | "approved" | "rejected";
+  resumeUrl?: string; skills?: string[]; appliedAt?: string;
 }
 
 // ─── Tabs ───────────────────────────────────────────────────
@@ -262,6 +264,15 @@ export default function Admin() {
       toast.success(`Application marked as ${newStatus}`);
       await logActivity({ actorEmail: user?.email || "", actorRole: myRole, action: `${newStatus}_application`, category: "applications", targetId: appId, targetLabel: app?.name || "" });
     } catch (error) { console.error(error); toast.error("Status update failed."); }
+  };
+
+  const handleMembership = async (userId: string, status: "approved" | "rejected" | "pending") => {
+    try {
+      await updateDoc(doc(db, "users", userId), { membershipStatus: status, reviewedAt: new Date().toISOString() });
+      setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, membershipStatus: status } : u));
+      toast.success(status === "approved" ? "Member approved ✓" : status === "rejected" ? "Member rejected" : "Moved back to pending");
+      await logActivity({ actorEmail: user?.email || "", actorRole: myRole, action: `member_${status}`, category: "users", targetId: userId });
+    } catch (error) { console.error(error); toast.error("Update failed."); }
   };
 
   const handleAddAdmin = async () => {
@@ -1107,29 +1118,46 @@ export default function Admin() {
 
                   {/* User List */}
                   <div className="grid gap-3">
-                    {paginatedUsers.map(u => (
-                      <div key={u.id} className="flex items-center gap-4 p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--primary)] transition-all">
+                    {paginatedUsers.map(u => {
+                      const ms = u.membershipStatus || "incomplete";
+                      const msMeta: Record<string, string> = {
+                        approved: "bg-green-500/20 text-green-500",
+                        pending: "bg-amber-500/20 text-amber-500",
+                        rejected: "bg-red-500/20 text-red-500",
+                        incomplete: "bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]",
+                      };
+                      return (
+                      <div key={u.id} className="flex items-start sm:items-center gap-4 p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex-wrap sm:flex-nowrap">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white font-bold text-lg overflow-hidden flex-shrink-0">
                           {u.profileImageUrl ? <Image src={u.profileImageUrl} alt="" width={48} height={48} className="w-full h-full object-cover" /> : (u.firstName?.[0] || u.email?.[0] || "U").toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-bold text-[var(--text-primary)] truncate">{u.firstName || ""} {u.lastName || ""}</span>
-                            {u.isProfileComplete && <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-[10px] rounded-full font-bold uppercase">Complete</span>}
-                            {!u.isProfileComplete && <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-500 text-[10px] rounded-full font-bold uppercase">Incomplete</span>}
+                            <span className={`px-2 py-0.5 text-[10px] rounded-full font-bold uppercase ${msMeta[ms]}`}>{ms === "incomplete" ? "Not applied" : ms}</span>
                           </div>
                           <div className="text-sm text-[var(--text-secondary)] truncate">{u.email}</div>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {u.professionCategory && <span className="text-xs text-[var(--text-muted)]">{u.professionCategory}</span>}
-                            {u.city && <span className="text-xs text-[var(--text-muted)]">📍 {u.city}</span>}
+                          <div className="flex flex-wrap gap-2 mt-1 items-center">
                             {u.phoneNumber && <span className="text-xs text-[var(--text-muted)]">📱 {u.phoneNumber}</span>}
+                            {Array.isArray(u.skills) && u.skills.length > 0 && <span className="text-xs text-[var(--text-muted)] truncate">🏷️ {u.skills.slice(0,4).join(", ")}</span>}
+                            {u.resumeUrl && <a href={u.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-[var(--primary)] font-semibold hover:underline">📄 CV</a>}
                           </div>
                         </div>
-                        <div className="text-xs text-[var(--text-muted)] flex-shrink-0">
-                          {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
+                        {/* Approve / reject controls */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {ms !== "approved" && (
+                            <button onClick={() => handleMembership(u.id, "approved")} className="px-3 py-1.5 rounded-lg bg-green-500/15 text-green-500 border border-green-500/30 text-xs font-bold hover:bg-green-500/25 transition-colors">Approve</button>
+                          )}
+                          {ms !== "rejected" && ms !== "incomplete" && (
+                            <button onClick={() => handleMembership(u.id, "rejected")} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-xs font-bold hover:bg-red-500/20 transition-colors">Reject</button>
+                          )}
+                          {ms === "approved" && (
+                            <button onClick={() => handleMembership(u.id, "pending")} className="px-3 py-1.5 rounded-lg glass-card text-[var(--text-secondary)] text-xs font-bold hover:text-[var(--primary)] transition-colors">Revoke</button>
+                          )}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                     {filteredUsers.length === 0 && <div className="text-center py-12 text-[var(--text-muted)]">No users found.</div>}
                   </div>
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -39,7 +40,20 @@ const SocialButton: React.FC<SocialButtonProps> = ({ icon, label, onClick, disab
 );
 
 export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthModalProps) {
-  const { signInWithGoogle, signInWithFacebook, signInWithApple, resetPassword } = useAuth();
+  const { signInWithGoogle, signInWithFacebook, signInWithApple, resetPassword, refreshMemberStatus } = useAuth();
+  const router = useRouter();
+
+  // Send un-applied members to the application step after auth.
+  const routeIfIncomplete = async () => {
+    await refreshMemberStatus();
+    const u = auth.currentUser;
+    if (!u) return;
+    try {
+      const snap = await getDoc(doc(db, "users", u.uid));
+      const status = snap.exists() ? (snap.data().membershipStatus || "incomplete") : "incomplete";
+      if (status === "incomplete") router.push("/apply");
+    } catch { /* ignore */ }
+  };
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -68,8 +82,12 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
     try {
       if (mode === "signup") {
         const { user } = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", user.uid), { email, createdAt: new Date().toISOString(), acceptedTermsAt: new Date().toISOString() });
-        toast.success("Account created! Welcome!");
+        await setDoc(doc(db, "users", user.uid), { email, createdAt: new Date().toISOString(), acceptedTermsAt: new Date().toISOString(), membershipStatus: "incomplete" });
+        toast.success("Account created! One quick step to go.");
+        setEmail(""); setPassword("");
+        onClose();
+        router.push("/apply");
+        return;
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast.success("Signed in!");
@@ -77,6 +95,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
       setEmail("");
       setPassword("");
       onClose();
+      await routeIfIncomplete();
     } catch (error: any) {
       console.error("Authentication error:", error);
       toast.error(error.message || "Authentication failed. Please try again.");
@@ -119,6 +138,7 @@ export default function AuthModal({ isOpen, onClose, mode: initialMode }: AuthMo
       await signInFn();
       toast.success(`Signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
       onClose();
+      await routeIfIncomplete();
     } catch (error) {
       console.error(`Social sign-in error (${provider}):`, error);
       toast.error(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in failed.`);

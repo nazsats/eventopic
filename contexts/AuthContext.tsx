@@ -20,9 +20,19 @@ import { auth, db } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
+// Membership vetting states:
+//  incomplete → account made, application not submitted yet
+//  pending    → application submitted, awaiting manual review / interview
+//  approved   → verified member, can browse & apply to jobs
+//  rejected   → not approved
+export type MemberStatus = "incomplete" | "pending" | "approved" | "rejected";
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  memberStatus: MemberStatus | null;
+  isAdmin: boolean;
+  refreshMemberStatus: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
   signInWithApple: () => Promise<void>;
@@ -34,6 +44,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  memberStatus: null,
+  isAdmin: false,
+  refreshMemberStatus: async () => { },
   signInWithGoogle: async () => { },
   signInWithFacebook: async () => { },
   signInWithApple: async () => { },
@@ -51,6 +64,8 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [memberStatus, setMemberStatus] = useState<MemberStatus | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -63,7 +78,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await setDoc(userRef, {
           email: user.email,
           createdAt: new Date().toISOString(),
-          isProfileComplete: false, // Default value for new users
+          isProfileComplete: false,
+          membershipStatus: "incomplete", // must apply + be reviewed before jobs unlock
         });
         console.log(`Saved user email ${user.email} to Firestore`);
       }
@@ -71,6 +87,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error saving user to Firestore:", error);
       toast.error("Failed to save user data.", { className: "bg-[var(--primary)] text-[var(--text-body)]" });
     }
+  };
+
+  const refreshMemberStatus = async () => {
+    if (!auth.currentUser) return;
+    try {
+      const snap = await getDoc(doc(db, "users", auth.currentUser.uid));
+      setMemberStatus((snap.exists() ? (snap.data().membershipStatus || "incomplete") : "incomplete") as MemberStatus);
+    } catch { /* ignore */ }
   };
 
   useEffect(() => {
@@ -82,8 +106,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
 
       if (!newUser) {
-        // Redirect unauthenticated users away from the profile page
-        if (pathname === "/profile") router.replace("/");
+        setMemberStatus(null);
+        setIsAdmin(false);
+        // Redirect unauthenticated users away from members-only pages
+        if (["/profile", "/dashboard", "/apply"].includes(pathname)) router.replace("/");
         return;
       }
 
@@ -92,7 +118,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // One read of the user's own profile doc.
         const userSnap = await getDoc(doc(db, "users", newUser.uid));
-        const isProfileComplete = userSnap.exists() ? !!userSnap.data().isProfileComplete : false;
+        const status = (userSnap.exists() ? (userSnap.data().membershipStatus || "incomplete") : "incomplete") as MemberStatus;
+        setMemberStatus(status);
 
         // Cheap single-doc admin check — the security rules allow a user to
         // read their OWN admin doc, so we never fetch the whole collection.
@@ -105,13 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Read denied => not an admin. Safe to ignore.
           }
         }
-
-        // Only nudge non-admins with an incomplete profile, and only from
-        // public marketing pages (never mid-task on protected routes).
-        const publicRoutes = ["/", "/about", "/services"];
-        if (!isAdminUser && !isProfileComplete && publicRoutes.includes(pathname)) {
-          router.replace("/profile");
-        }
+        setIsAdmin(isAdminUser);
       } catch (error: unknown) {
         console.error("AuthContext: profile/admin check failed:", error instanceof Error ? error.message : error);
       }
@@ -196,7 +217,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signInWithGoogle, signInWithFacebook, signInWithApple, signInWithEmail, signOut, resetPassword }}
+      value={{ user, loading, memberStatus, isAdmin, refreshMemberStatus, signInWithGoogle, signInWithFacebook, signInWithApple, signInWithEmail, signOut, resetPassword }}
     >
       {children}
     </AuthContext.Provider>

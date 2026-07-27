@@ -15,7 +15,7 @@ import {
   FaMapMarkerAlt, FaBriefcase, FaEdit, FaCheckCircle,
   FaHourglassHalf, FaTimesCircle, FaStar, FaTrophy,
   FaBolt, FaArrowRight, FaFileAlt, FaPaperPlane, FaMoneyBillWave,
-  FaRegClock, FaUser,
+  FaRegClock, FaUser, FaIdBadge,
 } from "react-icons/fa";
 
 interface Profile {
@@ -34,7 +34,7 @@ interface RecJob {
 type FilterType = "all" | "pending" | "accepted" | "rejected";
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, memberStatus, isAdmin } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
@@ -146,6 +146,45 @@ export default function Dashboard() {
 
       <section className="pt-24 pb-16">
         <div className="container mx-auto px-5 max-w-6xl">
+
+          {/* ── Membership status banner ── */}
+          {!isAdmin && memberStatus && memberStatus !== "approved" && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              className={`mb-5 rounded-sm p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-3 border ${
+                memberStatus === "pending"
+                  ? "bg-amber-500/10 border-amber-500/30"
+                  : memberStatus === "rejected"
+                    ? "bg-red-500/10 border-red-500/30"
+                    : "bg-[var(--primary-muted)] border-[var(--border-hover)]"}`}>
+              <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-white ${
+                memberStatus === "pending" ? "bg-amber-500" : memberStatus === "rejected" ? "bg-red-500" : "bg-[var(--primary)]"}`}>
+                {memberStatus === "pending" ? <FaHourglassHalf /> : memberStatus === "rejected" ? <FaTimesCircle /> : <FaIdBadge />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm text-[var(--text-primary)]">
+                  {memberStatus === "pending" ? "Application under review"
+                    : memberStatus === "rejected" ? "Membership not approved"
+                    : "Complete your membership application"}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {memberStatus === "pending" ? "We review every applicant personally and will contact you within 7 days for a short interview. Jobs unlock once you're approved."
+                    : memberStatus === "rejected" ? "Questions? Email info@eventopic.com."
+                    : "Add your details, skills and CV so we can review your application."}
+                </p>
+              </div>
+              {memberStatus === "incomplete" && (
+                <Link href="/apply" className="btn-primary px-5 py-2.5 text-sm shrink-0">Complete now <FaArrowRight className="text-xs" /></Link>
+              )}
+            </motion.div>
+          )}
+
+          {/* Verified member badge */}
+          {(isAdmin || memberStatus === "approved") && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              className="mb-5 inline-flex items-center gap-2 rounded-full bg-[var(--primary-muted)] border border-[var(--border-hover)] px-4 py-2 text-xs font-bold text-[var(--primary)]">
+              <FaCheckCircle /> {isAdmin ? "Admin" : "Verified Member"}
+            </motion.div>
+          )}
 
           {/* ── Header ── */}
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}

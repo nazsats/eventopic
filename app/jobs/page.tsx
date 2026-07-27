@@ -9,6 +9,7 @@ import { db } from "../../lib/firebase";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import CursorGlow from "../../components/CursorGlow";
+import MembershipGate from "../../components/MembershipGate";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import AuthModal from "../../components/AuthModal";
@@ -53,8 +54,11 @@ function CategoryBadge({ category }: { category: string }) {
 }
 
 export default function JobsPage() {
-    const { user, loading } = useAuth();
+    const { user, loading, memberStatus, isAdmin } = useAuth();
     const router = useRouter();
+
+    // Jobs are private — only approved (verified) members or admins can view.
+    const canView = isAdmin || memberStatus === "approved";
 
     const [jobs, setJobs] = useState<Job[]>([]);
     const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
@@ -64,8 +68,9 @@ export default function JobsPage() {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [page, setPage] = useState(1);
 
-    // Fetch jobs + user's existing applications
+    // Fetch jobs + user's existing applications — only for approved members.
     useEffect(() => {
+        if (!canView) { setIsLoading(false); return; }
         const fetchData = async () => {
             try {
                 const jobSnap = await getDocs(collection(db, "jobs"));
@@ -102,7 +107,7 @@ export default function JobsPage() {
             }
         };
         fetchData();
-    }, [user]);
+    }, [user, canView]);
 
     // Filter jobs based on category + search, reset page on filter change
     const filteredJobs = useMemo(() => {
@@ -153,6 +158,26 @@ export default function JobsPage() {
             </div>
         </div>
     );
+
+    // ── Private jobs: gate everyone who isn't an approved member ──
+    if (!loading && !canView) {
+        return (
+            <>
+                <CursorGlow />
+                <Navbar />
+                <MembershipGate status={user ? memberStatus : null} onRegister={() => setIsAuthModalOpen(true)} />
+                <Footer />
+                <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode="signup" />
+            </>
+        );
+    }
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-[var(--primary)]" />
+            </div>
+        );
+    }
 
     return (
         <>
